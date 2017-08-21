@@ -13,6 +13,11 @@ DEV_DRUPAL_PASSWORD=your_drupal_db_password
 DEV_DRUPAL_DATABASE=drupal5
 SERVICES_HOST=localhost
 PORT=port_for_services_to_listen_on
+PGPORT=postgres_port
+PGUSER=postgres_user
+PGPASSWORD=postgres_password
+PGDATABASE=postgres_database
+PGHOST=postgres_host
 ```
 In the root directory run 
 `npm install`
