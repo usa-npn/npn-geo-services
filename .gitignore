@@ -1,0 +1,7 @@
+.idea
+node_modules
+logs/**
+!.gitkeep
+!readme
+config/default.json
+npm-debug.log

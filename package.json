@@ -1,0 +1,30 @@
+{
+  "name": "npn-geo-services",
+  "version": "0.0.1",
+  "private": true,
+  "description": "New Swagger API Project",
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "main": "app.js",
+  "dependencies": {
+    "JSONStream": "^1.2.1",
+    "express": "^4.14.0",
+    "js-yaml": "^3.7.0",
+    "js2xmlparser": "^2.0.2",
+    "morgan": "^1.8.2",
+    "mysql": "^2.11.1",
+    "mysql2": "^1.1.2",
+    "pg": "^7.1.2",
+    "swagger-express-mw": "^0.7.0"
+  },
+  "devDependencies": {
+    "should": "^7.1.0",
+    "supertest": "^1.0.0"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "swagger project test",
+    "edit": "swagger project edit"
+  }
+}
