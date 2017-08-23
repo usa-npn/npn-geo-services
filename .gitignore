@@ -5,3 +5,4 @@ logs/**
 !readme
 config/default.json
 npm-debug.log
+static/rasters/**

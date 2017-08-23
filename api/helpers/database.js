@@ -85,16 +85,47 @@ GROUP BY p.gid;
 */
 
 async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
-    let query = `SELECT p.orgname,
-    ST_Count(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true)) AS pixel_count_excluding_nodata, 
-    ST_Count(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true), false) AS pixel_count_including_nodata, 
-    (ST_SummaryStats(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true), true)).*,
-    ST_AsTIFF(ST_Union(r.rast)) AS tiffyrast,
-    ST_AsTIFF(ST_AsRaster(ST_Union(p.geom), ST_Union(r.rast), '2BUI')) AS tiffyborder,
-    ST_AsTIFF(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true)) AS tiffy
-FROM ${rastTable} r, fws_boundaries p
-WHERE p.orgname = '${boundary}' AND ST_Intersects(r.rast, p.geom) AND r.rast_date = '${dateString}' AND r.plant='${plant}' AND r.phenophase='${phenophase}'
-GROUP BY p.orgname;`;
+//     let query = `SELECT p.orgname,
+//     ST_Count(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true)) AS pixel_count_excluding_nodata,
+//     ST_Count(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true), false) AS pixel_count_including_nodata,
+//     (ST_SummaryStats(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true), true)).*,
+//     ST_AsTIFF(ST_Union(r.rast)) AS tiffyrast,
+//     ST_AsTIFF(ST_AsRaster(ST_Union(p.geom), ST_Union(r.rast), '2BUI')) AS tiffyborder,
+//     ST_AsTIFF(ST_Clip(ST_Union(r.rast), ST_Union(p.geom), true)) AS tiffy
+// FROM ${rastTable} r, fws_boundaries p
+// WHERE p.orgname = '${boundary}' AND ST_Intersects(r.rast, p.geom) AND r.rast_date = '${dateString}' AND r.plant='${plant}' AND r.phenophase='${phenophase}'
+// GROUP BY p.orgname;`;
+
+
+    // //     ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Union(foo.boundary, ST_Boundary(foo.boundary)), true))) AS tiffy
+    // let query = `SELECT
+    // (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Union(foo.boundary, ST_Boundary(foo.boundary)), true)), true)).*,
+    // ST_AsTIFF(ST_Union(ST_Clip(r.rast, foo.boundary, true), ST_Clip(r.rast, ST_Boundary(foo.boundary), true))) AS tiffy
+    // FROM (SELECT p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    // INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    // AND r.rast_date = '${dateString}'
+    // AND r.plant='${plant}'
+    // AND r.phenophase='${phenophase}';`;
+
+    //keep this!
+    let query = `SELECT
+    (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, .01), true)), true)).*,
+    ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, .01), true))) AS tiffy,
+    ST_Union(foo.boundary) AS shapefile
+    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    AND r.rast_date = '${dateString}'
+    AND r.plant='${plant}'
+    AND r.phenophase='${phenophase}';`;
+
+    //keep this!
+    // let query = `SELECT
+    // ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Boundary(foo.boundary), true))) AS tiffy
+    // FROM (SELECT p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    // INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    // AND r.rast_date = '${dateString}'
+    // AND r.plant='${plant}'
+    // AND r.phenophase='${phenophase}';`;
 
     /* KEEP THIS ONE, ONLY ISSUE IS THAT IT DOESNT INCLUDE EVERY PIXEL INSIDE THE BOARDER */
 //     let query = `SELECT p.orgname,
@@ -114,34 +145,60 @@ GROUP BY p.orgname;`;
     console.log(query);
     const res = await pgPool.query(query);
 
-    let d = new Date();
+    let response = {};
+    if (res.rows.length > 0) {
+        response.count = res.rows[0].count;
+        response.sum = res.rows[0].sum;
+        response.mean = res.rows[0].mean;
+        response.stddev = res.rows[0].stddev;
+        response.min = res.rows[0].min;
+        response.max = res.rows[0].max;
+        response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
+        response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
+
+        let d = new Date();
+        let rasterpath = 'static/rasters/';
+        let filename = `${boundary.replace(/ /g, '_')}_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
+        let shapefilename = `${boundary.replace(/ /g, '_')}.shp`;
+        response.rasterpath = filename;
+        response.boundarypath = shapefilename;
+        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+        });
+    }
+
 
     // res.rows.forEach(row => {
-    //     fs.writeFile(`D:\\tiffs\\${boundary}_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`, row.tiffy, function(err) {
+    //     let filepath = `D:\\tiffs\\${boundary}_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
+    //     res.rasterpath = filepath;
+    //     fs.writeFile(filepath, row.tiffy, function(err) {
     //         if(err) {
     //             return console.log(err);
     //         }
     //
     //         console.log("The file was saved!");
     //     });
-    //     fs.writeFile(`D:\\tiffs\\${boundary}_${plant}_${phenophase}_${dateString}_border_${d.getTime()}.tiff`, row.tiffyborder, function(err) {
-    //         if(err) {
-    //             return console.log(err);
-    //         }
-    //
-    //         console.log("The file was saved!");
-    //     });
-    //     fs.writeFile(`D:\\tiffs\\${boundary}_${plant}_${phenophase}_${dateString}_rast_${d.getTime()}.tiff`, row.tiffyrast, function(err) {
-    //         if(err) {
-    //             return console.log(err);
-    //         }
-    //
-    //         console.log("The file was saved!");
-    //     });
+        // fs.writeFile(`D:\\tiffs\\${boundary}_${plant}_${phenophase}_${dateString}_border_${d.getTime()}.tiff`, row.tiffyborder, function(err) {
+        //     if(err) {
+        //         return console.log(err);
+        //     }
+        //
+        //     console.log("The file was saved!");
+        // });
+        // fs.writeFile(`D:\\tiffs\\${boundary}_${plant}_${phenophase}_${dateString}_rast_${d.getTime()}.tiff`, row.tiffyrast, function(err) {
+        //     if(err) {
+        //         return console.log(err);
+        //     }
+        //
+        //     console.log("The file was saved!");
+        // });
     // });
 
 
-    return res;
+    return response;
 }
 
 // returns the number of tiles the boundary intersects

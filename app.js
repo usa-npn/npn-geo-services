@@ -37,6 +37,8 @@ app.use((req,res,next) => {
 
 app.use(express.static('api/swagger'));
 
+app.use(express.static('static/rasters'));
+
 SwaggerExpress.create(config, (err, swaggerExpress) => {
   if (err) { throw err; }
 
