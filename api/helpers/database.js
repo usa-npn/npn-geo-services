@@ -109,6 +109,7 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
 
     //keep this!
     let query = `SELECT
+    ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
     (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, .01), true)), true)).*,
     ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, .01), true))) AS tiffy,
     ST_Union(foo.boundary) AS shapefile
@@ -153,21 +154,22 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
-        response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
+        // todo: maybe possible to view in openlayers but not always zooming right so commenting out for now
+        // response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
         response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
 
         let d = new Date();
         let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
-        let shapefilename = `${boundary.replace(/ /g, '_')}.shp`;
-        response.rasterpath = filename;
-        response.boundarypath = shapefilename;
+        response.rasterFile = filename;
         fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
             if(err) {
                 return console.log(err);
             }
             console.log("The file was saved!");
         });
+
+        response.geojson = res.rows[0].geojson;
     }
 
 
@@ -201,6 +203,99 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
     return response;
 }
 
+async function getPostgisClippedRasterSixStats(rastTable, boundary, dateString, plant, phenophase) {
+    let buffer = .01;
+    if (rastTable === 'best_spring_index') {
+        buffer = 1;
+    }
+    let query = `SELECT
+    ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
+    (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
+    ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true))) AS tiffy,
+    ST_Union(foo.boundary) AS shapefile
+    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    AND r.rast_date = '${dateString}'
+    AND r.plant='${plant}'
+    AND r.phenophase='${phenophase}';`;
+
+    console.log(query);
+    const res = await pgPool.query(query);
+
+    let response = {date: dateString};
+    if (res.rows.length > 0) {
+        response.count = res.rows[0].count;
+        response.sum = res.rows[0].sum;
+        response.mean = res.rows[0].mean;
+        response.stddev = res.rows[0].stddev;
+        response.min = res.rows[0].min;
+        response.max = res.rows[0].max;
+        // todo: maybe possible to view in openlayers but not always zooming right so commenting out for now
+        // response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
+        response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
+
+        let d = new Date();
+        let rasterpath = 'static/rasters/';
+        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
+        response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
+        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+        });
+
+        //todo: below line can use this with geoserver wps to obtain styled clipped raster, initial testing shows boundary rules aren't correct though
+        //response.geojson = res.rows[0].geojson;
+    }
+    return response;
+}
+
+async function getPostgisClippedRasterAgddStats(rastTable, boundary, dateString, base) {
+    let buffer = .01;
+    let query = `SELECT
+    ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
+    (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
+    ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true))) AS tiffy,
+    ST_Union(foo.boundary) AS shapefile
+    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    AND r.rast_date = '${dateString}'
+    AND r.base='${base}'
+    AND r.scale='fahrenheit';`;
+
+    console.log(query);
+    const res = await pgPool.query(query);
+
+    let response = {date: dateString};
+    if (res.rows.length > 0) {
+        response.count = res.rows[0].count;
+        response.sum = res.rows[0].sum;
+        response.mean = res.rows[0].mean;
+        response.stddev = res.rows[0].stddev;
+        response.min = res.rows[0].min;
+        response.max = res.rows[0].max;
+        // todo: maybe possible to view in openlayers but not always zooming right so commenting out for now
+        // response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
+        response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
+
+        let d = new Date();
+        let rasterpath = 'static/rasters/';
+        let filename = `${boundary.replace(/ /g, '_')}_agdd_${base}f_${dateString}_${d.getTime()}.tiff`;
+        response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
+        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+        });
+
+        //todo: below line can use this with geoserver wps to obtain styled clipped raster, initial testing shows boundary rules aren't correct though
+        //response.geojson = res.rows[0].geojson;
+    }
+    return response;
+}
+
 // returns the number of tiles the boundary intersects
 async function boundaryRasterIntersections(rastTable, boundary, dateString, plant, phenophase) {
     let query = `
@@ -213,51 +308,58 @@ async function boundaryRasterIntersections(rastTable, boundary, dateString, plan
     return parseInt(res.rows[0].intersections);
 }
 
-async function getAreaStats(boundary, date, plant, phenophase, climate) {
+// choose table via selected data and boundary tile intersection (for ncep alaska)
+async function getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase) {
 
-    let dateString = date.toISOString().split('T')[0];
-    let now = new Date();
-
-    // choose table via selected data and boundary tile intersection (for ncep alaska)
-    let rastTable = '';
     if (climate === 'PRISM') {
-        rastTable = 'prism_spring_index';
+        return 'prism_spring_index';
+    } else if (climate === 'BEST') {
+        return 'best_spring_index';
     } else if (climate === 'NCEP') {
+        let now = new Date();
         if (date.getYear() < now.getYear()) {
-            rastTable = 'ncep_spring_index_historic';
+            return 'ncep_spring_index_historic';
         } else {
-            rastTable = 'ncep_spring_index';
-            let rasterCellsInBoundary = await boundaryRasterIntersections(rastTable, boundary, dateString, plant, phenophase);
-            if(rasterCellsInBoundary < 1) {
-                rastTable = 'ncep_spring_index_alaska';
+            let rasterCellsInBoundary = await boundaryRasterIntersections('ncep_spring_index', boundary, dateString, plant, phenophase);
+            if (rasterCellsInBoundary < 1) {
+                return 'ncep_spring_index_alaska';
+            } else {
+                return 'ncep_spring_index';
             }
 
         }
-    } else if (climate === 'BEST') {
-        rastTable = 'best_spring_index';
     }
+}
 
-    let response = await getTiff(rastTable, boundary, dateString, plant, phenophase);
+// choose table via selected data and boundary tile intersection (for ncep alaska)
+async function getAppropriateAgddTable(date, climate, boundary, dateString, base) {
+    let year = date.getFullYear();
+    if (climate === 'PRISM') {
+        return `prism_agdd_${year}`;
+    } else if (climate === 'BEST') {
+        return 'no_best_agdd';
+    } else if (climate === 'NCEP') {
+        return `agdd_${year}`;
+    }
+}
+
+async function getSixAreaStats(boundary, date, plant, phenophase, climate) {
+    let dateString = date.toISOString().split('T')[0];
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
+    let response = await getPostgisClippedRasterSixStats(rastTable, boundary, dateString, plant, phenophase);
     return response;
+}
 
-    /*
-    let query = `SELECT gid, CAST(AVG(((foo.geomval).val)) AS decimal(9,1)) as avgimr
-    FROM (SELECT p.gid, ST_Intersection(r.rast, p.geom) AS geomval
-    FROM ${rastTable} r, fws_boundaries p
-    WHERE ST_Intersects(p.geom, r.rast) AND p.orgname = '${boundary}' AND r.rast_date = '${dateString}' AND r.plant='${plant}' AND r.phenophase='${phenophase}') AS foo
-    WHERE (foo.geomval).val >=0
-    GROUP BY gid ORDER BY gid;`;
-    const res = await pgPool.query(query);
-    //await pgPool.end();
-
-    console.log(res);
-
-    return res;
-    */
+async function getAgddAreaStats(boundary, date, base, climate) {
+    let dateString = date.toISOString().split('T')[0];
+    let rastTable = await getAppropriateAgddTable(date, climate, boundary, dateString, base);
+    let response = await getPostgisClippedRasterAgddStats(rastTable, boundary, dateString, base);
+    return response;
 }
 
 module.exports.usanpnPool = usanpnPool;
 module.exports.usanpnPromisePool = usanpnPromisePool;
 module.exports.drupalPool = drupalPool;
-module.exports.getAreaStats = getAreaStats;
+module.exports.getSixAreaStats = getSixAreaStats;
+module.exports.getAgddAreaStats = getAgddAreaStats;
 module.exports.pgPool = pgPool;
