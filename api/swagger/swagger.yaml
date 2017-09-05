@@ -1735,6 +1735,7 @@ definitions:
       - max
       - zippedShapeFile
       - rasterFile
+      - geojson
     properties:
       date:
         type: string
@@ -1753,6 +1754,8 @@ definitions:
       zippedShapeFile:
         type: string
       rasterFile:
+        type: string
+      geojson:
         type: string
   AgddStatsResponse:
       required:
