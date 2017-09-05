@@ -8,7 +8,7 @@ info:
     name: The National Phenology Network
     email: support@usanpn.org
     url: www.usanpn.org
-host: 'localhost:3006'
+host: 'data-dev.usanpn.org:3006'
 basePath: /v0
 tags: []
 schemes:
