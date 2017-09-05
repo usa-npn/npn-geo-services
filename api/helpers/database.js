@@ -205,6 +205,9 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
 
 async function getPostgisClippedRasterSixStats(rastTable, boundary, dateString, plant, phenophase) {
     let buffer = .01;
+    if (rastTable === 'prism_spring_index') {
+        buffer = .02;
+    }
     if (rastTable === 'best_spring_index') {
         buffer = 1;
     }
