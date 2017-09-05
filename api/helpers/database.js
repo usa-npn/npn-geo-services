@@ -291,7 +291,7 @@ async function getPostgisClippedRasterAgddStats(rastTable, boundary, dateString,
         });
 
         //todo: below line can use this with geoserver wps to obtain styled clipped raster, initial testing shows boundary rules aren't correct though
-        //response.geojson = res.rows[0].geojson;
+        response.geojson = res.rows[0].geojson;
     }
     return response;
 }
