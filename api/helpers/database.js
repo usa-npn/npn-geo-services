@@ -203,7 +203,9 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
     return response;
 }
 
-async function getPostgisClippedRasterSixStats(rastTable, boundary, dateString, plant, phenophase) {
+
+
+async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, saveToCache) {
     let buffer = .01;
     if (rastTable === 'prism_spring_index') {
         buffer = .02;
@@ -233,6 +235,12 @@ async function getPostgisClippedRasterSixStats(rastTable, boundary, dateString, 
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
+
+        // save the results to the caching table
+        if (saveToCache) {
+            await saveSixAreaStatsToCache(boundary, plant, phenophase, climate, dateString, response.count, response.mean, response.stddev, response.min, response.max, null);
+        }
+
         // todo: maybe possible to view in openlayers but not always zooming right so commenting out for now
         // response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
         response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
@@ -349,7 +357,26 @@ async function getAppropriateAgddTable(date, climate, boundary, dateString, base
 async function getSixAreaStats(boundary, date, plant, phenophase, climate) {
     let dateString = date.toISOString().split('T')[0];
     let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
-    let response = await getPostgisClippedRasterSixStats(rastTable, boundary, dateString, plant, phenophase);
+    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, false);
+    return response;
+}
+
+async function getSixAreaStatsWithCaching(boundary, date, plant, phenophase, climate) {
+    let dateString = date.toISOString().split('T')[0];
+
+    let res = await checkSixAreaStatsCache(boundary, date, plant, phenophase, climate);
+    let response = {};
+    if (res.rows.length > 0) {
+        response.count = res.rows[0].count;
+        response.sum = res.rows[0].sum;
+        response.mean = res.rows[0].mean;
+        response.stddev = res.rows[0].stddev;
+        response.min = res.rows[0].min;
+        response.max = res.rows[0].max;
+    } else {
+        let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
+        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, true);
+    }
     return response;
 }
 
@@ -360,9 +387,65 @@ async function getAgddAreaStats(boundary, date, base, climate) {
     return response;
 }
 
+async function createSixAreaStatsCacheTable() {
+    let query = `CREATE TABLE IF NOT EXISTS cached_six_area_stats (
+                    id integer primary key autoincrement,
+                    boundary text,
+                    plant text,
+                    phenophase text,
+                    climate text,
+                    date date,
+                    count integer,
+                    mean real,
+                    stddev real,
+                    min integer,
+                    max integer,
+                    percent_complete real);`;
+
+    console.log(query);
+    const res = await pgPool.query(query);
+}
+
+async function saveSixAreaStatsToCache(boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete) {
+    // make sure the table exists
+    await createSixAreaStatsCacheTable();
+
+    // possibly delete any old data in the cache before inserting the new row
+    // let query1 = `DELETE FROM cached_six_area_stats WHERE boundary = ${boundary}
+    //             AND date = ${date}
+    //             AND plant = ${plant}
+    //             AND phenophase = ${phenophase}
+    //             AND climate = ${climate};`;
+    // console.log(query1);
+    // const res = await pgPool.query(query1);
+
+    let query2 = `INSERT INTO TABLE cached_six_area_stats (boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete)
+        VALUES (${boundary}, ${plant}, ${phenophase}, ${climate}, ${date}, ${count}, ${mean}, ${stddev}, ${min}, ${max}, ${percent_complete});`;
+    console.log(query2);
+    const res = await pgPool.query(query2);
+    return res;
+}
+
+async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate) {
+    // make sure the table exists
+    await createSixAreaStatsCacheTable();
+
+    let query = `SELECT * FROM cached_six_area_stats
+                WHERE boundary = ${boundary}
+                AND date = ${date}
+                AND plant = ${plant}
+                AND phenophase = ${phenophase}
+                AND climate = ${climate};`;
+
+    console.log(query);
+    const res = await pgPool.query(query);
+    return res;
+}
+
 module.exports.usanpnPool = usanpnPool;
 module.exports.usanpnPromisePool = usanpnPromisePool;
 module.exports.drupalPool = drupalPool;
 module.exports.getSixAreaStats = getSixAreaStats;
+module.exports.getSixAreaStatsWithCaching = getSixAreaStatsWithCaching;
 module.exports.getAgddAreaStats = getAgddAreaStats;
 module.exports.pgPool = pgPool;
