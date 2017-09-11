@@ -364,7 +364,7 @@ async function getSixAreaStats(boundary, date, plant, phenophase, climate) {
 async function getSixAreaStatsWithCaching(boundary, date, plant, phenophase, climate) {
     let dateString = date.toISOString().split('T')[0];
 
-    let res = await checkSixAreaStatsCache(boundary, date, plant, phenophase, climate);
+    let res = await checkSixAreaStatsCache(boundary, dateString, plant, phenophase, climate);
     let response = {};
     if (res.rows.length > 0) {
         response.count = res.rows[0].count;
@@ -406,7 +406,7 @@ async function createSixAreaStatsCacheTable() {
     const res = await pgPool.query(query);
 }
 
-async function saveSixAreaStatsToCache(boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete) {
+async function saveSixAreaStatsToCache(boundary, plant, phenophase, climate, dateString, count, mean, stddev, min, max, percent_complete) {
     // make sure the table exists
     await createSixAreaStatsCacheTable();
 
@@ -420,19 +420,19 @@ async function saveSixAreaStatsToCache(boundary, plant, phenophase, climate, dat
     // const res = await pgPool.query(query1);
 
     let query2 = `INSERT INTO TABLE cached_six_area_stats (boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete)
-        VALUES ('${boundary}', '${plant}', '${phenophase}', '${climate}', '${date}', ${count}, ${mean}, ${stddev}, ${min}, ${max}, ${percent_complete});`;
+        VALUES ('${boundary}', '${plant}', '${phenophase}', '${climate}', '${dateString}', ${count}, ${mean}, ${stddev}, ${min}, ${max}, ${percent_complete});`;
     console.log(query2);
     const res = await pgPool.query(query2);
     return res;
 }
 
-async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate) {
+async function checkSixAreaStatsCache(boundary, dateString, plant, phenophase, climate) {
     // make sure the table exists
     await createSixAreaStatsCacheTable();
 
     let query = `SELECT * FROM cached_six_area_stats
                 WHERE boundary = '${boundary}'
-                AND date = '${date}'
+                AND date = '${dateString}'
                 AND plant = '${plant}'
                 AND phenophase = '${phenophase}'
                 AND climate = '${climate}';`;
