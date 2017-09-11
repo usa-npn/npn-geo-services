@@ -389,7 +389,7 @@ async function getAgddAreaStats(boundary, date, base, climate) {
 
 async function createSixAreaStatsCacheTable() {
     let query = `CREATE TABLE IF NOT EXISTS cached_six_area_stats (
-                    id integer primary key,
+                    id serial not null primary key,
                     boundary text,
                     plant text,
                     phenophase text,
