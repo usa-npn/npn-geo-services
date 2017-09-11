@@ -419,7 +419,7 @@ async function saveSixAreaStatsToCache(boundary, plant, phenophase, climate, dat
     // console.log(query1);
     // const res = await pgPool.query(query1);
 
-    let query2 = `INSERT INTO cached_six_area_stats(cached_six_area_stats (boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete)
+    let query2 = `INSERT INTO cached_six_area_stats (cached_six_area_stats (boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete)
         VALUES ('${boundary}', '${plant}', '${phenophase}', '${climate}', '${dateString}', ${count}, ${mean}, ${stddev}, ${min}, ${max}, ${percent_complete});`;
     console.log(query2);
     const res = await pgPool.query(query2);
