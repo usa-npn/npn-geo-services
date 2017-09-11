@@ -50,6 +50,7 @@ async function areaStatsTimeSeries(req, res) {
             } else {
                 resultForYear = await db.getSixAreaStats(boundary, new Date(year, 0, 1), plant, phenophase, climate);
             }
+            resultForYear.year = year;
             return resultForYear;
         }));
         return res.status(200).send({timeSeries: promiseResults});
