@@ -420,7 +420,7 @@ async function saveSixAreaStatsToCache(boundary, plant, phenophase, climate, dat
     // const res = await pgPool.query(query1);
 
     let query2 = `INSERT INTO TABLE cached_six_area_stats (boundary, plant, phenophase, climate, date, count, mean, stddev, min, max, percent_complete)
-        VALUES (${boundary}, ${plant}, ${phenophase}, ${climate}, ${date}, ${count}, ${mean}, ${stddev}, ${min}, ${max}, ${percent_complete});`;
+        VALUES ('${boundary}', '${plant}', '${phenophase}', '${climate}', '${date}', ${count}, ${mean}, ${stddev}, ${min}, ${max}, ${percent_complete});`;
     console.log(query2);
     const res = await pgPool.query(query2);
     return res;
@@ -431,11 +431,11 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
     await createSixAreaStatsCacheTable();
 
     let query = `SELECT * FROM cached_six_area_stats
-                WHERE boundary = ${boundary}
-                AND date = ${date}
-                AND plant = ${plant}
-                AND phenophase = ${phenophase}
-                AND climate = ${climate};`;
+                WHERE boundary = '${boundary}'
+                AND date = '${date}'
+                AND plant = '${plant}'
+                AND phenophase = '${phenophase}'
+                AND climate = '${climate}';`;
 
     console.log(query);
     const res = await pgPool.query(query);
