@@ -23,6 +23,7 @@ async function areaStatsTimeSeries(req, res) {
     try {
         let promiseResults = await Promise.all(yearRange.map(async (year) => {
             let resultForYear = await db.getAgddAreaStats(boundary, new Date(year, 0, 1), base, climate);
+            resultForYear.year = year;
             return resultForYear;
         }));
         return res.status(200).send({timeSeries: promiseResults});

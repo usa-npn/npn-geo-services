@@ -19,18 +19,6 @@ function areaStats(req, res) {
     }
 }
 
-// function areaStatsWithCaching(req, res) {
-//     let boundary = req.swagger.params['boundary'].value;
-//     let phenophase = req.swagger.params['phenophase'].value;
-//     let date = req.swagger.params['date'].value;
-//     let plant = req.swagger.params['plant'].value;
-//     let climate = req.swagger.params['climate'].value;
-//
-//     return db.getSixAreaStatsWithCaching(boundary, date, plant, phenophase, climate)
-//         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
-//         .catch((error) => res.status(500).json({"message": error.message}));
-// }
-
 async function areaStatsTimeSeries(req, res) {
     let boundary = req.swagger.params['boundary'].value;
     let phenophase = req.swagger.params['phenophase'].value;

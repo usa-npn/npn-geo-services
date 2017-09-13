@@ -216,7 +216,7 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dat
     let query = `SELECT
     ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
     (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
-    ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true))) AS tiffy,
+    ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), 1, -9999)) AS tiffy,
     ST_Union(foo.boundary) AS shapefile
     FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
     INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
