@@ -9,6 +9,7 @@
   "main": "app.js",
   "dependencies": {
     "JSONStream": "^1.2.1",
+    "bunyan": "^1.8.12",
     "express": "^4.14.0",
     "js-yaml": "^3.7.0",
     "js2xmlparser": "^2.0.2",

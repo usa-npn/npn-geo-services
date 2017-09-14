@@ -5,12 +5,28 @@ var express = require('express');
 var fs = require('fs');
 var path = require("path");
 var morgan = require('morgan');
+import * as bunyan from "bunyan";
+
 
 var app = express();
 
 // create a write stream (in append mode) and set up a log to record requests
 let accessLogStream = fs.createWriteStream(path.join("./logs", "access.log"), {flags: "a"});
 app.use(morgan("combined", {stream: accessLogStream}));
+
+let log = bunyan.createLogger({
+    name: "dot_service",
+    streams: [
+        {
+            level: "info",
+            path: path.join("./logs", "info.log")
+        },
+        {
+            level: "error",
+            path: path.join("./logs", "error.log")
+        }
+    ]
+});
 
 module.exports = app; // for testing
 const util = require('util');
@@ -47,6 +63,9 @@ SwaggerExpress.create(config, (err, swaggerExpress) => {
 
   //todo 3006 is here because 'swagger project test' doesn't pick up the env port
   app.listen(process.env.PORT || 3006);
+
+  log.info('listening on port 3006');
+  log.err('this is a test error!');
 
   setInterval(function() {
     console.log('HeapUsed in MB: ' + process.memoryUsage().heapUsed / 1048576);
