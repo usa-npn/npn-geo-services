@@ -248,7 +248,6 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 
 
             var postData = `
-            <?xml version="1.0" encoding="UTF-8"?>
 <wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
 	<ows:Identifier>ras:StyleCoverage</ows:Identifier>
 	<wps:DataInputs>
@@ -302,6 +301,10 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 </wps:Execute>
             `;
 
+            var username = 'twellman';
+            var password = 'M0EV5xI1dN';
+            var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+
             var options = {
                 hostname: 'geoserver-dev.usanpn.org',
                 port: 80,
@@ -309,31 +312,22 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'text/xml',
-                    'Content-Length': Buffer.byteLength(postData)
+                    'Content-Length': Buffer.byteLength(postData),
+                    'Authorization': auth
                 }
             };
 
+            let styledFileName = `${filename.replace('.tiff', '_styled.tiff')}`;
+            let styledFilePath = rasterpath + styledFileName;
+            var writeStream = fs.createWriteStream(styledFilePath);
+
             var req = http.request(options, (res) => {
-                console.log('statusCode:', res.statusCode);
-                console.log('headers:', res.headers);
+                res.pipe(writeStream);
 
-                res.on('data', (d) => {
-
-                    log.info("styled data was retrieved from geoserver here it is: ");
-
-                    log.info(d);
-
-                    fs.writeFile(rasterpath + `${filename.replace('.tiff', '_styled.tiff')}`, d, function(err) {
-                        if (err) {
-                            log.error('there was an error saveing the tiff');
-                            log.error(e);
-                            return console.log(err);
-                        }
-                        console.log("The styled file was saved!");
-                        log.info('the stylized tiff was saved to disk');
-                    });
-
-                    //process.stdout.write(d);
+                res.on('end', () => {
+                    log.info('finished writing styled raster.');
+                    response.styledRasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + styledFileName;
+                    return response;
                 });
             });
 
