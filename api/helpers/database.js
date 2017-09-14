@@ -257,40 +257,7 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
-			<wps:Data>
-				<wps:ComplexData mimeType="text/xml; subtype=sld/1.0.0"><![CDATA[
-					<StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd">
-						<NamedLayer>
-							<Name>leafout</Name>
-							<UserStyle>
-								<Name>leafout</Name>
-								<Title>Day leaf index  reached</Title>
-								<FeatureTypeStyle>
-									<Rule>
-										<RasterSymbolizer>
-											<Opacity>1.0</Opacity>
-											<ColorMap>
-												<ColorMapEntry color="#FFFFFF" quantity="-9999" opacity="0.0" label=""/>
-												<ColorMapEntry color="#FFFF00" quantity="1"     label="Jan 1"/>
-												<ColorMapEntry color="#B6DA00" quantity="15"    label="Jan 15"/>
-												<ColorMapEntry color="#6DB600" quantity="32"    label="Feb 1"/>
-												<ColorMapEntry color="#249200" quantity="46"    label="Feb 15"/>
-												<ColorMapEntry color="#0A8019" quantity="60"    label="Mar 1"/>
-												<ColorMapEntry color="#328180" quantity="74"    label="Mar 15"/>
-												<ColorMapEntry color="#4682B4" quantity="91"    label="Apr 1"/>
-												<ColorMapEntry color="#4764A8" quantity="105"   label="Apr 15"/>
-												<ColorMapEntry color="#491E8D" quantity="121"   label="May 1"/>
-												<ColorMapEntry color="#6A287E" quantity="135"     label="May 15"/>
-											</ColorMap>
-										</RasterSymbolizer>
-									</Rule>
-								</FeatureTypeStyle>
-							</UserStyle>
-						</NamedLayer>
-					</StyledLayerDescriptor>
-					]]>
-				</wps:ComplexData>
-			</wps:Data>
+			<wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://geoserver-dev.usanpn.org/geoserver/wms?request=GetStyles&amp;layers=si-x:leafout_bimonthly&amp;service=wms&amp;version=1.1.1" method="GET"/>
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>
