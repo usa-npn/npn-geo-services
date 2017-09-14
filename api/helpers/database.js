@@ -205,6 +205,143 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
 
 
 
+async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
+
+
+    let dateString = date.toISOString().split('T')[0];
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
+
+    let buffer = .01;
+    if (rastTable === 'prism_spring_index') {
+        buffer = .02;
+    }
+    if (rastTable === 'best_spring_index') {
+        buffer = 1;
+    }
+    let query = `SELECT
+    ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), 1, -9999)) AS tiffy
+    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    AND r.rast_date = '${dateString}'
+    AND r.plant='${plant}'
+    AND r.phenophase='${phenophase}';`;
+
+    console.log(query);
+    const res = await pgPool.query(query);
+
+    let response = {date: dateString};
+    if (res.rows.length > 0) {
+        let d = new Date();
+        let rasterpath = 'static/rasters/';
+        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
+        response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
+        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+
+            // issue curl request to style the saved tiff
+            const querystring = require('querystring');
+            const https = require('https');
+
+            var postData = `
+            <?xml version="1.0" encoding="UTF-8"?>
+<wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
+	<ows:Identifier>ras:StyleCoverage</ows:Identifier>
+	<wps:DataInputs>
+		<wps:Input>
+			<ows:Identifier>coverage</ows:Identifier>
+			<wps:Reference mimeType="image/tiff" xlink:href="http://data-dev.usanpn.org:3006/${filename}" method="GET"/>
+		</wps:Input>
+		<wps:Input>
+			<ows:Identifier>style</ows:Identifier>
+			<wps:Data>
+				<wps:ComplexData mimeType="text/xml; subtype=sld/1.0.0"><![CDATA[
+					<StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd">
+						<NamedLayer>
+							<Name>leafout</Name>
+							<UserStyle>
+								<Name>leafout</Name>
+								<Title>Day leaf index  reached</Title>
+								<FeatureTypeStyle>
+									<Rule>
+										<RasterSymbolizer>
+											<Opacity>1.0</Opacity>
+											<ColorMap>
+												<ColorMapEntry color="#FFFFFF" quantity="-9999" opacity="0.0" label=""/>
+												<ColorMapEntry color="#FFFF00" quantity="1"     label="Jan 1"/>
+												<ColorMapEntry color="#B6DA00" quantity="15"    label="Jan 15"/>
+												<ColorMapEntry color="#6DB600" quantity="32"    label="Feb 1"/>
+												<ColorMapEntry color="#249200" quantity="46"    label="Feb 15"/>
+												<ColorMapEntry color="#0A8019" quantity="60"    label="Mar 1"/>
+												<ColorMapEntry color="#328180" quantity="74"    label="Mar 15"/>
+												<ColorMapEntry color="#4682B4" quantity="91"    label="Apr 1"/>
+												<ColorMapEntry color="#4764A8" quantity="105"   label="Apr 15"/>
+												<ColorMapEntry color="#491E8D" quantity="121"   label="May 1"/>
+												<ColorMapEntry color="#6A287E" quantity="135"     label="May 15"/>
+											</ColorMap>
+										</RasterSymbolizer>
+									</Rule>
+								</FeatureTypeStyle>
+							</UserStyle>
+						</NamedLayer>
+					</StyledLayerDescriptor>
+					]]>
+				</wps:ComplexData>
+			</wps:Data>
+		</wps:Input>
+	</wps:DataInputs>
+	<wps:ResponseForm>
+		<wps:RawDataOutput mimeType="image/tiff">
+			<ows:Identifier>result</ows:Identifier>
+		</wps:RawDataOutput>
+	</wps:ResponseForm>
+</wps:Execute>
+            `;
+
+            var options = {
+                hostname: 'geoserver-dev.usanpn.org',
+                port: 80,
+                path: '/geoserver/ows?service=WPS&version=1.0.0&request=execute',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/xml',
+                    'Content-Length': Buffer.byteLength(postData)
+                }
+            };
+
+            var req = https.request(options, (res) => {
+                console.log('statusCode:', res.statusCode);
+                console.log('headers:', res.headers);
+
+                res.on('data', (d) => {
+
+                    fs.writeFile(rasterpath + 'teststyledfile.tiff', d, function(err) {
+                        if (err) {
+                            return console.log(err);
+                        }
+                        console.log("The styled file was saved!");
+                    });
+
+                    //process.stdout.write(d);
+                });
+            });
+
+            req.on('error', (e) => {
+                console.error(e);
+            });
+
+            req.write(postData);
+            req.end();
+
+
+        });
+    }
+    return response;
+}
+
+
 async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, saveToCache) {
     let buffer = .01;
     if (rastTable === 'prism_spring_index') {
@@ -448,4 +585,5 @@ module.exports.drupalPool = drupalPool;
 module.exports.getSixAreaStats = getSixAreaStats;
 module.exports.getSixAreaStatsWithCaching = getSixAreaStatsWithCaching;
 module.exports.getAgddAreaStats = getAgddAreaStats;
+module.exports.getClippedSixImage = getClippedSixImage;
 module.exports.pgPool = pgPool;
