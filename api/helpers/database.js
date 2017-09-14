@@ -257,7 +257,7 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
-			<wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://geoserver-dev.usanpn.org/geoserver/wms?request=GetStyles&amp;layers=si-x:leafout_bimonthly&amp;service=wms&amp;version=1.1.1" method="GET"/>
+			<wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://geoserver-dev.usanpn.org/geoserver/wms?request=GetStyles&layers=si-x:average_leaf_ncep&service=wms&version=1.1.1" method="GET"/>
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>
