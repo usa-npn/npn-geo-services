@@ -1,5 +1,5 @@
 let db = require('../helpers/database.js');
-let log = require('./logger.js');
+let log = require('../../logger.js');
 
 function clippedImage(req, res) {
     let boundary = req.swagger.params['boundary'].value;

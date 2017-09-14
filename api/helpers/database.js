@@ -1,5 +1,5 @@
 var fs = require('fs');
-let log = require('./logger.js');
+let log = require('../../logger.js');
 
 // postgres pool
 const { Pool, Client } = require('pg');
