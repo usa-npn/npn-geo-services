@@ -319,9 +319,11 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 
                 res.on('data', (d) => {
 
-                    log.info("styled data was retrieved from geoserver");
+                    log.info("styled data was retrieved from geoserver here it is: ");
 
-                    fs.writeFile(rasterpath + 'teststyledfile.tiff', d, function(err) {
+                    log.info(d);
+
+                    fs.writeFile(rasterpath + `${filename.replace('.tiff', '_styled.tiff')}`, d, function(err) {
                         if (err) {
                             log.error('there was an error saveing the tiff');
                             log.error(e);
