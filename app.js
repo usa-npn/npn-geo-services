@@ -32,6 +32,11 @@ var config = {
   }
 };
 
+process.on("uncaughtException", (err) => {
+    log.error(err, "Something Broke!.");
+    console.error(err.stack);
+});
+
 app.use((req,res,next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

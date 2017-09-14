@@ -1,5 +1,6 @@
 var fs = require('fs');
 let log = require('../../logger.js');
+const http = require('http');
 
 // postgres pool
 const { Pool, Client } = require('pg');
@@ -244,8 +245,7 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
             log.info("The unstyled image was saved");
 
             // issue curl request to style the saved tiff
-            const querystring = require('querystring');
-            const https = require('https');
+
 
             var postData = `
             <?xml version="1.0" encoding="UTF-8"?>
@@ -313,7 +313,7 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
                 }
             };
 
-            var req = https.request(options, (res) => {
+            var req = http.request(options, (res) => {
                 console.log('statusCode:', res.statusCode);
                 console.log('headers:', res.headers);
 
