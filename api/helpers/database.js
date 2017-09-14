@@ -1,4 +1,5 @@
 var fs = require('fs');
+let log = require('./logger.js');
 
 // postgres pool
 const { Pool, Client } = require('pg');
@@ -240,6 +241,7 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
                 return console.log(err);
             }
             console.log("The file was saved!");
+            log.info("The unstyled image was saved");
 
             // issue curl request to style the saved tiff
             const querystring = require('querystring');
@@ -317,11 +319,16 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 
                 res.on('data', (d) => {
 
+                    log.info("styled data was retrieved from geoserver");
+
                     fs.writeFile(rasterpath + 'teststyledfile.tiff', d, function(err) {
                         if (err) {
+                            log.error('there was an error saveing the tiff');
+                            log.error(e);
                             return console.log(err);
                         }
                         console.log("The styled file was saved!");
+                        log.info('the stylized tiff was saved to disk');
                     });
 
                     //process.stdout.write(d);
@@ -329,6 +336,8 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
             });
 
             req.on('error', (e) => {
+                log.error("there was an error with the geoserver request");
+                log.error(e);
                 console.error(e);
             });
 

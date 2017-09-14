@@ -1,4 +1,5 @@
 let db = require('../helpers/database.js');
+let log = require('./logger.js');
 
 function areaStats(req, res) {
     let boundary = req.swagger.params['boundary'].value;
