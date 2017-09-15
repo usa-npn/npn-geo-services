@@ -309,8 +309,9 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 
 
         });
+    } else {
+        return response;
     }
-    return response;
 }
 
 
