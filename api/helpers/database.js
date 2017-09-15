@@ -205,49 +205,29 @@ async function getTiff(rastTable, boundary, dateString, plant, phenophase) {
     return response;
 }
 
-
-
-async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
-
-
-    let dateString = date.toISOString().split('T')[0];
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
-
-    let buffer = .01;
-    if (rastTable === 'prism_spring_index') {
-        buffer = .02;
-    }
-    if (rastTable === 'best_spring_index') {
-        buffer = 1;
-    }
-    let query = `SELECT
-    ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), 1, -9999)) AS tiffy
-    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
-    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
-    AND r.rast_date = '${dateString}'
-    AND r.plant='${plant}'
-    AND r.phenophase='${phenophase}';`;
-
-    console.log(query);
-    const res = await pgPool.query(query);
-
-    let response = {date: dateString};
-    if (res.rows.length > 0) {
-        let d = new Date();
-        let rasterpath = 'static/rasters/';
-        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
-        response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
-            if(err) {
-                return console.log(err);
+// helper function to allow awaiting on writeFile
+function WriteFile(fileName, data)
+{
+    return new Promise((resolve, reject) =>
+    {
+        fs.writeFile(fileName, data, (err) =>
+        {
+            if (err)
+            {
+                reject(err);
             }
-            console.log("The file was saved!");
-            log.info("The unstyled image was saved");
+            else
+            {
+                resolve();
+            }
+        });
+    });
+}
 
-            // issue curl request to style the saved tiff
-
-
-            var postData = `
+function stylizeFile(filename, rasterpath){
+    return new Promise((resolve, reject) =>
+    {
+        var postData = `
 <wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
 	<ows:Identifier>ras:StyleCoverage</ows:Identifier>
 	<wps:DataInputs>
@@ -268,54 +248,51 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 </wps:Execute>
             `;
 
-            var username = 'twellman';
-            var password = 'M0EV5xI1dN';
-            var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+        var username = 'twellman';
+        var password = 'M0EV5xI1dN';
+        var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
 
-            var options = {
-                hostname: 'geoserver-dev.usanpn.org',
-                port: 80,
-                path: '/geoserver/ows?service=WPS&version=1.0.0&request=execute',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/xml',
-                    'Content-Length': Buffer.byteLength(postData),
-                    'Authorization': auth
-                }
-            };
+        var options = {
+            hostname: 'geoserver-dev.usanpn.org',
+            port: 80,
+            path: '/geoserver/ows?service=WPS&version=1.0.0&request=execute',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/xml',
+                'Content-Length': Buffer.byteLength(postData),
+                'Authorization': auth
+            }
+        };
 
-            let styledFileName = `${filename.replace('.tiff', '_styled.tiff')}`;
-            let styledFilePath = rasterpath + styledFileName;
-            var writeStream = fs.createWriteStream(styledFilePath);
+        let styledFileName = `${filename.replace('.tiff', '_styled.tiff')}`;
+        let styledFilePath = rasterpath + styledFileName;
+        var writeStream = fs.createWriteStream(styledFilePath);
 
-            var req = http.request(options, (res) => {
-                res.pipe(writeStream);
+        var req = http.request(options, (res) => {
+            res.pipe(writeStream);
 
-                res.on('end', () => {
-                    log.info('finished writing styled raster.');
-                    response.styledRasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + styledFileName;
-                    return response;
-                });
+            res.on('end', () => {
+                log.info('finished writing styled raster.');
+                resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
             });
-
-            req.on('error', (e) => {
-                log.error("there was an error with the geoserver request");
-                log.error(e);
-                console.error(e);
-            });
-
-            req.write(postData);
-            req.end();
-
-
         });
-    } else {
-        return response;
-    }
+
+        req.on('error', (e) => {
+            log.error("there was an error with the geoserver request");
+            log.error(e);
+            console.error(e);
+            reject(e);
+        });
+
+        req.write(postData);
+        req.end();
+    });
 }
 
 
-async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, saveToCache) {
+// to pick up all pixels inside boundary we need to buffer around the shapefile before doing a clip,
+// the size of this buffer depends on the dataset resolution. This function returns the correct buffer size.
+function getBufferSizeForTable(rastTable) {
     let buffer = .01;
     if (rastTable === 'prism_spring_index') {
         buffer = .02;
@@ -323,6 +300,43 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dat
     if (rastTable === 'best_spring_index') {
         buffer = 1;
     }
+    return buffer;
+}
+
+
+async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
+    let dateString = date.toISOString().split('T')[0];
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
+
+    let buffer = getBufferSizeForTable(rastTable);
+    let query = `SELECT
+    ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), 1, -9999)) AS tiffy
+    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+    AND r.rast_date = '${dateString}'
+    AND r.plant='${plant}'
+    AND r.phenophase='${phenophase}';`;
+
+    console.log(query);
+    const res = await pgPool.query(query);
+
+    let response = {date: dateString};
+    if (res.rows.length > 0) {
+        let d = new Date();
+        let rasterpath = 'static/rasters/';
+        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
+        response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
+        await WriteFile(rasterpath + filename, res.rows[0].tiffy);
+        response.styledRasterFile = await stylizeFile(filename, rasterpath);
+        return response;
+    } else {
+        return response;
+    }
+}
+
+
+async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, saveToCache) {
+    let buffer = getBufferSizeForTable(rastTable);
     let query = `SELECT
     ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
     (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
@@ -359,13 +373,7 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dat
         let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${dateString}_${d.getTime()}.tiff`;
         response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
-            if(err) {
-                return console.log(err);
-            }
-            console.log("The file was saved!");
-        });
-
+        await WriteFile(rasterpath + filename, res.rows[0].tiffy);
         //todo: below line can use this with geoserver wps to obtain styled clipped raster, initial testing shows boundary rules aren't correct though
         response.geojson = res.rows[0].geojson;
     }
@@ -373,7 +381,7 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dat
 }
 
 async function getPostgisClippedRasterAgddStats(rastTable, boundary, dateString, base) {
-    let buffer = .01;
+    let buffer = getBufferSizeForTable(rastTable);
     let query = `SELECT
     ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
     (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
@@ -404,12 +412,7 @@ async function getPostgisClippedRasterAgddStats(rastTable, boundary, dateString,
         let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_agdd_${base}f_${dateString}_${d.getTime()}.tiff`;
         response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-        fs.writeFile(rasterpath + filename, res.rows[0].tiffy, function(err) {
-            if(err) {
-                return console.log(err);
-            }
-            console.log("The file was saved!");
-        });
+        await WriteFile(rasterpath + filename, res.rows[0].tiffy);
 
         //todo: below line can use this with geoserver wps to obtain styled clipped raster, initial testing shows boundary rules aren't correct though
         response.geojson = res.rows[0].geojson;
