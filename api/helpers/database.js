@@ -348,7 +348,7 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 
     let buffer = getBufferSizeForTable(rastTable);
     let query = `SELECT
-    ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), 1, -9999)) AS tiffy
+    ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), -9999, true)), 1, -9999)) AS tiffy
     FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
     INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
     AND r.rast_date = '${dateString}'
