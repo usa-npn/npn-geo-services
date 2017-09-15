@@ -1155,7 +1155,7 @@ paths:
           '200':
             description: successful operation
             schema:
-              $ref: '#/definitions/SixStatsResponse'
+              $ref: '#/definitions/ImageResponse'
           '500':
             description: internal server error
             schema:
@@ -2305,6 +2305,15 @@ definitions:
       - message
     properties:
       message:
+        type: string
+  ImageResponse:
+    required:
+      - rasterFile
+      - styledRasterFile
+    properties:
+      rasterFile:
+        type: string
+      styledRasterFile:
         type: string
   SixStatsResponse:
     required:
