@@ -280,9 +280,8 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dat
 }
 
 async function getSixAreaStats(boundary, date, plant, phenophase, climate) {
-    let dateString = date.toISOString().split('T')[0];
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, dateString, plant, phenophase);
-    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, dateString, plant, phenophase, false);
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, plant, phenophase);
+    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, plant, phenophase, false);
     return response;
 }
 
