@@ -102,7 +102,7 @@ function stylizeFile(filename, rasterpath){
 
             res.on('data', (d) => {
                 console.log('recieving data from geoserver');
-                log.info(d.toString());
+                // log.info(d.toString());
             });
 
             res.on('end', () => {
