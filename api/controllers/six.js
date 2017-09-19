@@ -6,38 +6,71 @@ let sixController = require('../helpers/six.js');
  * @param {{swagger}} req
  */
 function clippedImage(req, res) {
-    let boundary = req.swagger.params['boundary'].value;
+    let fwsBoundary = req.swagger.params['fwsBoundary'].value;
+    let stateBoundary = req.swagger.params['stateBoundary'].value;
     let phenophase = req.swagger.params['phenophase'].value;
     let date = req.swagger.params['date'].value;
     let plant = req.swagger.params['plant'].value;
     let climate = req.swagger.params['climate'].value;
 
-    return sixController.getClippedSixImage(boundary, moment(date), plant, phenophase, climate)
+    let boundaryTable = "";
+    let boundary = "";
+    let boundaryColumn = "";
+    if(fwsBoundary) {
+        boundaryTable = "fws_boundaries";
+        boundary = fwsBoundary;
+        boundaryColumn = "orgname";
+    } else if(stateBoundary) {
+        boundaryTable = "state_boundaries";
+        boundary = stateBoundary;
+        boundaryColumn = "name";
+    } else {
+        res.status(500).json({"message": "Invalid Boundary"});
+    }
+
+    return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment(date), plant, phenophase, climate)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
 
 function areaStats(req, res) {
-    let boundary = req.swagger.params['boundary'].value;
+    let fwsBoundary = req.swagger.params['fwsBoundary'].value;
+    let stateBoundary = req.swagger.params['stateBoundary'].value;
     let phenophase = req.swagger.params['phenophase'].value;
     let date = req.swagger.params['date'].value;
     let plant = req.swagger.params['plant'].value;
     let climate = req.swagger.params['climate'].value;
     let useCache = req.swagger.params['useCache'].value;
 
+    let boundaryTable = "";
+    let boundary = "";
+    let boundaryColumn = "";
+    if(fwsBoundary) {
+        boundaryTable = "fws_boundaries";
+        boundary = fwsBoundary;
+        boundaryColumn = "orgname";
+    } else if(stateBoundary) {
+        boundaryTable = "state_boundaries";
+        boundary = stateBoundary;
+        boundaryColumn = "name";
+    } else {
+        res.status(500).json({"message": "Invalid Boundary"});
+    }
+
     if (useCache) {
-        return sixController.getSixAreaStatsWithCaching(boundary, moment(date), plant, phenophase, climate)
+        return sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment(date), plant, phenophase, climate)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     } else {
-        return sixController.getSixAreaStats(boundary, moment(date), plant, phenophase, climate)
+        return sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment(date), plant, phenophase, climate)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     }
 }
 
 async function areaStatsTimeSeries(req, res) {
-    let boundary = req.swagger.params['boundary'].value;
+    let fwsBoundary = req.swagger.params['fwsBoundary'].value;
+    let stateBoundary = req.swagger.params['stateBoundary'].value;
     let phenophase = req.swagger.params['phenophase'].value;
     let startYear = req.swagger.params['yearStart'].value;
     let endYear = req.swagger.params['yearEnd'].value;
@@ -45,15 +78,30 @@ async function areaStatsTimeSeries(req, res) {
     let climate = req.swagger.params['climate'].value;
     let useCache = req.swagger.params['useCache'].value;
 
+    let boundaryTable = "";
+    let boundary = "";
+    let boundaryColumn = "";
+    if(fwsBoundary) {
+        boundaryTable = "fws_boundaries";
+        boundary = fwsBoundary;
+        boundaryColumn = "orgname";
+    } else if(stateBoundary) {
+        boundaryTable = "state_boundaries";
+        boundary = stateBoundary;
+        boundaryColumn = "name";
+    } else {
+        res.status(500).json({"message": "Invalid Boundary"});
+    }
+
     let yearRange = [...Array(endYear - startYear + 1).keys()].map(i => startYear + i);
 
     try {
         let promiseResults = await Promise.all(yearRange.map(async (year) => {
             let resultForYear;
             if (useCache) {
-                resultForYear = await sixController.getSixAreaStatsWithCaching(boundary, moment(new Date(year, 0, 1)), plant, phenophase, climate);
+                resultForYear = await sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment(new Date(year, 0, 1)), plant, phenophase, climate);
             } else {
-                resultForYear = await sixController.getSixAreaStats(boundary, moment(new Date(year, 0, 1)), plant, phenophase, climate);
+                resultForYear = await sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment(new Date(year, 0, 1)), plant, phenophase, climate);
             }
             resultForYear.year = year;
             return resultForYear;

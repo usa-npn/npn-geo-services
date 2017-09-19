@@ -7,12 +7,12 @@ const http = require('http');
 
 
 // returns the number of tiles the boundary intersects
-async function boundaryRasterIntersections(rastTable, boundary, date, plant, phenophase) {
+async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase) {
     const query = {
         text: `
         SELECT COUNT(*) AS intersections
-        FROM ${rastTable} r, fws_boundaries p 
-        WHERE p.orgname = $1 AND ST_Intersects(r.rast, p.geom) AND r.rast_date = $2 AND r.plant = $3 AND r.phenophase = $4`,
+        FROM ${rastTable} r, ${boundaryTable} p 
+        WHERE p.${boundaryColumn} = $1 AND ST_Intersects(r.rast, p.geom) AND r.rast_date = $2 AND r.plant = $3 AND r.phenophase = $4`,
         values: [boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
     const res = await db.pgPool.query(query);
@@ -137,7 +137,7 @@ function getBufferSizeForTable(rastTable) {
 }
 
 // choose table via selected data and boundary tile intersection (for ncep alaska)
-async function getAppropriateSixTable(date, climate, boundary, plant, phenophase) {
+async function getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase) {
 
     if (climate === 'PRISM') {
         return 'prism_spring_index';
@@ -148,7 +148,7 @@ async function getAppropriateSixTable(date, climate, boundary, plant, phenophase
         if (date.year() < now.year()) {
             return 'ncep_spring_index_historic';
         } else {
-            let rasterCellsInBoundary = await boundaryRasterIntersections('ncep_spring_index_alaska', boundary, date, plant, phenophase);
+            let rasterCellsInBoundary = await boundaryRasterIntersections('ncep_spring_index_alaska', boundary, boundaryTable, boundaryColumn, date, plant, phenophase);
             if (rasterCellsInBoundary > 0) {
                 return 'ncep_spring_index_alaska';
             } else {
@@ -210,15 +210,15 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
 }
 
 // saves to disk and returns path to unstyled tiff and styled tiff for six clipping
-async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, plant, phenophase);
+async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
 
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
         SELECT ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy
-        FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM fws_boundaries p WHERE p.orgname = $2) as foo
+        FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
         AND r.rast_date = $3
         AND r.plant = $4
@@ -243,14 +243,14 @@ async function getClippedSixImage(boundary, date, plant, phenophase, climate) {
 }
 
 // gets si-x stats for functions params, if saveToCache is true, also saves result to the cache table
-async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, date, plant, phenophase, saveToCache) {
+async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, saveToCache) {
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
         SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_MakeValid(ST_Buffer(foo.boundary, $1)), true)), true)).*,
         ST_Union(foo.boundary) AS shapefile
-        FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM fws_boundaries p WHERE p.orgname = $2) as foo
+        FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
         AND r.rast_date = $3
         AND r.plant = $4
@@ -280,13 +280,13 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, dat
     return response;
 }
 
-async function getSixAreaStats(boundary, date, plant, phenophase, climate) {
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, plant, phenophase);
-    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, date, plant, phenophase, false);
+async function getSixAreaStats(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, false);
     return response;
 }
 
-async function getSixAreaStatsWithCaching(boundary, date, plant, phenophase, climate) {
+async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
 
     let res = await checkSixAreaStatsCache(boundary, date, plant, phenophase, climate);
     let response = {};
@@ -298,8 +298,8 @@ async function getSixAreaStatsWithCaching(boundary, date, plant, phenophase, cli
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
     } else {
-        let rastTable = await getAppropriateSixTable(date, climate, boundary, plant, phenophase);
-        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, date, plant, phenophase, true);
+        let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true);
     }
     return response;
 }

@@ -42,10 +42,70 @@ paths:
                     - arnoldred
                     - zabelli
                     - average
-                - name: boundary
+                - name: stateBoundary
                   in: query
-                  description: the boundary to average over
-                  required: true
+                  description: the state boundary to average over
+                  type: string
+                  enum:
+                    - Alabama
+                    - Alaska
+                    - American Samoa
+                    - Arizona
+                    - Arkansas
+                    - California
+                    - Colorado
+                    - Commonwealth of the Northern Mariana Islands
+                    - Connecticut
+                    - Delaware
+                    - District of Columbia
+                    - Florida
+                    - Georgia
+                    - Guam
+                    - Hawaii
+                    - Idaho
+                    - Illinois
+                    - Indiana
+                    - Iowa
+                    - Kansas
+                    - Kentucky
+                    - Louisiana
+                    - Maine
+                    - Maryland
+                    - Massachusetts
+                    - Michigan
+                    - Minnesota
+                    - Mississippi
+                    - Missouri
+                    - Montana
+                    - Nebraska
+                    - Nevada
+                    - New Hampshire
+                    - New Jersey
+                    - New Mexico
+                    - New York
+                    - North Carolina
+                    - North Dakota
+                    - Ohio
+                    - Oklahoma
+                    - Oregon
+                    - Pennsylvania
+                    - Puerto Rico
+                    - Rhode Island
+                    - South Carolina
+                    - South Dakota
+                    - Tennessee
+                    - Texas
+                    - United States Virgin Islands
+                    - Utah
+                    - Vermont
+                    - Virginia
+                    - Washington
+                    - West Virginia
+                    - Wisconsin
+                    - Wyoming
+                - name: fwsBoundary
+                  in: query
+                  description: the fws boundary to average over
                   type: string
                   enum:
                     - AGASSIZ NATIONAL WILDLIFE REFUGE
@@ -618,10 +678,70 @@ paths:
                     - arnoldred
                     - zabelli
                     - average
-                - name: boundary
+                - name: stateBoundary
                   in: query
-                  description: the boundary to average over
-                  required: true
+                  description: the state boundary to average over
+                  type: string
+                  enum:
+                    - Alabama
+                    - Alaska
+                    - American Samoa
+                    - Arizona
+                    - Arkansas
+                    - California
+                    - Colorado
+                    - Commonwealth of the Northern Mariana Islands
+                    - Connecticut
+                    - Delaware
+                    - District of Columbia
+                    - Florida
+                    - Georgia
+                    - Guam
+                    - Hawaii
+                    - Idaho
+                    - Illinois
+                    - Indiana
+                    - Iowa
+                    - Kansas
+                    - Kentucky
+                    - Louisiana
+                    - Maine
+                    - Maryland
+                    - Massachusetts
+                    - Michigan
+                    - Minnesota
+                    - Mississippi
+                    - Missouri
+                    - Montana
+                    - Nebraska
+                    - Nevada
+                    - New Hampshire
+                    - New Jersey
+                    - New Mexico
+                    - New York
+                    - North Carolina
+                    - North Dakota
+                    - Ohio
+                    - Oklahoma
+                    - Oregon
+                    - Pennsylvania
+                    - Puerto Rico
+                    - Rhode Island
+                    - South Carolina
+                    - South Dakota
+                    - Tennessee
+                    - Texas
+                    - United States Virgin Islands
+                    - Utah
+                    - Vermont
+                    - Virginia
+                    - Washington
+                    - West Virginia
+                    - Wisconsin
+                    - Wyoming
+                - name: fwsBoundary
+                  in: query
+                  description: the fws boundary to average over
                   type: string
                   enum:
                     - AGASSIZ NATIONAL WILDLIFE REFUGE
@@ -1189,9 +1309,70 @@ paths:
                       - arnoldred
                       - zabelli
                       - average
-                  - name: boundary
+                  - name: stateBoundary
                     in: query
-                    description: the boundary to average over
+                    description: the state boundary to average over
+                    type: string
+                    enum:
+                      - Alabama
+                      - Alaska
+                      - American Samoa
+                      - Arizona
+                      - Arkansas
+                      - California
+                      - Colorado
+                      - Commonwealth of the Northern Mariana Islands
+                      - Connecticut
+                      - Delaware
+                      - District of Columbia
+                      - Florida
+                      - Georgia
+                      - Guam
+                      - Hawaii
+                      - Idaho
+                      - Illinois
+                      - Indiana
+                      - Iowa
+                      - Kansas
+                      - Kentucky
+                      - Louisiana
+                      - Maine
+                      - Maryland
+                      - Massachusetts
+                      - Michigan
+                      - Minnesota
+                      - Mississippi
+                      - Missouri
+                      - Montana
+                      - Nebraska
+                      - Nevada
+                      - New Hampshire
+                      - New Jersey
+                      - New Mexico
+                      - New York
+                      - North Carolina
+                      - North Dakota
+                      - Ohio
+                      - Oklahoma
+                      - Oregon
+                      - Pennsylvania
+                      - Puerto Rico
+                      - Rhode Island
+                      - South Carolina
+                      - South Dakota
+                      - Tennessee
+                      - Texas
+                      - United States Virgin Islands
+                      - Utah
+                      - Vermont
+                      - Virginia
+                      - Washington
+                      - West Virginia
+                      - Wisconsin
+                      - Wyoming
+                  - name: fwsBoundary
+                    in: query
+                    description: the fws boundary to average over
                     required: true
                     type: string
                     enum:
@@ -2324,9 +2505,6 @@ definitions:
       - stddev
       - min
       - max
-      - zippedShapeFile
-      - rasterFile
-      - geojson
     properties:
       date:
         type: string
@@ -2357,8 +2535,6 @@ definitions:
         - stddev
         - min
         - max
-        - zippedShapeFile
-        - rasterFile
       properties:
         date:
           type: string
