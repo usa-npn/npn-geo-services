@@ -1373,7 +1373,6 @@ paths:
                   - name: fwsBoundary
                     in: query
                     description: the fws boundary to average over
-                    required: true
                     type: string
                     enum:
                       - AGASSIZ NATIONAL WILDLIFE REFUGE
