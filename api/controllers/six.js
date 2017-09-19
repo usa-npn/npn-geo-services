@@ -1,6 +1,10 @@
-let db = require('../helpers/database.js');
 let log = require('../../logger.js');
+const moment = require('moment');
+let sixController = require('../helpers/six.js');
 
+/**
+ * @param {{swagger}} req
+ */
 function clippedImage(req, res) {
     let boundary = req.swagger.params['boundary'].value;
     let phenophase = req.swagger.params['phenophase'].value;
@@ -8,7 +12,7 @@ function clippedImage(req, res) {
     let plant = req.swagger.params['plant'].value;
     let climate = req.swagger.params['climate'].value;
 
-    return db.getClippedSixImage(boundary, date, plant, phenophase, climate)
+    return sixController.getClippedSixImage(boundary, moment(date), plant, phenophase, climate)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
@@ -22,11 +26,11 @@ function areaStats(req, res) {
     let useCache = req.swagger.params['useCache'].value;
 
     if (useCache) {
-        return db.getSixAreaStatsWithCaching(boundary, date, plant, phenophase, climate)
+        return sixController.getSixAreaStatsWithCaching(boundary, moment(date), plant, phenophase, climate)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     } else {
-        return db.getSixAreaStats(boundary, date, plant, phenophase, climate)
+        return sixController.getSixAreaStats(boundary, moment(date), plant, phenophase, climate)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     }
@@ -47,9 +51,9 @@ async function areaStatsTimeSeries(req, res) {
         let promiseResults = await Promise.all(yearRange.map(async (year) => {
             let resultForYear;
             if (useCache) {
-                resultForYear = await db.getSixAreaStatsWithCaching(boundary, new Date(year, 0, 1), plant, phenophase, climate);
+                resultForYear = await sixController.getSixAreaStatsWithCaching(boundary, moment(new Date(year, 0, 1)), plant, phenophase, climate);
             } else {
-                resultForYear = await db.getSixAreaStats(boundary, new Date(year, 0, 1), plant, phenophase, climate);
+                resultForYear = await sixController.getSixAreaStats(boundary, moment(new Date(year, 0, 1)), plant, phenophase, climate);
             }
             resultForYear.year = year;
             return resultForYear;
@@ -62,5 +66,4 @@ async function areaStatsTimeSeries(req, res) {
 
 module.exports.clippedImage = clippedImage;
 module.exports.areaStats = areaStats;
-// module.exports.areaStatsWithCaching = areaStatsWithCaching;
 module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

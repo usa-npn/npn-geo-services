@@ -1,5 +1,6 @@
-let db = require('../helpers/database.js');
 let log = require('../../logger.js');
+const moment = require('moment');
+let agddController = require('../helpers/agdd.js');
 
 function areaStats(req, res) {
     let boundary = req.swagger.params['boundary'].value;
@@ -7,7 +8,7 @@ function areaStats(req, res) {
     let base = req.swagger.params['base'].value;
     let climate = req.swagger.params['climate'].value;
 
-    return db.getAgddAreaStats(boundary, date, base, climate)
+    return agddController.getAgddAreaStats(boundary, moment(date), base, climate)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
@@ -23,7 +24,7 @@ async function areaStatsTimeSeries(req, res) {
 
     try {
         let promiseResults = await Promise.all(yearRange.map(async (year) => {
-            let resultForYear = await db.getAgddAreaStats(boundary, new Date(year, 0, 1), base, climate);
+            let resultForYear = await agddController.getAgddAreaStats(boundary, moment(new Date(year, 0, 1)), base, climate);
             resultForYear.year = year;
             return resultForYear;
         }));
