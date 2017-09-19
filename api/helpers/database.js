@@ -1,6 +1,5 @@
 var fs = require('fs');
 let log = require('../../logger.js');
-const http = require('http');
 const moment = require('moment');
 
 // postgres pool

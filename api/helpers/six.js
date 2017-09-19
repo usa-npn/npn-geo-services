@@ -3,6 +3,7 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let helpers = require('./general');
 var fs = require('fs');
+const http = require('http');
 
 
 // returns the number of tiles the boundary intersects
