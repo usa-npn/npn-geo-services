@@ -8,7 +8,7 @@ function areaStats(req, res) {
     let base = req.swagger.params['base'].value;
     let climate = req.swagger.params['climate'].value;
 
-    return agddController.getAgddAreaStats(boundary, moment(date), base, climate)
+    return agddController.getAgddAreaStats(boundary, moment.utc(date), base, climate)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
@@ -24,7 +24,7 @@ async function areaStatsTimeSeries(req, res) {
 
     try {
         let promiseResults = await Promise.all(yearRange.map(async (year) => {
-            let resultForYear = await agddController.getAgddAreaStats(boundary, moment(new Date(year, 0, 1)), base, climate);
+            let resultForYear = await agddController.getAgddAreaStats(boundary, moment.utc(new Date(year, 0, 1)), base, climate);
             resultForYear.year = year;
             return resultForYear;
         }));

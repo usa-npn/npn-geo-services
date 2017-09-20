@@ -28,7 +28,7 @@ function clippedImage(req, res) {
         res.status(500).json({"message": "Invalid Boundary"});
     }
 
-    return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment(date), plant, phenophase, climate)
+    return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
@@ -58,11 +58,11 @@ function areaStats(req, res) {
     }
 
     if (useCache) {
-        return sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment(date), plant, phenophase, climate)
+        return sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     } else {
-        return sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment(date), plant, phenophase, climate)
+        return sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     }
@@ -99,9 +99,9 @@ async function areaStatsTimeSeries(req, res) {
         let promiseResults = await Promise.all(yearRange.map(async (year) => {
             let resultForYear;
             if (useCache) {
-                resultForYear = await sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment(new Date(year, 0, 1)), plant, phenophase, climate);
+                resultForYear = await sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment.utc(new Date(year, 0, 1)), plant, phenophase, climate);
             } else {
-                resultForYear = await sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment(new Date(year, 0, 1)), plant, phenophase, climate);
+                resultForYear = await sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(new Date(year, 0, 1)), plant, phenophase, climate);
             }
             resultForYear.year = year;
             return resultForYear;
