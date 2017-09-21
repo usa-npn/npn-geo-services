@@ -248,8 +248,10 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
 
     const query = {
         text: `
-        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_MakeValid(ST_Buffer(foo.boundary, $1)), true)), true)).*,
-        ST_Union(foo.boundary) AS shapefile
+        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), true)).*,
+        ST_Count(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), true) AS data_in_boundary,
+        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '[-9999-0):8888,[0-500]:[0-500]', '16BUI'), ST_Buffer(foo.boundary, $1), -9999, true)), 1, false, 8888) AS nodata_in_boundary,
+        ST_Count(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), false) AS total_pixels_in_and_out_of_boundary
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
         AND r.rast_date = $3
@@ -263,13 +265,18 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
 
     let response = {date: date.format('YYYY-MM-DD')};
     if (res.rows.length > 0) {
-        response.count = res.rows[0].count;
+        response.count = Number(res.rows[0].count);
         response.sum = res.rows[0].sum;
         response.mean = res.rows[0].mean;
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
+        response.data_in_boundary = Number(res.rows[0].data_in_boundary);
+        response.nodata_in_boundary = Number(res.rows[0].nodata_in_boundary);
+        response.total_pixels_in_and_out_of_boundary = Number(res.rows[0].total_pixels_in_and_out_of_boundary);
+        response.percentComplete = Number(res.rows[0].count) / (Number(res.rows[0].nodata_in_boundary) + Number(res.rows[0].data_in_boundary)) * 100;
 
+        console.log(res.rows[0].total_pixels_in_boundary);
         // save the results to the caching table
         if (saveToCache) {
             await saveSixAreaStatsToCache(boundary, plant, phenophase, climate, date, response.count, response.mean, response.stddev, response.min, response.max, null);
