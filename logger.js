@@ -2,7 +2,7 @@ var bunyan = require('bunyan');
 var path = require("path");
 
 let log = bunyan.createLogger({
-    name: "dot_service",
+    name: "npn_geo_services",
     streams: [
         {
             level: "info",

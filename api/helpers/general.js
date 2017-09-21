@@ -1,4 +1,6 @@
 var fs = require('fs');
+var os = require('os');
+const { spawnSync } = require('child_process');
 
 // helper function to allow awaiting on writeFile
 function WriteFile(fileName, data)
@@ -13,6 +15,10 @@ function WriteFile(fileName, data)
             }
             else
             {
+                // if we are on linux, chown to teamcity so that teamcity has permissions to mv / overwrite these files
+                if (os.platform() !== 'win32') {
+                    spawnSync('chown', ['teamcity:developers', fileName]);
+                }
                 resolve();
             }
         });
