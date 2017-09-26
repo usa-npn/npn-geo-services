@@ -233,9 +233,9 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
         let d = new Date();
         let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.tiff`;
-        response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
+        //response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
-        response.styledRasterFile = await stylizeFile(filename, rasterpath);
+        response.clippedRaster = await stylizeFile(filename, rasterpath);
         return response;
     } else {
         return response;
@@ -271,18 +271,15 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
-        response.data_in_boundary = Number(res.rows[0].data_in_boundary);
-        response.nodata_in_boundary = Number(res.rows[0].nodata_in_boundary);
-        response.total_pixels_in_and_out_of_boundary = Number(res.rows[0].total_pixels_in_and_out_of_boundary);
+        // response.data_in_boundary = Number(res.rows[0].data_in_boundary);
+        // response.nodata_in_boundary = Number(res.rows[0].nodata_in_boundary);
+        // response.total_pixels_in_and_out_of_boundary = Number(res.rows[0].total_pixels_in_and_out_of_boundary);
         response.percentComplete = Number(res.rows[0].count) / (Number(res.rows[0].nodata_in_boundary) + Number(res.rows[0].data_in_boundary)) * 100;
 
-        console.log(res.rows[0].total_pixels_in_boundary);
         // save the results to the caching table
         if (saveToCache) {
-            await saveSixAreaStatsToCache(boundary, plant, phenophase, climate, date, response.count, response.mean, response.stddev, response.min, response.max, null);
+            await saveSixAreaStatsToCache(boundary, plant, phenophase, climate, date, response.count, response.mean, response.stddev, response.min, response.max, response.percentComplete);
         }
-
-        //response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
     }
     return response;
 }
@@ -298,12 +295,14 @@ async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColum
     let res = await checkSixAreaStatsCache(boundary, date, plant, phenophase, climate);
     let response = {};
     if (res.rows.length > 0) {
+        response.date = date.format('YYYY-MM-DD');
         response.count = res.rows[0].count;
         response.sum = res.rows[0].sum;
         response.mean = res.rows[0].mean;
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
+        response.percentComplete = res.rows[0].percent_complete;
     } else {
         let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
         response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true);
