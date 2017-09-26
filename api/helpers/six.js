@@ -209,7 +209,7 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
     return res;
 }
 
-// saves to disk and returns path to unstyled tiff and styled tiff for six clipping
+// saves to disk and returns path to styled tiff for six clipping
 async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
 
@@ -235,7 +235,39 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.tiff`;
         //response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
-        response.clippedRaster = await stylizeFile(filename, rasterpath);
+        response.clippedImage = await stylizeFile(filename, rasterpath);
+        return response;
+    } else {
+        return response;
+    }
+}
+
+// saves to disk and returns path to unstyled tiff for six clipping
+async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+
+    let buffer = getBufferSizeForTable(rastTable);
+
+    const query = {
+        text: `
+        SELECT ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy
+        FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
+        INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+        AND r.rast_date = $3
+        AND r.plant = $4
+        AND r.phenophase = $5`,
+        values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+    };
+    console.log(query);
+    const res = await db.pgPool.query(query);
+
+    let response = {date: date.format('YYYY-MM-DD')};
+    if (res.rows.length > 0) {
+        let d = new Date();
+        let rasterpath = 'static/rasters/';
+        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.tiff`;
+        await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
+        response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         return response;
     } else {
         return response;
@@ -356,6 +388,7 @@ async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColum
 // }
 
 module.exports.getClippedSixImage = getClippedSixImage;
+module.exports.getClippedSixRaster = getClippedSixRaster;
 module.exports.getSixAreaStats = getSixAreaStats;
 module.exports.getSixAreaStatsWithCaching = getSixAreaStatsWithCaching;
 module.exports.getPostgisClippedRasterSixStats = getPostgisClippedRasterSixStats;

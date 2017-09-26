@@ -1271,6 +1271,11 @@ paths:
                   required: true
                   type: string
                   format: date
+                - name: style
+                  in: query
+                  description: styled image will be colored; unstyled image will contain actual raster data
+                  required: true
+                  type: boolean
         responses:
           '200':
             description: successful operation
@@ -3094,8 +3099,11 @@ definitions:
         type: string
   ImageResponse:
     required:
+      - date
       - clippedImage
     properties:
+      date:
+        type: string
       clippedImage:
         type: string
   BoundaryResponse:

@@ -12,6 +12,7 @@ function clippedImage(req, res) {
     let date = req.swagger.params['date'].value;
     let plant = req.swagger.params['plant'].value;
     let climate = req.swagger.params['climate'].value;
+    let style = req.swagger.params['style'].value;
 
     let boundaryTable = "";
     let boundary = "";
@@ -28,9 +29,17 @@ function clippedImage(req, res) {
         res.status(500).json({"message": "Invalid Boundary"});
     }
 
-    return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
-        .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
-        .catch((error) => res.status(500).json({"message": error.message}));
+    if (style) {
+        return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
+            .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+            .catch((error) => res.status(500).json({"message": error.message}));
+    } else {
+        return sixController.getClippedSixRaster(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
+            .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+            .catch((error) => res.status(500).json({"message": error.message}));
+    }
+
+
 }
 
 function boundary(req, res) {
