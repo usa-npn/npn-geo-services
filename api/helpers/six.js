@@ -218,7 +218,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
     const query = {
         text: `
         SELECT ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
-        ST_Extent(ST_Buffer(foo.boundary, $1)) as extent,
+        ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
         AND r.rast_date = $3
@@ -253,7 +253,7 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
     const query = {
         text: `
         SELECT ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
-        ST_Extent(ST_Buffer(foo.boundary, $1)) as extent,
+        ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
         AND r.rast_date = $3
