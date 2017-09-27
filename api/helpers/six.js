@@ -20,7 +20,7 @@ async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, b
 }
 
 // calls wps to apply sld style to input raster, returns promise to the path of the stylized tiff
-function stylizeFile(filename, rasterpath){
+function stylizeFile(filename, rasterpath, fileFormat){
     return new Promise((resolve, reject) =>
     {
         var postData = `
@@ -29,7 +29,7 @@ function stylizeFile(filename, rasterpath){
 	<wps:DataInputs>
 		<wps:Input>
 			<ows:Identifier>coverage</ows:Identifier>
-			<wps:Reference mimeType="image/tiff" xlink:href="http://data-dev.usanpn.org:3006/${filename}" method="GET"/>
+			<wps:Reference mimeType="image/${fileFormat}" xlink:href="http://data-dev.usanpn.org:3006/${filename}" method="GET"/>
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
@@ -70,7 +70,7 @@ function stylizeFile(filename, rasterpath){
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>
-		<wps:RawDataOutput mimeType="image/tiff">
+		<wps:RawDataOutput mimeType="image/${fileFormat}">
 			<ows:Identifier>result</ows:Identifier>
 		</wps:RawDataOutput>
 	</wps:ResponseForm>
@@ -93,7 +93,7 @@ function stylizeFile(filename, rasterpath){
             }
         };
 
-        let styledFileName = `${filename.replace('.tiff', '_styled.tiff')}`;
+        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 
@@ -210,14 +210,14 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
 }
 
 // saves to disk and returns path to styled tiff for six clipping
-async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
 
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
-        SELECT ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
+        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
         ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
@@ -233,10 +233,10 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
     if (res.rows.length > 0) {
         let d = new Date();
         let rasterpath = 'static/rasters/';
-        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.tiff`;
+        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         //response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
-        response.clippedImage = await stylizeFile(filename, rasterpath);
+        response.clippedImage = await stylizeFile(filename, rasterpath, fileFormat);
         response.extent = res.rows[0].extent;
         return response;
     } else {
@@ -245,14 +245,14 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
 }
 
 // saves to disk and returns path to unstyled tiff for six clipping
-async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
 
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
-        SELECT ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
+        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
         ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
@@ -268,7 +268,7 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
     if (res.rows.length > 0) {
         let d = new Date();
         let rasterpath = 'static/rasters/';
-        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.tiff`;
+        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
         response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         response.extent = res.rows[0].extent;

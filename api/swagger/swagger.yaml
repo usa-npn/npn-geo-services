@@ -1276,6 +1276,14 @@ paths:
                   description: styled image will be colored; unstyled image will contain actual raster data
                   required: true
                   type: boolean
+                - name: fileFormat
+                  in: query
+                  description: the format of the returned clipped image
+                  required: true
+                  type: string
+                  enum:
+                    - png
+                    - tiff
         responses:
           '200':
             description: successful operation
