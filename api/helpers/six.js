@@ -217,7 +217,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
 
     const query = {
         text: `
-        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_SetBandNoDataValue(ST_Union(ST_Clip(ST_Reclass(r.rast, '(-9999-9999):(-9999-9999)', '16BUI'), ST_Buffer(foo.boundary, $1), -9999, true)), 1, null), 1, 1) AS tiffy,
+        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_SetBandNoDataValue(ST_Union(ST_Clip(ST_Reclass(r.rast, '(-9999-9999):(-9999-9999)', '16BUI'), ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
         ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
@@ -252,7 +252,7 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
 
     const query = {
         text: `
-        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_Union(ST_Clip(ST_Reclass(r.rast, '(-9999-9999):(-9999-9999)', '16BUI'), ST_Buffer(foo.boundary, $1), -9999, true)), 1, 1) AS tiffy,
+        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_Union(ST_Clip(ST_Reclass(r.rast, '(-9999-9999):(-9999-9999)', '16BUI'), ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
         ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
