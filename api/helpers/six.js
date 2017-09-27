@@ -70,7 +70,7 @@ function stylizeFile(filename, rasterpath, fileFormat){
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>
-		<wps:RawDataOutput mimeType="image/png">
+		<wps:RawDataOutput mimeType="image/${fileFormat}">
 			<ows:Identifier>result</ows:Identifier>
 		</wps:RawDataOutput>
 	</wps:ResponseForm>
@@ -93,7 +93,7 @@ function stylizeFile(filename, rasterpath, fileFormat){
             }
         };
 
-        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.png`);
+        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 
