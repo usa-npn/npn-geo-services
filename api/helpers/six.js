@@ -6,7 +6,7 @@ var fs = require('fs');
 const http = require('http');
 const { exec } = require('child_process');
 
-const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images';
+const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
 
 
 // returns the number of tiles the boundary intersects
