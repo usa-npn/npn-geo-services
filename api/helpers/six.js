@@ -4,8 +4,9 @@ const moment = require('moment');
 let helpers = require('./general');
 var fs = require('fs');
 const http = require('http');
-// const sharp = require('sharp');
 const { exec } = require('child_process');
+
+const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images';
 
 
 // returns the number of tiles the boundary intersects
@@ -252,11 +253,11 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
     let response = {date: date.format('YYYY-MM-DD')};
     if (res.rows.length > 0) {
         let d = new Date();
-        let rasterpath = 'static/rasters/';
+        // let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         //response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-        await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
-        response.clippedImage = await stylizeFile(filename, rasterpath, fileFormat);
+        await helpers.WriteFile(imagePath + filename, res.rows[0].tiffy);
+        response.clippedImage = await stylizeFile(filename, imagePath, fileFormat);
         response.extent = res.rows[0].extent;
         return response;
     } else {
@@ -287,16 +288,12 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
     let response = {date: date.format('YYYY-MM-DD')};
     if (res.rows.length > 0) {
         let d = new Date();
-        let rasterpath = 'static/rasters/';
+        // let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
-        await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
-
-        // sharp(rasterpath + filename).png().toFile(rasterpath + filename.replace('tiff', 'png'), function(err) {
-        //     if(err) console.log(err);
-        // });
+        await helpers.WriteFile(imagePath + filename, res.rows[0].tiffy);
 
         if (fileFormat === 'png') {
-            exec(`convert ${rasterpath + filename} -transparent white ${rasterpath + filename.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+            exec(`convert ${imagePath + filename} -transparent white ${imagePath + filename.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                 if (err) {
                     // node couldn't execute the command
                     return;

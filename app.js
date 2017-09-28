@@ -45,7 +45,10 @@ app.use((req,res,next) => {
 
 app.use(express.static('api/swagger'));
 
-app.use(express.static('static/rasters'));
+const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images';
+
+// app.use(express.static('static/rasters'));
+app.use(express.static(imagePath));
 
 SwaggerExpress.create(config, (err, swaggerExpress) => {
   if (err) { throw err; }
