@@ -18,6 +18,7 @@
     "mysql": "^2.11.1",
     "mysql2": "^1.1.2",
     "pg": "^7.1.2",
+    "sharp": "^0.18.4",
     "swagger-express-mw": "^0.7.0"
   },
   "devDependencies": {
