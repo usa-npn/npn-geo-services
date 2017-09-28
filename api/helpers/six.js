@@ -111,7 +111,7 @@ function stylizeFile(filename, rasterpath, fileFormat){
                 log.info('finished writing styled raster.');
 
                 if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                         if (err) {
                             // node couldn't execute the command
                             reject(err);
@@ -296,7 +296,7 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
         // });
 
         if (fileFormat === 'png') {
-            exec(`convert ${rasterpath + filename} ${rasterpath + filename.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+            exec(`convert ${rasterpath + filename} -transparent white ${rasterpath + filename.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                 if (err) {
                     // node couldn't execute the command
                     return;
