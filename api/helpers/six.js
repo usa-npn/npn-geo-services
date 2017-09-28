@@ -4,7 +4,7 @@ const moment = require('moment');
 let helpers = require('./general');
 var fs = require('fs');
 const http = require('http');
-const sharp = require('sharp');
+// const sharp = require('sharp');
 
 
 // returns the number of tiles the boundary intersects
@@ -272,9 +272,11 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         await helpers.WriteFile(rasterpath + filename, res.rows[0].tiffy);
 
-        sharp(rasterpath + filename).png().toFile(rasterpath + filename.replace('tiff', 'png'), function(err) {
-            if(err) console.log(err);
-        });
+        // sharp(rasterpath + filename).png().toFile(rasterpath + filename.replace('tiff', 'png'), function(err) {
+        //     if(err) console.log(err);
+        // });
+
+
 
         response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         response.extent = res.rows[0].extent;
