@@ -5,6 +5,7 @@ let helpers = require('./general');
 var fs = require('fs');
 const http = require('http');
 // const sharp = require('sharp');
+const { exec } = require('child_process');
 
 
 // returns the number of tiles the boundary intersects
@@ -108,7 +109,25 @@ function stylizeFile(filename, rasterpath, fileFormat){
 
             res.on('end', () => {
                 log.info('finished writing styled raster.');
-                resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+
+                if (fileFormat === 'png') {
+                    exec(`convert ${rasterpath + styledFileName} ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                        if (err) {
+                            // node couldn't execute the command
+                            reject(err);
+                        }
+
+                        // the *entire* stdout and stderr (buffered)
+                        console.log(`stdout: ${stdout}`);
+                        console.log(`stderr: ${stderr}`);
+                    });
+
+                    resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                } else {
+                    resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+                }
+
+                //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
             });
         });
 
@@ -218,7 +237,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
 
     const query = {
         text: `
-        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
+        SELECT ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
         ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
@@ -253,7 +272,7 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
 
     const query = {
         text: `
-        SELECT ${fileFormat === 'tiff' ? 'ST_AsTIFF' : 'ST_AsPNG'}(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
+        SELECT ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
         ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
         FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
         INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
@@ -276,11 +295,28 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
         //     if(err) console.log(err);
         // });
 
+        if (fileFormat === 'png') {
+            exec(`convert ${rasterpath + filename} ${rasterpath + filename.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                if (err) {
+                    // node couldn't execute the command
+                    return;
+                }
+
+                // the *entire* stdout and stderr (buffered)
+                console.log(`stdout: ${stdout}`);
+                console.log(`stderr: ${stderr}`);
+            });
+
+            response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename.replace('.tiff', '.png');
+            response.extent = res.rows[0].extent;
+            return response;
+        } else {
+            response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
+            response.extent = res.rows[0].extent;
+            return response;
+        }
 
 
-        response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-        response.extent = res.rows[0].extent;
-        return response;
     } else {
         return response;
     }
