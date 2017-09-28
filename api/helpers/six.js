@@ -111,7 +111,7 @@ function stylizeFile(filename, rasterpath, fileFormat){
                 log.info('finished writing styled raster.');
 
                 if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.gif')}`, (err, stdout, stderr) => {
+                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                         if (err) {
                             // node couldn't execute the command
                             reject(err);
@@ -122,7 +122,7 @@ function stylizeFile(filename, rasterpath, fileFormat){
                         console.log(`stderr: ${stderr}`);
                     });
 
-                    resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName.replace('.tiff', '.gif'));
+                    resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
                 } else {
                     resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
                 }
