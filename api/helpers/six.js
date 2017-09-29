@@ -26,6 +26,7 @@ async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, b
 function stylizeFile(filename, rasterpath, fileFormat){
     return new Promise((resolve, reject) =>
     {
+        log.info(`styling ${rasterpath}${filename}`);
         var postData = `
 <wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
 	<ows:Identifier>ras:StyleCoverage</ows:Identifier>
@@ -105,6 +106,7 @@ function stylizeFile(filename, rasterpath, fileFormat){
 
             res.on('data', (d) => {
                 console.log('recieving data from geoserver');
+                log.info('recieving data from geoserver');
                 // log.info(d.toString());
             });
 
@@ -264,7 +266,9 @@ FROM (
     };
 
     console.log(query);
+    log.info(query);
     const res = await db.pgPool.query(query);
+    log.info('query complete');
 
     let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
     if (res.rows.length > 0) {
