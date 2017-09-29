@@ -3109,11 +3109,16 @@ definitions:
     required:
       - date
       - clippedImage
+      - bbox
     properties:
       date:
         type: string
       clippedImage:
         type: string
+      bbox:
+        type: array
+        items:
+          type: number
   BoundaryResponse:
     required:
       - boundary

@@ -259,29 +259,16 @@ FROM (
         values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
 
-    // const query = {
-    //     text: `
-    //     SELECT ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), 1, null)) AS tiffy,
-    //     ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
-    //     FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
-    //     INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
-    //     AND r.rast_date = $3
-    //     AND r.plant = $4
-    //     AND r.phenophase = $5`,
-    //     values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-    // };
     console.log(query);
     const res = await db.pgPool.query(query);
 
     let response = {date: date.format('YYYY-MM-DD')};
     if (res.rows.length > 0) {
         let d = new Date();
-        // let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
-        //response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
         await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
         response.clippedImage = await stylizeFile(filename, imagePath, fileFormat);
-        response.extent = res.rows[0].extent;
+        response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {
         return response;
@@ -317,24 +304,12 @@ FROM (
         values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
 
-    // const query = {
-    //     text: `
-    //     SELECT ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true))) AS tiffy,
-    //     ST_Extent(ST_Buffer(foo.boundary, $1)) as extent
-    //     FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
-    //     INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
-    //     AND r.rast_date = $3
-    //     AND r.plant = $4
-    //     AND r.phenophase = $5`,
-    //     values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-    // };
     console.log(query);
     const res = await db.pgPool.query(query);
 
     let response = {date: date.format('YYYY-MM-DD')};
     if (res.rows.length > 0) {
         let d = new Date();
-        // let rasterpath = 'static/rasters/';
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
 
@@ -351,11 +326,12 @@ FROM (
             });
 
             response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename.replace('.tiff', '.png');
-            response.extent = res.rows[0].extent;
+            response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
             return response;
         } else {
             response.clippedImage = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-            response.extent = res.rows[0].extent;
+            response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+            response.bbox = bbox;
             return response;
         }
 

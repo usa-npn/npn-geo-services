@@ -47,5 +47,12 @@ var getDatesRangeArray = function (startDate, endDate, interval, total) {
     return dateArray;
 };
 
+// takes a string and extracts the floating point numbers into an array
+var extractFloatsFromString = function (inputString) {
+    let regex = /[+-]?\d+(\.\d+)?/g;
+    return inputString.match(regex).map(n => parseFloat(n));
+};
+
 module.exports.WriteFile = WriteFile;
 module.exports.getDatesRangeArray = getDatesRangeArray;
+module.exports.extractFloatsFromString = extractFloatsFromString;
