@@ -233,6 +233,10 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
 // saves to disk and returns path to styled tiff for six clipping
 async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+    let layerName = `six:${plant}_${phenophase}_${climate}`;
+    if (rastTable.includes('alaska')) {
+        layerName += '_alaska';
+    }
 
     let buffer = getBufferSizeForTable(rastTable);
 
@@ -262,7 +266,7 @@ FROM (
     console.log(query);
     const res = await db.pgPool.query(query);
 
-    let response = {date: date.format('YYYY-MM-DD')};
+    let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
     if (res.rows.length > 0) {
         let d = new Date();
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
@@ -278,6 +282,10 @@ FROM (
 // saves to disk and returns path to unstyled tiff for six clipping
 async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+    let layerName = `six:${plant}_${phenophase}_${climate}`;
+    if (rastTable.includes('alaska')) {
+        layerName += '_alaska';
+    }
 
     let buffer = getBufferSizeForTable(rastTable);
 
@@ -307,7 +315,7 @@ FROM (
     console.log(query);
     const res = await db.pgPool.query(query);
 
-    let response = {date: date.format('YYYY-MM-DD')};
+    let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
     if (res.rows.length > 0) {
         let d = new Date();
         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;

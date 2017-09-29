@@ -3108,10 +3108,13 @@ definitions:
   ImageResponse:
     required:
       - date
+      - layerClippedFrom
       - clippedImage
       - bbox
     properties:
       date:
+        type: string
+      layerClippedFrom:
         type: string
       clippedImage:
         type: string
