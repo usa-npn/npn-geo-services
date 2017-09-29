@@ -255,6 +255,7 @@ FROM (
     AND r.plant = $4
     AND r.phenophase = $5
 ) AS bar
+GROUP BY bar.clipped_raster
 `,
         values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
@@ -313,6 +314,7 @@ FROM (
     AND r.plant = $4
     AND r.phenophase = $5
 ) AS bar
+GROUP BY bar.clipped_raster
 `,
         values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
