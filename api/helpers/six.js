@@ -239,7 +239,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
     const query = {
         text: `
 SELECT 
-ST_AsTIFF(ST_SetBandNoDataValue(bar.clipped_raster, 1, null)) AS tiff,
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
     SELECT ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)) AS clipped_raster
@@ -255,7 +255,6 @@ FROM (
     AND r.plant = $4
     AND r.phenophase = $5
 ) AS bar
-GROUP BY bar.clipped_raster
 `,
         values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
@@ -298,7 +297,7 @@ async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date
     const query = {
         text: `
 SELECT 
-ST_AsTIFF(bar.clipped_raster) AS tiff,
+ST_AsTIFF(ST_Union(bar.clipped_raster)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
     SELECT ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)) AS clipped_raster
@@ -314,7 +313,6 @@ FROM (
     AND r.plant = $4
     AND r.phenophase = $5
 ) AS bar
-GROUP BY bar.clipped_raster
 `,
         values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
