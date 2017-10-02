@@ -1,4 +1,4 @@
-let db = require('./database.js');
+let db = require('../helpers/database.js');
 
 function boundary(req, res) {
     let fwsBoundary = req.swagger.params['fwsBoundary'].value;

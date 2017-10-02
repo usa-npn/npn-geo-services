@@ -1927,6 +1927,7 @@ paths:
                   - name: boundaryType
                     in: query
                     description: list the FWS boundaries or the State Boundaries
+                    required: true
                     type: string
                     enum:
                       - FWS
