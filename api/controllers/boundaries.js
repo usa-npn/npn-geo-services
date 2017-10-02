@@ -56,7 +56,7 @@ async function boundaryNames(req, res) {
         }
 
         const query = {
-            text: `SELECT ${boundaryColumn} AS name FROM ${boundaryTable} ORDER BY ${boundaryColumn}`
+            text: `SELECT DISTINCT ${boundaryColumn} AS name FROM ${boundaryTable} ORDER BY ${boundaryColumn}`
         };
         console.log(query);
         const result = await db.pgPool.query(query);
