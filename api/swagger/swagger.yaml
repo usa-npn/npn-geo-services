@@ -1306,7 +1306,7 @@ paths:
 
 
   /si-x/area/boundary:
-      x-swagger-router-controller: six
+      x-swagger-router-controller: boundaries
       get:
         summary: gets boundary shapefile or geojson
         description: Gets boundary shapefile or geojson (can paste geojson into http://geojson.io for preview)
@@ -1915,6 +1915,31 @@ paths:
             schema:
               $ref: '#/definitions/ErrorResponse'
 
+  /si-x/area/boundaryNames:
+        x-swagger-router-controller: boundaries
+        get:
+          summary: get list of available boundary names for FWS or States
+          description: Gets list of available boundary names for FWS or States
+          tags:
+            - boundaries
+          operationId: boundaryNames
+          parameters:
+                  - name: boundaryType
+                    in: query
+                    description: list the FWS boundaries or the State Boundaries
+                    type: string
+                    enum:
+                      - FWS
+                      - States
+          responses:
+            '200':
+              description: successful operation
+              schema:
+                $ref: '#/definitions/BoundaryNamesResponse'
+            '500':
+              description: internal server error
+              schema:
+                $ref: '#/definitions/ErrorResponse'
 
   /si-x/area/statistics/timeseries:
         x-swagger-router-controller: six
@@ -3153,6 +3178,14 @@ definitions:
     properties:
       boundary:
         type: string
+  BoundaryNamesResponse:
+      required:
+        - boundaryName
+      properties:
+        boundaryName:
+          type: array
+          items:
+            type: string
   SixStatsResponse:
     required:
       - date
