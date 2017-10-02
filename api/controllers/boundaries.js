@@ -56,11 +56,11 @@ async function boundaryNames(req, res) {
         }
 
         const query = {
-            text: `SELECT ${boundaryColumn} FROM ${boundaryTable} ORDER BY ${boundaryColumn}`
+            text: `SELECT ${boundaryColumn} AS name FROM ${boundaryTable} ORDER BY ${boundaryColumn}`
         };
         console.log(query);
         const result = await db.pgPool.query(query);
-        res.status(200).send({'boundaryNames' : result});
+        res.status(200).send({'boundaryNames' : result.rows.map(row => row.name)});
     } catch(error) {
         res.status(500).json({"message": error.message});
     }
