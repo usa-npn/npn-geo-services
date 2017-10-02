@@ -41,25 +41,29 @@ function boundary(req, res) {
     res.status(200).send({'boundary' : boundaryPath});
 }
 
-async function boundaryNames() {
-    let boundaryType = req.swagger.params['boundaryType'].value;
+async function boundaryNames(req, res) {
+    try {
+        let boundaryType = req.swagger.params['boundaryType'].value;
 
-    let boundaryTable = '';
-    let boundaryColumn = '';
-    if(boundaryType === 'fws') {
-        boundaryTable = "fws_boundaries";
-        boundaryColumn = 'orgname';
-    } else {
-        boundaryTable = "state_boundaries";
-        boundaryColumn = 'NAME';
+        let boundaryTable = '';
+        let boundaryColumn = '';
+        if(boundaryType === 'FWS') {
+            boundaryTable = "fws_boundaries";
+            boundaryColumn = 'orgname';
+        } else {
+            boundaryTable = "state_boundaries";
+            boundaryColumn = 'NAME';
+        }
+
+        const query = {
+            text: `SELECT ${boundaryColumn} FROM ${boundaryTable} ORDER BY ${boundaryColumn}`
+        };
+        console.log(query);
+        const res = await db.pgPool.query(query);
+        res.status(200).send({'boundaryNames' : res});
+    } catch(error) {
+        res.status(500).json({"message": error.message});
     }
-
-    const query = {
-        text: `SELECT ${boundaryColumn} FROM ${boundaryTable} ORDER BY ${boundaryColumn}`
-    };
-    console.log(query);
-    const res = await db.pgPool.query(query);
-    return res;
 }
 
 module.exports.boundary = boundary;
