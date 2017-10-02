@@ -200,7 +200,7 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
 }
 
 // saves to disk and returns path to styled tiff for six clipping
-async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat) {
+async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundry) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
     let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {
@@ -251,7 +251,7 @@ FROM (
 }
 
 // saves to disk and returns path to unstyled tiff for six clipping
-async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat) {
+async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundary) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
     let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {

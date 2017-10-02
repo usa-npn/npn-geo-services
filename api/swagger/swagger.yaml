@@ -620,6 +620,11 @@ paths:
                     - YAZOO NATIONAL WILDLIFE REFUGE
                     - YUKON DELTA NATIONAL WILDLIFE REFUGE
                     - YUKON FLATS NATIONAL WILDLIFE REFUGE
+                - name: useBufferedBoundary
+                  in: query
+                  description: for FWS boundaries select true to use 30km buffered boundary
+                  required: true
+                  type: boolean
                 - name: climate
                   in: query
                   description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
@@ -1256,6 +1261,11 @@ paths:
                     - YAZOO NATIONAL WILDLIFE REFUGE
                     - YUKON DELTA NATIONAL WILDLIFE REFUGE
                     - YUKON FLATS NATIONAL WILDLIFE REFUGE
+                - name: useBufferedBoundary
+                  in: query
+                  description: for FWS boundaries select true to use 30km buffered boundary
+                  required: true
+                  type: boolean
                 - name: climate
                   in: query
                   description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
@@ -1890,6 +1900,11 @@ paths:
                     - YAZOO NATIONAL WILDLIFE REFUGE
                     - YUKON DELTA NATIONAL WILDLIFE REFUGE
                     - YUKON FLATS NATIONAL WILDLIFE REFUGE
+                - name: useBufferedBoundary
+                  in: query
+                  description: for FWS boundaries select true to get 30km buffered boundary
+                  required: true
+                  type: boolean
         responses:
           '200':
             description: successful operation
@@ -2525,6 +2540,11 @@ paths:
                     description: the final year for the timeseries (inclusive)
                     required: true
                     type: integer
+                  - name: useBufferedBoundary
+                    in: query
+                    description: for FWS boundaries select true to use 30km buffered boundary
+                    required: true
+                    type: boolean
                   - name: useCache
                     in: query
                     description: whether to try and pull results from the cache table.
@@ -3074,6 +3094,11 @@ paths:
                     - YAZOO NATIONAL WILDLIFE REFUGE
                     - YUKON DELTA NATIONAL WILDLIFE REFUGE
                     - YUKON FLATS NATIONAL WILDLIFE REFUGE
+                - name: useBufferedBoundary
+                  in: query
+                  description: for FWS boundaries select true to use 30km buffered boundary
+                  required: true
+                  type: boolean
                 - name: climate
                   in: query
                   description: the backing climate data provider. Available from 2016 on.
