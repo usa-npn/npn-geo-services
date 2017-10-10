@@ -214,7 +214,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
     if(useConvexHullBoundary) {
         query = {
             text: `
-SELECT $1,
+SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
@@ -223,16 +223,16 @@ FROM (
     (
         SELECT p.gid as gid, ST_ConvexHull(ST_MakeValid(p.geom)) AS boundary 
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} = $2
+        WHERE p.${boundaryColumn} = $1
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.boundary)
-    AND r.rast_date = $3
-    AND r.plant = $4
-    AND r.phenophase = $5
+    AND r.rast_date = $2
+    AND r.plant = $3
+    AND r.phenophase = $4
 ) AS bar
 `,
-            values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+            values: [boundary, date.format('YYYY-MM-DD'), plant, phenophase]
         };
     } else {
         query = {
