@@ -221,18 +221,18 @@ FROM (
     SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
     FROM
     (
-        SELECT ST_ConvexHull(ST_Union(ST_MakeValid(p.geom))) AS boundary 
+        SELECT ST_Buffer(ST_ConvexHull(ST_Union(ST_MakeValid(p.geom))) $1) AS boundary 
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} = $1
+        WHERE p.${boundaryColumn} = $2
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.boundary)
-    AND r.rast_date = $2
-    AND r.plant = $3
-    AND r.phenophase = $4
+    AND r.rast_date = $3
+    AND r.plant = $4
+    AND r.phenophase = $5
 ) AS bar
 `,
-            values: [boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+            values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
         };
     } else {
         query = {
