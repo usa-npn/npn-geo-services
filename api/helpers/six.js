@@ -200,7 +200,7 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
 }
 
 // saves to disk and returns path to styled tiff for six clipping
-async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundry) {
+async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundry, useConvexHullBoundary) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
     let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {
@@ -209,8 +209,34 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
 
     let buffer = getBufferSizeForTable(rastTable);
 
-    const query = {
-        text: `
+    let query = {};
+
+    if(useConvexHullBoundary) {
+        query = {
+            text: `
+SELECT 
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(r.rast, ST_ConvexHull(ST_Buffer(foo.boundary, $1)), -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary 
+        FROM ${boundaryTable} p
+        WHERE p.${boundaryColumn} = $2
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.boundary)
+    AND r.rast_date = $3
+    AND r.plant = $4
+    AND r.phenophase = $5
+) AS bar
+`,
+            values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+        };
+    } else {
+        query = {
+            text: `
 SELECT 
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
@@ -229,8 +255,11 @@ FROM (
     AND r.phenophase = $5
 ) AS bar
 `,
-        values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-    };
+            values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+        };
+    }
+
+
 
     console.log(query);
     log.info(query);
@@ -251,7 +280,7 @@ FROM (
 }
 
 // saves to disk and returns path to unstyled tiff for six clipping
-async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundary) {
+async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
     let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {

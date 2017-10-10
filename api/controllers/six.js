@@ -15,6 +15,7 @@ function clippedImage(req, res) {
     let style = req.swagger.params['style'].value;
     let fileFormat = req.swagger.params['fileFormat'].value;
     let useBufferedBoundary = req.swagger.params['useBufferedBoundary'].value;
+    let useConvexHullBoundary = req.swagger.params['useConvexHullBoundary'].value;
 
     let boundaryTable = "";
     let boundary = "";
@@ -36,11 +37,11 @@ function clippedImage(req, res) {
     }
 
     if (style) {
-        return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate, fileFormat, useBufferedBoundary)
+        return sixController.getClippedSixImage(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     } else {
-        return sixController.getClippedSixRaster(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate, fileFormat, useBufferedBoundary)
+        return sixController.getClippedSixRaster(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     }
@@ -57,6 +58,7 @@ function areaStats(req, res) {
     let climate = req.swagger.params['climate'].value;
     let useCache = req.swagger.params['useCache'].value;
     let useBufferedBoundary = req.swagger.params['useBufferedBoundary'].value;
+    let useConvexHullBoundary = req.swagger.params['useConvexHullBoundary'].value;
 
     let boundaryTable = "";
     let boundary = "";
@@ -98,6 +100,7 @@ async function areaStatsTimeSeries(req, res) {
     let climate = req.swagger.params['climate'].value;
     let useCache = req.swagger.params['useCache'].value;
     let useBufferedBoundary = req.swagger.params['useBufferedBoundary'].value;
+    let useConvexHullBoundary = req.swagger.params['useConvexHullBoundary'].value;
 
     let boundaryTable = "";
     let boundary = "";
