@@ -221,7 +221,7 @@ FROM (
     SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
     FROM
     (
-        SELECT p.gid as gid, ST_ConvexHull(ST_MakeValid(p.geom)) AS boundary 
+        SELECT ST_ConvexHull(ST_Union(ST_MakeValid(p.geom))) AS boundary 
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} = $1
     ) AS foo
