@@ -214,7 +214,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
     if(useConvexHullBoundary) {
         query = {
             text: `
-SELECT 
+SELECT $1,
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
