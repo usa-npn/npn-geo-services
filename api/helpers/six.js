@@ -218,15 +218,15 @@ SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
-    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
+    SELECT ST_Union(ST_Clip(r.rast, ST_Buffer(ST_ConvexHull(ST_Union(ST_MakeValid(foo.boundary))), $1), -9999, true)) AS clipped_raster
     FROM
     (
-        SELECT ST_Buffer(ST_ConvexHull(ST_Union(ST_MakeValid(p.geom))), $1) AS boundary 
+        SELECT p.geom AS boundary 
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} = $2
     ) AS foo
     INNER JOIN ${rastTable} r
-    ON ST_Intersects(r.rast, foo.boundary)
+    ON ST_Intersects(r.rast, ST_ConvexHull(foo.boundary))
     AND r.rast_date = $3
     AND r.plant = $4
     AND r.phenophase = $5
@@ -241,15 +241,15 @@ SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
-    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
+    SELECT ST_Union(ST_Clip(r.rast, ST_Buffer(ST_MakeValid(foo.boundary), $1), -9999, true)) AS clipped_raster
     FROM
     (
-        SELECT p.gid as gid, ST_Buffer(ST_MakeValid(p.geom), $1) AS boundary 
+        SELECT p.gid as gid, p.geom AS boundary 
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} = $2
     ) AS foo
     INNER JOIN ${rastTable} r
-    ON ST_Intersects(r.rast, foo.boundary)
+    ON ST_Intersects(r.rast, ST_ConvexHull(foo.boundary))
     AND r.rast_date = $3
     AND r.plant = $4
     AND r.phenophase = $5
