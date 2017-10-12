@@ -372,17 +372,22 @@ FROM (
 }
 
 // gets si-x stats for functions params, if saveToCache is true, also saves result to the cache table
-async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, saveToCache) {
+async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, saveToCache, useConvexHullBoundary) {
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
-        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), true)).*,
-        ST_Count(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), true) AS data_in_boundary,
-        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '[-9999-0):8888,[0-500]:[0-500]', '16BUI'), ST_Buffer(foo.boundary, $1), -9999, true)), 1, false, 8888) AS nodata_in_boundary,
-        ST_Count(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), -9999, true)), false) AS total_pixels_in_and_out_of_boundary
-        FROM (SELECT p.gid as gid, ST_MakeValid(p.geom) AS boundary FROM ${boundaryTable} p WHERE p.${boundaryColumn} = $2) as foo
-        INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true)).*,
+        ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true) AS data_in_boundary,
+        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '[-9999-0):8888,[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
+        ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), false) AS total_pixels_in_and_out_of_boundary
+        FROM (
+            SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
+            ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+            FROM ${boundaryTable} p
+            WHERE p.${boundaryColumn} = $2
+        ) as foo
+        INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.convex_hull_boundary)
         AND r.rast_date = $3
         AND r.plant = $4
         AND r.phenophase = $5`,
@@ -413,13 +418,13 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
     return response;
 }
 
-async function getSixAreaStats(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+async function getSixAreaStats(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
-    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, false);
+    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, false, useConvexHullBoundary);
     return response;
 }
 
-async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate) {
+async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary) {
 
     let res = await checkSixAreaStatsCache(boundary, date, plant, phenophase, climate);
     let response = {};
@@ -434,55 +439,11 @@ async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColum
         response.percentComplete = res.rows[0].percent_complete;
     } else {
         let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
-        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true);
+        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true, useConvexHullBoundary);
     }
     return response;
 }
 
-// async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, date, plant, phenophase, saveToCache) {
-//     let buffer = getBufferSizeForTable(rastTable);
-//     let query = `SELECT
-//     ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
-//     (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
-//     ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), 1, -9999)) AS tiffy,
-//     ST_Union(foo.boundary) AS shapefile
-//     FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
-//     INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
-//     AND r.rast_date = '${date.format('YYYY-MM-DD')}'
-//     AND r.plant='${plant}'
-//     AND r.phenophase='${phenophase}';`;
-//
-//     console.log(query);
-//     const res = await db.pgPool.query(query);
-//
-//     let response = {date: date.format('YYYY-MM-DD')};
-//     if (res.rows.length > 0) {
-//         response.count = res.rows[0].count;
-//         response.sum = res.rows[0].sum;
-//         response.mean = res.rows[0].mean;
-//         response.stddev = res.rows[0].stddev;
-//         response.min = res.rows[0].min;
-//         response.max = res.rows[0].max;
-//
-//         // save the results to the caching table
-//         if (saveToCache) {
-//             await saveSixAreaStatsToCache(boundary, plant, phenophase, climate, date, response.count, response.mean, response.stddev, response.min, response.max, null);
-//         }
-//
-//         // todo: maybe possible to view in openlayers but not always zooming right so commenting out for now
-//         // response.viewboundary = `http://geoserver-dev.usanpn.org/geoserver/gdd/wms?service=WMS&version=1.1.0&request=GetMap&layers=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&styles=&bbox=-180.944702148438,17.4382019042969,181.569763183594,65.4184417724609&width=1400&height=700&srs=EPSG:4269&format=application/openlayers`;
-//         response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
-//
-//         let d = new Date();
-//         let rasterpath = 'static/rasters/';
-//         let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.tiff`;
-//         response.rasterFile = `data-dev.usanpn.org:${process.env.PORT}/` + filename;
-//         await WriteFile(rasterpath + filename, res.rows[0].tiffy);
-//         //todo: below line can use this with geoserver wps to obtain styled clipped raster, initial testing shows boundary rules aren't correct though
-//         response.geojson = res.rows[0].geojson;
-//     }
-//     return response;
-// }
 
 module.exports.getClippedSixImage = getClippedSixImage;
 module.exports.getClippedSixRaster = getClippedSixRaster;

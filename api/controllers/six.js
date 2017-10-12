@@ -80,11 +80,11 @@ function areaStats(req, res) {
     }
 
     if (useCache) {
-        return sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
+        return sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate, useConvexHullBoundary)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     } else {
-        return sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate)
+        return sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(date), plant, phenophase, climate, useConvexHullBoundary)
             .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
             .catch((error) => res.status(500).json({"message": error.message}));
     }
