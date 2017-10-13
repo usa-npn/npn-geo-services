@@ -2,20 +2,70 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let sixController = require('../helpers/six.js');
 
+function getPlantFromLayerName(layerName) {
+    if (layerName.includes('lilac')) {
+        return 'lilac';
+    } else if (layerName.includes('zabelli')) {
+        return 'zabelli';
+    } else if (layerName.includes('arnoldred')) {
+        return 'arnoldred';
+    } else {
+        return 'average';
+    }
+}
+
+function getPhenophaseFromLayerName(layerName) {
+    if (layerName.includes('leaf')) {
+        return 'leaf';
+    } else if (layerName.includes('bloom')) {
+        return 'bloom';
+    } else {
+        return null;
+    }
+}
+
+function getClimateProviderFromLayerName(layerName) {
+    if (layerName.includes('ncep')) {
+        return 'NCEP';
+    } else if (layerName.includes('prism')) {
+        return 'PRISM';
+    } else if (layerName.includes('best')) {
+        return 'BEST';
+    } else {
+        return null;
+    }
+}
+
+function getParam(param) {
+    if (param != null) {
+        return param.value
+    } else {
+        return null;
+    }
+}
+
+
 /**
  * @param {{swagger}} req
  */
 function clippedImage(req, res) {
-    let fwsBoundary = req.swagger.params['fwsBoundary'].value;
-    let stateBoundary = req.swagger.params['stateBoundary'].value;
-    let phenophase = req.swagger.params['phenophase'].value;
-    let date = req.swagger.params['date'].value;
-    let plant = req.swagger.params['plant'].value;
-    let climate = req.swagger.params['climate'].value;
-    let style = req.swagger.params['style'].value;
-    let fileFormat = req.swagger.params['fileFormat'].value;
-    let useBufferedBoundary = req.swagger.params['useBufferedBoundary'].value;
-    let useConvexHullBoundary = req.swagger.params['useConvexHullBoundary'].value;
+    let fwsBoundary = getParam(req.swagger.params['fwsBoundary']);
+    let stateBoundary = getParam(req.swagger.params['stateBoundary']);
+    let layerName = getParam(req.swagger.params['layerName']);
+    let phenophase = getParam(req.swagger.params['phenophase']);
+    let date = getParam(req.swagger.params['date']);
+    let plant = getParam(req.swagger.params['plant']);
+    let climate = getParam(req.swagger.params['climate']);
+    let style = getParam(req.swagger.params['style']);
+    let fileFormat = getParam(req.swagger.params['fileFormat']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']);
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']);
+
+    if (layerName) {
+        plant = getPlantFromLayerName(layerName);
+        phenophase = getPhenophaseFromLayerName(layerName);
+        climate = getClimateProviderFromLayerName(layerName);
+    }
 
     let boundaryTable = "";
     let boundary = "";
@@ -50,15 +100,22 @@ function clippedImage(req, res) {
 }
 
 function areaStats(req, res) {
-    let fwsBoundary = req.swagger.params['fwsBoundary'].value;
-    let stateBoundary = req.swagger.params['stateBoundary'].value;
-    let phenophase = req.swagger.params['phenophase'].value;
-    let date = req.swagger.params['date'].value;
-    let plant = req.swagger.params['plant'].value;
-    let climate = req.swagger.params['climate'].value;
-    let useCache = req.swagger.params['useCache'].value;
-    let useBufferedBoundary = req.swagger.params['useBufferedBoundary'].value;
-    let useConvexHullBoundary = req.swagger.params['useConvexHullBoundary'].value;
+    let fwsBoundary = getParam(req.swagger.params['fwsBoundary']);
+    let stateBoundary = getParam(req.swagger.params['stateBoundary']);
+    let layerName = getParam(req.swagger.params['layerName']);
+    let phenophase = getParam(req.swagger.params['phenophase']);
+    let date = getParam(req.swagger.params['date']);
+    let plant = getParam(req.swagger.params['plant']);
+    let climate = getParam(req.swagger.params['climate']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']);
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']);
+    let useCache = getParam(req.swagger.params['useCache']);
+
+    if (layerName) {
+        plant = getPlantFromLayerName(layerName);
+        phenophase = getPhenophaseFromLayerName(layerName);
+        climate = getClimateProviderFromLayerName(layerName);
+    }
 
     let boundaryTable = "";
     let boundary = "";
@@ -91,16 +148,23 @@ function areaStats(req, res) {
 }
 
 async function areaStatsTimeSeries(req, res) {
-    let fwsBoundary = req.swagger.params['fwsBoundary'].value;
-    let stateBoundary = req.swagger.params['stateBoundary'].value;
-    let phenophase = req.swagger.params['phenophase'].value;
-    let startYear = req.swagger.params['yearStart'].value;
-    let endYear = req.swagger.params['yearEnd'].value;
-    let plant = req.swagger.params['plant'].value;
-    let climate = req.swagger.params['climate'].value;
-    let useCache = req.swagger.params['useCache'].value;
-    let useBufferedBoundary = req.swagger.params['useBufferedBoundary'].value;
-    let useConvexHullBoundary = req.swagger.params['useConvexHullBoundary'].value;
+    let fwsBoundary = getParam(req.swagger.params['fwsBoundary']);
+    let stateBoundary = getParam(req.swagger.params['stateBoundary']);
+    let layerName = getParam(req.swagger.params['layerName']);
+    let phenophase = getParam(req.swagger.params['phenophase']);
+    let plant = getParam(req.swagger.params['plant']);
+    let climate = getParam(req.swagger.params['climate']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']);
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']);
+    let useCache = getParam(req.swagger.params['useCache']);
+    let startYear = getParam(req.swagger.params['yearStart']);
+    let endYear = getParam(req.swagger.params['yearEnd']);
+
+    if (layerName) {
+        plant = getPlantFromLayerName(layerName);
+        phenophase = getPhenophaseFromLayerName(layerName);
+        climate = getClimateProviderFromLayerName(layerName);
+    }
 
     let boundaryTable = "";
     let boundary = "";
