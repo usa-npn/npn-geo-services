@@ -652,12 +652,10 @@ paths:
                 - name: useBufferedBoundary
                   in: query
                   description: for FWS boundaries select true to use 30km buffered boundary
-                  required: true
                   type: boolean
                 - name: useConvexHullBoundary
                   in: query
                   description: for FWS boundaries select true to clip by the convex hull of the boundary
-                  required: true
                   type: boolean
                 - name: climate
                   in: query
@@ -732,7 +730,6 @@ paths:
                 - name: phenophase
                   in: query
                   description: the spring index phenophase to average over
-                  required: true
                   type: string
                   enum:
                     - leaf
@@ -740,7 +737,6 @@ paths:
                 - name: plant
                   in: query
                   description: the spring index plant or average for all three combined (for BEST only average is available)
-                  required: true
                   type: string
                   enum:
                     - lilac
@@ -1328,17 +1324,14 @@ paths:
                 - name: useBufferedBoundary
                   in: query
                   description: for FWS boundaries select true to use 30km buffered boundary
-                  required: true
                   type: boolean
                 - name: useConvexHullBoundary
                   in: query
                   description: for FWS boundaries select true to clip by the convex hull of the boundary
-                  required: true
                   type: boolean
                 - name: climate
                   in: query
                   description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
-                  required: true
                   type: string
                   enum:
                     - NCEP
@@ -1972,12 +1965,10 @@ paths:
                 - name: useBufferedBoundary
                   in: query
                   description: for FWS boundaries select true to get 30km buffered boundary
-                  required: true
                   type: boolean
                 - name: useConvexHullBoundary
                   in: query
                   description: for FWS boundaries select true to clip by the convex hull of the boundary
-                  required: true
                   type: boolean
         responses:
           '200':
@@ -2671,12 +2662,10 @@ paths:
                   - name: useBufferedBoundary
                     in: query
                     description: for FWS boundaries select true to use 30km buffered boundary
-                    required: true
                     type: boolean
                   - name: useConvexHullBoundary
                     in: query
                     description: for FWS boundaries select true to clip by the convex hull of the FWS boundary
-                    required: true
                     type: boolean
                   - name: useCache
                     in: query
@@ -3230,12 +3219,10 @@ paths:
                 - name: useBufferedBoundary
                   in: query
                   description: for FWS boundaries select true to use 30km buffered boundary
-                  required: true
                   type: boolean
                 - name: useConvexHullBoundary
                   in: query
                   description: for FWS boundaries select true to clip by the convex hull of the boundary
-                  required: true
                   type: boolean
                 - name: climate
                   in: query

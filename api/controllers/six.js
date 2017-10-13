@@ -58,8 +58,8 @@ function clippedImage(req, res) {
     let climate = getParam(req.swagger.params['climate']);
     let style = getParam(req.swagger.params['style']);
     let fileFormat = getParam(req.swagger.params['fileFormat']);
-    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']);
-    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
 
     if (layerName) {
         plant = getPlantFromLayerName(layerName);
@@ -107,8 +107,8 @@ function areaStats(req, res) {
     let date = getParam(req.swagger.params['date']);
     let plant = getParam(req.swagger.params['plant']);
     let climate = getParam(req.swagger.params['climate']);
-    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']);
-    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
     let useCache = getParam(req.swagger.params['useCache']);
 
     if (layerName) {
@@ -154,8 +154,8 @@ async function areaStatsTimeSeries(req, res) {
     let phenophase = getParam(req.swagger.params['phenophase']);
     let plant = getParam(req.swagger.params['plant']);
     let climate = getParam(req.swagger.params['climate']);
-    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']);
-    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
     let useCache = getParam(req.swagger.params['useCache']);
     let startYear = getParam(req.swagger.params['yearStart']);
     let endYear = getParam(req.swagger.params['yearEnd']);
