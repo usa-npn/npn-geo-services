@@ -233,54 +233,6 @@ FROM (
     `, values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
     };
 
-//     if(useConvexHullBoundary) {
-//         query = {
-//             text: `
-// SELECT
-// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
-// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
-// FROM (
-//     SELECT ST_Union(ST_Clip(r.rast, ST_Buffer(ST_ConvexHull(ST_Union(foo.boundary)), $1), -9999, true)) AS clipped_raster
-//     FROM
-//     (
-//         SELECT p.geom AS boundary
-//         FROM ${boundaryTable} p
-//         WHERE p.${boundaryColumn} = $2
-//     ) AS foo
-//     INNER JOIN ${rastTable} r
-//     ON ST_Intersects(r.rast, ST_ConvexHull(foo.boundary))
-//     AND r.rast_date = $3
-//     AND r.plant = $4
-//     AND r.phenophase = $5
-// ) AS bar
-// `,
-//             values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-//         };
-//     } else {
-//         query = {
-//             text: `
-// SELECT
-// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
-// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
-// FROM (
-//     SELECT ST_Union(ST_Clip(r.rast, ST_Buffer(ST_MakeValid(foo.boundary), $1), -9999, true)) AS clipped_raster
-//     FROM
-//     (
-//         SELECT p.gid as gid, p.geom AS boundary
-//         FROM ${boundaryTable} p
-//         WHERE p.${boundaryColumn} = $2
-//     ) AS foo
-//     INNER JOIN ${rastTable} r
-//     ON ST_Intersects(r.rast, ST_ConvexHull(foo.boundary))
-//     AND r.rast_date = $3
-//     AND r.plant = $4
-//     AND r.phenophase = $5
-// ) AS bar
-// `,
-//             values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-//         };
-//     }
-
 
 
     console.log(query);
