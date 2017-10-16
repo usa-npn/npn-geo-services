@@ -53,8 +53,7 @@ var extractFloatsFromString = function (inputString) {
         let regex = /[+-]?\d+(\.\d+)?/g;
         return inputString.match(regex).map(n => parseFloat(n));
     } catch (error) {
-        // if there was no returned extent, then there was no data within the boundary
-        throw 'no data found'
+        return null;
     }
 
 };
