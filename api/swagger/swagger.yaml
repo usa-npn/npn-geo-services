@@ -4536,7 +4536,7 @@ paths:
                     - gdd:agdd_50f
                     - gdd:agdd_alaska
                     - gdd:agdd_alaska_50f
-                - name: phenophase
+                - name: base
                   in: query
                   description: the agdd base to average over
                   type: number
