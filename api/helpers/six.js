@@ -247,7 +247,9 @@ FROM (
     let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
     if (res.rows.length > 0) {
         let d = new Date();
-        let filename = `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
+        let filename = anomaly
+            ? `${boundary.replace(/ /g, '_')}_six_anomaly_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`
+            : `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
         response.clippedImage = await stylizeFile(filename, imagePath, fileFormat, layerName);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
@@ -260,7 +262,7 @@ FROM (
 // saves to disk and returns path to unstyled tiff for six clipping
 async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary, anomaly) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
-    let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
+    let layerName = anomaly ? `si-x:${phenophase}_anomaly` : `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {
         layerName += '_alaska';
     }
