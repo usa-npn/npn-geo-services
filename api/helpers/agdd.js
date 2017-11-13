@@ -22,7 +22,7 @@ async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, b
         text: `
         SELECT COUNT(*) AS intersections
         FROM ${rastTable} r, ${boundaryTable} p 
-        WHERE p.${boundaryColumn} = $1 AND ST_Intersects(r.rast, p.geom) AND r.rast_date = $2 AND r.base = $3 AND r.phenophase = $4`,
+        WHERE p.${boundaryColumn} = $1 AND ST_Intersects(r.rast, p.geom) AND r.rast_date = $2 AND r.base = $3`,
         values: [boundary, date.format('YYYY-MM-DD'), base]
     };
     const res = await db.pgPool.query(query);
