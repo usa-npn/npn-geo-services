@@ -31,7 +31,9 @@ async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, b
 
 // choose table via selected data and boundary tile intersection (for ncep alaska)
 async function getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly) {
-
+    if (anomaly) {
+        return `agdd_anomaly_${date.year()}`;
+    }
     let rasterCellsInBoundary = await boundaryRasterIntersections(`agdd_alaska_${date.year()}`, boundary, boundaryTable, boundaryColumn, date, base);
     if (rasterCellsInBoundary > 0) {
         return `agdd_alaska_${date.year()}`;
