@@ -135,7 +135,7 @@ function anomalyAreaStats(req, res) {
     return areaStatsInternal(req, res, anomaly);
 }
 
-function areaStatsInternal(req, res) {
+function areaStatsInternal(req, res, anomaly) {
     let fwsBoundary = getParam(req.swagger.params['fwsBoundary']);
     let stateBoundary = getParam(req.swagger.params['stateBoundary']);
     let layerName = getParam(req.swagger.params['layerName']);
@@ -146,7 +146,6 @@ function areaStatsInternal(req, res) {
     let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
     let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
     let useCache = getParam(req.swagger.params['useCache']);
-    let anomaly = false;
 
     if (layerName) {
         phenophase = getPhenophaseFromLayerName(layerName);
