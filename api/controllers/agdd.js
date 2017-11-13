@@ -2,6 +2,24 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let agddController = require('../helpers/agdd.js');
 
+function getClimateProviderFromLayerName(layerName) {
+    if (layerName.includes('ncep')) {
+        return 'NCEP';
+    } else if (layerName.includes('prism')) {
+        return 'PRISM';
+    } else {
+        return null;
+    }
+}
+
+function getParam(param) {
+    if (param != null) {
+        return param.value
+    } else {
+        return null;
+    }
+}
+
 function areaStats(req, res) {
     let boundary = req.swagger.params['boundary'].value;
     let date = req.swagger.params['date'].value;
@@ -34,5 +52,72 @@ async function areaStatsTimeSeries(req, res) {
     }
 }
 
+/**
+ * @param {{swagger}} req
+ */
+function clippedImage(req, res) {
+    let anomaly = false;
+    return clippedImageInternal(req, res, anomaly);
+}
+
+/**
+ * @param {{swagger}} req
+ */
+function anomalyClippedImage(req, res) {
+    let anomaly = true;
+    return clippedImageInternal(req, res, anomaly);
+}
+
+/**
+ * @param {{swagger}} req
+ */
+function clippedImageInternal(req, res, anomaly) {
+    let fwsBoundary = getParam(req.swagger.params['fwsBoundary']);
+    let stateBoundary = getParam(req.swagger.params['stateBoundary']);
+    let layerName = getParam(req.swagger.params['layerName']);
+    let base = getParam(req.swagger.params['base']);
+    let date = getParam(req.swagger.params['date']);
+    let climate = anomaly ? null : getParam(req.swagger.params['climate']);
+    let style = getParam(req.swagger.params['style']);
+    let fileFormat = getParam(req.swagger.params['fileFormat']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
+
+    if (layerName) {
+        climate = getClimateProviderFromLayerName(layerName);
+    }
+
+    let boundaryTable = "";
+    let boundary = "";
+    let boundaryColumn = "";
+    if(fwsBoundary) {
+        if(useBufferedBoundary) {
+            boundaryTable = "fws_boundaries_buff30km";
+        } else {
+            boundaryTable = "fws_boundaries";
+        }
+        boundary = fwsBoundary;
+        boundaryColumn = "orgname";
+    } else if(stateBoundary) {
+        boundaryTable = "state_boundaries";
+        boundary = stateBoundary;
+        boundaryColumn = "name";
+    } else {
+        res.status(500).json({"message": "Invalid Boundary"});
+    }
+
+    if (style) {
+        return agddController.getClippedAgddImage(boundary, boundaryTable, boundaryColumn, moment.utc(date), base, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary, anomaly)
+            .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+            .catch((error) => res.status(500).json({"message": error.message}));
+    } else {
+        return agddController.getClippedAgddRaster(boundary, boundaryTable, boundaryColumn, moment.utc(date), base, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary, anomaly)
+            .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+            .catch((error) => res.status(500).json({"message": error.message}));
+    }
+}
+
 module.exports.areaStats = areaStats;
+module.exports.clippedImage = clippedImage;
+module.exports.anomalyClippedImage = anomalyClippedImage;
 module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

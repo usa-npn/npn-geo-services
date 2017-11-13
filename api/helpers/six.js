@@ -22,96 +22,7 @@ async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, b
     return parseInt(res.rows[0].intersections);
 }
 
-// calls wps to apply sld style to input raster, returns promise to the path of the stylized tiff
-function stylizeFile(filename, rasterpath, fileFormat, layerName){
-    return new Promise((resolve, reject) =>
-    {
-        log.info(`styling ${rasterpath}${filename}`);
-        var postData = `
-<wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
-	<ows:Identifier>ras:StyleCoverage</ows:Identifier>
-	<wps:DataInputs>
-		<wps:Input>
-			<ows:Identifier>coverage</ows:Identifier>
-			<wps:Reference mimeType="image/${fileFormat}" xlink:href="http://data-dev.usanpn.org:3006/${filename}" method="GET"/>
-		</wps:Input>
-		<wps:Input>
-			<ows:Identifier>style</ows:Identifier>
-            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://geoserver-dev.usanpn.org/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
-		</wps:Input>
-	</wps:DataInputs>
-	<wps:ResponseForm>
-		<wps:RawDataOutput mimeType="image/${fileFormat}">
-			<ows:Identifier>result</ows:Identifier>
-		</wps:RawDataOutput>
-	</wps:ResponseForm>
-</wps:Execute>
-            `;
 
-        var username = 'twellman';
-        var password = 'M0EV5xI1dN';
-        var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
-
-        var options = {
-            hostname: 'geoserver-dev.usanpn.org',
-            port: 80,
-            path: '/geoserver/ows?service=WPS&version=1.0.0&request=execute',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/xml',
-                'Content-Length': Buffer.byteLength(postData),
-                'Authorization': auth
-            }
-        };
-
-        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
-        let styledFilePath = rasterpath + styledFileName;
-        var writeStream = fs.createWriteStream(styledFilePath);
-
-        var req = http.request(options, (res) => {
-            res.pipe(writeStream);
-
-            res.on('data', (d) => {
-                console.log('recieving data from geoserver');
-                log.info('recieving data from geoserver');
-                // log.info(d.toString());
-            });
-
-            res.on('end', () => {
-                log.info('finished writing styled raster.');
-
-                if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                        if (err) {
-                            // node couldn't execute the command
-                            reject(err);
-                        }
-
-                        // the *entire* stdout and stderr (buffered)
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                    });
-
-                    resolve(`http://data-dev.usanpn.org:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
-                } else {
-                    resolve(`http://data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
-                }
-
-                //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
-            });
-        });
-
-        req.on('error', (e) => {
-            log.error("there was an error with the geoserver request");
-            log.error(e);
-            console.error(e);
-            reject(e);
-        });
-
-        req.write(postData);
-        req.end();
-    });
-}
 
 // to pick up all pixels inside boundary we need to buffer around the shapefile before doing a clip,
 // the size of this buffer depends on the dataset resolution. This function returns the correct buffer size.
@@ -251,7 +162,7 @@ FROM (
             ? `${boundary.replace(/ /g, '_')}_six_anomaly_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`
             : `${boundary.replace(/ /g, '_')}_six_${plant}_${phenophase}_${date.format('YYYY-MM-DD')}_${d.getTime()}.${fileFormat}`;
         await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
-        response.clippedImage = await stylizeFile(filename, imagePath, fileFormat, layerName);
+        response.clippedImage = await helpers.stylizeFile(filename, imagePath, fileFormat, layerName);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {
