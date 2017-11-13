@@ -127,14 +127,20 @@ function getBufferSizeForTable(rastTable) {
 }
 
 // choose table via selected data and boundary tile intersection (for ncep alaska)
-async function getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase) {
+async function getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly) {
 
-    if (climate === 'PRISM') {
+    let now = moment();
+
+    if (anomaly) {
+        if (date.year() < now.year())
+            return 'six_anomaly_historic';
+        else
+            return 'six_anomaly'
+    } else if (climate === 'PRISM') {
         return 'prism_spring_index';
     } else if (climate === 'BEST') {
         return 'best_spring_index';
     } else if (climate === 'NCEP') {
-        let now = moment();
         if (date.year() < now.year()) {
             return 'ncep_spring_index_historic';
         } else {
@@ -200,16 +206,14 @@ async function checkSixAreaStatsCache(boundary, date, plant, phenophase, climate
 }
 
 // saves to disk and returns path to styled tiff for six clipping
-async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundry, useConvexHullBoundary) {
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
-    let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
+async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundry, useConvexHullBoundary, anomaly) {
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
+    let layerName = anomaly ? `si-x:${phenophase}_anomaly` : `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {
         layerName += '_alaska';
     }
 
     let buffer = getBufferSizeForTable(rastTable);
-
-    let query = {};
 
     query = {text: `
 SELECT
@@ -254,8 +258,8 @@ FROM (
 }
 
 // saves to disk and returns path to unstyled tiff for six clipping
-async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary) {
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+async function getClippedSixRaster(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, fileFormat, useBufferedBoundary, useConvexHullBoundary, anomaly) {
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
     let layerName = `si-x:${plant}_${phenophase}_${climate.toLowerCase()}`;
     if (rastTable.includes('alaska')) {
         layerName += '_alaska';
@@ -370,13 +374,13 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
     return response;
 }
 
-async function getSixAreaStats(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary) {
-    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+async function getSixAreaStats(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary, anomaly) {
+    let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
     let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, false, useConvexHullBoundary);
     return response;
 }
 
-async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary) {
+async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary, anomaly) {
 
     let res = await checkSixAreaStatsCache(boundary, date, plant, phenophase, climate);
     let response = {};
@@ -390,7 +394,7 @@ async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColum
         response.max = res.rows[0].max;
         response.percentComplete = res.rows[0].percent_complete;
     } else {
-        let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase);
+        let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
         response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true, useConvexHullBoundary);
     }
     return response;
