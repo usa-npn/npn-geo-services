@@ -126,7 +126,7 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
 
     let buffer = getBufferSizeForTable(rastTable);
 
-    query = {text: `
+    let query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent

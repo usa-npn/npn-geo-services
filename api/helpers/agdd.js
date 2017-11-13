@@ -16,13 +16,26 @@ function getBufferSizeForTable(rastTable) {
     return buffer;
 }
 
+// returns the number of tiles the boundary intersects
+async function boundaryRasterIntersections(rastTable, boundary, boundaryTable, boundaryColumn, date, base) {
+    const query = {
+        text: `
+        SELECT COUNT(*) AS intersections
+        FROM ${rastTable} r, ${boundaryTable} p 
+        WHERE p.${boundaryColumn} = $1 AND ST_Intersects(r.rast, p.geom) AND r.rast_date = $2 AND r.base = $3 AND r.phenophase = $4`,
+        values: [boundary, date.format('YYYY-MM-DD'), base]
+    };
+    const res = await db.pgPool.query(query);
+    return parseInt(res.rows[0].intersections);
+}
+
 // choose table via selected data and boundary tile intersection (for ncep alaska)
-async function getAppropriateAgddTable(date, climate, boundary, base) {
-    if (climate === 'PRISM') {
-        return `prism_agdd_${date.year()}`;
-    } else if (climate === 'BEST') {
-        return 'no_best_agdd';
-    } else if (climate === 'NCEP') {
+async function getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly) {
+
+    let rasterCellsInBoundary = await boundaryRasterIntersections(`agdd_alaska_${date.year()}`, boundary, boundaryTable, boundaryColumn, date, base);
+    if (rasterCellsInBoundary > 0) {
+        return `agdd_alaska_${date.year()}`;
+    } else {
         return `agdd_${date.year()}`;
     }
 }
@@ -80,7 +93,7 @@ async function getAgddAreaStats(boundary, date, base, climate) {
 
 // saves to disk and returns path to styled tiff for six clipping
 async function getClippedAgddImage(boundary, boundaryTable, boundaryColumn, date, base, climate, fileFormat, useBufferedBoundry, useConvexHullBoundary, anomaly) {
-    let rastTable = 'agdd_2017'; // todo fix this await getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly);
+    let rastTable = await getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly);
     let layerName = anomaly ? `gdd:agdd_anomaly` : `gdd:agdd`;
     if (rastTable.includes('alaska')) {
         layerName += '_alaska';
@@ -91,7 +104,7 @@ async function getClippedAgddImage(boundary, boundaryTable, boundaryColumn, date
 
     let buffer = getBufferSizeForTable(rastTable);
 
-    query = {text: `
+    let query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent

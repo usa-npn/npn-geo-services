@@ -2,15 +2,15 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let agddController = require('../helpers/agdd.js');
 
-function getClimateProviderFromLayerName(layerName) {
-    if (layerName.includes('ncep')) {
-        return 'NCEP';
-    } else if (layerName.includes('prism')) {
-        return 'PRISM';
-    } else {
-        return null;
-    }
-}
+// function getClimateProviderFromLayerName(layerName) {
+//     if (layerName.includes('ncep')) {
+//         return 'NCEP';
+//     } else if (layerName.includes('prism')) {
+//         return 'PRISM';
+//     } else {
+//         return null;
+//     }
+// }
 
 function getParam(param) {
     if (param != null) {
@@ -84,7 +84,7 @@ function clippedImageInternal(req, res, anomaly) {
     let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
 
     if (layerName) {
-        climate = getClimateProviderFromLayerName(layerName);
+        climate = 'NCEP';//getClimateProviderFromLayerName(layerName);
     }
 
     let boundaryTable = "";
