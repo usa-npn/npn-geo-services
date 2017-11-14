@@ -3954,7 +3954,7 @@ paths:
                 $ref: '#/definitions/ErrorResponse'
 
 
-  /si-x/area/statistics:
+  /agdd/area/statistics:
       x-swagger-router-controller: agdd
       get:
         summary: finds agdd statistics over the selected boundary
