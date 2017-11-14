@@ -3954,24 +3954,93 @@ paths:
                 $ref: '#/definitions/ErrorResponse'
 
 
-  /agdd/area/statistics:
+  /si-x/area/statistics:
       x-swagger-router-controller: agdd
       get:
-        summary: finds accumulated growing degree day statistics over the selected boundary
-        description: Finds accumulated growing degree day statistics for a specified base, and date. Also returns paths to download the boundary shapefile and the clipped raster used to generate the statistics.
+        summary: finds agdd statistics over the selected boundary
+        description: Finds agdd statistics for a specified base and date. Also returns paths to download the boundary shapefile and the clipped raster used to generate the statistics.
         tags:
           - accumlated growing degree days
         operationId: areaStats
         parameters:
+                - name: layerName
+                  in: query
+                  description: the agdd layer to clip from
+                  type: string
+                  enum:
+                    - gdd:agdd
+                    - gdd:agdd_alaska
                 - name: base
                   in: query
-                  description: the base in fehrenheit (either 32 or 50)
-                  required: true
-                  type: integer
-                - name: boundary
+                  description: the agdd base
+                  type: string
+                  enum:
+                    - 32
+                    - 50
+                - name: stateBoundary
                   in: query
-                  description: the boundary to average over
-                  required: true
+                  description: the state boundary to average over
+                  type: string
+                  enum:
+                    - Alabama
+                    - Alaska
+                    - American Samoa
+                    - Arizona
+                    - Arkansas
+                    - California
+                    - Colorado
+                    - Commonwealth of the Northern Mariana Islands
+                    - Connecticut
+                    - Delaware
+                    - District of Columbia
+                    - Florida
+                    - Georgia
+                    - Guam
+                    - Hawaii
+                    - Idaho
+                    - Illinois
+                    - Indiana
+                    - Iowa
+                    - Kansas
+                    - Kentucky
+                    - Louisiana
+                    - Maine
+                    - Maryland
+                    - Massachusetts
+                    - Michigan
+                    - Minnesota
+                    - Mississippi
+                    - Missouri
+                    - Montana
+                    - Nebraska
+                    - Nevada
+                    - New Hampshire
+                    - New Jersey
+                    - New Mexico
+                    - New York
+                    - North Carolina
+                    - North Dakota
+                    - Ohio
+                    - Oklahoma
+                    - Oregon
+                    - Pennsylvania
+                    - Puerto Rico
+                    - Rhode Island
+                    - South Carolina
+                    - South Dakota
+                    - Tennessee
+                    - Texas
+                    - United States Virgin Islands
+                    - Utah
+                    - Vermont
+                    - Virginia
+                    - Washington
+                    - West Virginia
+                    - Wisconsin
+                    - Wyoming
+                - name: fwsBoundary
+                  in: query
+                  description: the fws boundary to average over
                   type: string
                   enum:
                     - AGASSIZ NATIONAL WILDLIFE REFUGE
@@ -4496,23 +4565,27 @@ paths:
                   type: boolean
                 - name: climate
                   in: query
-                  description: the backing climate data provider. Available from 2016 on.
-                  required: true
+                  description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
                   type: string
                   enum:
                     - NCEP
                     - PRISM
                 - name: date
                   in: query
-                  description: the date to average over for example 2017-08-01.
+                  description: the date to average over for example 2017-08-01. For historic yearly data specify January 1st. ie. 2013-01-01
                   required: true
                   type: string
                   format: date
+                - name: useCache
+                  in: query
+                  description: whether to try and pull results from the cache table.
+                  required: true
+                  type: boolean
         responses:
           '200':
             description: successful operation
             schema:
-              $ref: '#/definitions/AgddStatsResponse'
+              $ref: '#/definitions/SixStatsResponse'
           '500':
             description: internal server error
             schema:
