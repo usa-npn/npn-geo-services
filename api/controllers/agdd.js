@@ -20,15 +20,70 @@ function getParam(param) {
     }
 }
 
-function areaStats(req, res) {
-    let boundary = req.swagger.params['boundary'].value;
-    let date = req.swagger.params['date'].value;
-    let base = req.swagger.params['base'].value;
-    let climate = req.swagger.params['climate'].value;
 
-    return agddController.getAgddAreaStats(boundary, moment.utc(date), base, climate)
-        .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
-        .catch((error) => res.status(500).json({"message": error.message}));
+/**
+ * @param {{swagger}} req
+ */
+function areaStats(req, res) {
+    let anomaly = false;
+    return areaStatsInternal(req, res, anomaly);
+}
+
+/**
+ * @param {{swagger}} req
+ */
+function anomalyAreaStats(req, res) {
+    let anomaly = true;
+    return areaStatsInternal(req, res, anomaly);
+}
+
+function areaStatsInternal(req, res, anomaly) {
+    let fwsBoundary = getParam(req.swagger.params['fwsBoundary']);
+    let stateBoundary = getParam(req.swagger.params['stateBoundary']);
+    let layerName = getParam(req.swagger.params['layerName']);
+    let base = getParam(req.swagger.params['base']);
+    let date = getParam(req.swagger.params['date']);
+    let climate = anomaly ? null : getParam(req.swagger.params['climate']);
+    let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
+    let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
+    let useCache = getParam(req.swagger.params['useCache']);
+
+    // if (layerName) {
+    //     phenophase = getPhenophaseFromLayerName(layerName);
+    //     if (!anomaly) {
+    //         plant = getPlantFromLayerName(layerName);
+    //         climate = getClimateProviderFromLayerName(layerName);
+    //     }
+    // }
+
+    let boundaryTable = "";
+    let boundary = "";
+    let boundaryColumn = "";
+    if(fwsBoundary) {
+        if(useBufferedBoundary) {
+            boundaryTable = "fws_boundaries_buff30km";
+        } else {
+            boundaryTable = "fws_boundaries";
+        }
+        boundary = fwsBoundary;
+        boundaryColumn = "orgname";
+    } else if(stateBoundary) {
+        boundaryTable = "state_boundaries";
+        boundary = stateBoundary;
+        boundaryColumn = "name";
+    } else {
+        res.status(500).json({"message": "Invalid Boundary"});
+    }
+
+    if (useCache) {
+        return agddController.getAgddAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment.utc(date), base, climate, useConvexHullBoundary, anomaly)
+            .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+            .catch((error) => res.status(500).json({"message": error.message}));
+    } else {
+        return agddController.getAgddAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(date), base, climate, useConvexHullBoundary, anomaly)
+            .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+            .catch((error) => res.status(500).json({"message": error.message}));
+    }
 }
 
 async function areaStatsTimeSeries(req, res) {
@@ -118,6 +173,7 @@ function clippedImageInternal(req, res, anomaly) {
 }
 
 module.exports.areaStats = areaStats;
+module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.anomalyClippedImage = anomalyClippedImage;
 module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

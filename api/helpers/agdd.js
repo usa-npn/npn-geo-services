@@ -42,53 +42,128 @@ async function getAppropriateAgddTable(date, climate, boundary, boundaryTable, b
     }
 }
 
-async function getPostgisClippedRasterAgddStats(rastTable, boundary, date, base) {
+
+// gets si-x stats for functions params, if saveToCache is true, also saves result to the cache table
+async function getPostgisClippedRasterAgddStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, base, saveToCache, useConvexHullBoundary) {
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
-        SELECT
-    (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), true)), true)).*,
-    ST_Union(foo.boundary) AS shapefile
-    FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = $2) as foo
-    INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
-    AND r.rast_date = $3
-    AND r.base = $4
-    AND r.scale='fahrenheit';`,
+        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true)).*,
+        ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true) AS data_in_boundary,
+        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '[-9999-0):8888,[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
+        ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), false) AS total_pixels_in_and_out_of_boundary
+        FROM (
+            SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
+            ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+            FROM ${boundaryTable} p
+            WHERE p.${boundaryColumn} = $2
+        ) as foo
+        INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+        AND r.rast_date = $3
+        AND r.base = $4`,
         values: [buffer, boundary, date.format('YYYY-MM-DD'), base]
     };
+    console.log(query.text);
 
-    // let query = `SELECT
-    // ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
-    // (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
-    // ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true))) AS tiffy,
-    // ST_Union(foo.boundary) AS shapefile
-    // FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
-    // INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
-    // AND r.rast_date = '${date.format('YYYY-MM-DD')}'
-    // AND r.base='${base}'
-    // AND r.scale='fahrenheit';`;
-
-    console.log(query);
-    const res = await pgPool.query(query);
+    const res = await db.pgPool.query(query);
 
     let response = {date: date.format('YYYY-MM-DD')};
     if (res.rows.length > 0) {
+        response.count = Number(res.rows[0].count);
+        response.sum = res.rows[0].sum;
+        response.mean = res.rows[0].mean;
+        response.stddev = res.rows[0].stddev;
+        response.min = res.rows[0].min;
+        response.max = res.rows[0].max;
+        // response.data_in_boundary = Number(res.rows[0].data_in_boundary);
+        // response.nodata_in_boundary = Number(res.rows[0].nodata_in_boundary);
+        // response.total_pixels_in_and_out_of_boundary = Number(res.rows[0].total_pixels_in_and_out_of_boundary);
+        response.percentComplete = Number(res.rows[0].count) / (Number(res.rows[0].nodata_in_boundary) + Number(res.rows[0].data_in_boundary)) * 100;
+
+        // save the results to the caching table
+        // if (saveToCache) {
+        //     await saveAgddAreaStatsToCache(boundary, plant, phenophase, climate, date, response.count, response.mean, response.stddev, response.min, response.max, response.percentComplete);
+        // }
+    }
+    return response;
+}
+
+
+// async function getPostgisClippedRasterAgddStats(rastTable, boundary, date, base) {
+//     let buffer = getBufferSizeForTable(rastTable);
+//
+//     const query = {
+//         text: `
+//         SELECT
+//     (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, $1), true)), true)).*,
+//     ST_Union(foo.boundary) AS shapefile
+//     FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = $2) as foo
+//     INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+//     AND r.rast_date = $3
+//     AND r.base = $4
+//     AND r.scale='fahrenheit';`,
+//         values: [buffer, boundary, date.format('YYYY-MM-DD'), base]
+//     };
+//
+//     // let query = `SELECT
+//     // ST_AsGeoJSON(ST_Union(foo.boundary)) as geojson,
+//     // (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true)), true)).*,
+//     // ST_AsTIFF(ST_Union(ST_Clip(r.rast, ST_Buffer(foo.boundary, ${buffer}), true))) AS tiffy,
+//     // ST_Union(foo.boundary) AS shapefile
+//     // FROM (SELECT p.gid as gid, p.geom AS boundary FROM fws_boundaries p WHERE p.orgname = '${boundary}') as foo
+//     // INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.boundary)
+//     // AND r.rast_date = '${date.format('YYYY-MM-DD')}'
+//     // AND r.base='${base}'
+//     // AND r.scale='fahrenheit';`;
+//
+//     console.log(query);
+//     const res = await pgPool.query(query);
+//
+//     let response = {date: date.format('YYYY-MM-DD')};
+//     if (res.rows.length > 0) {
+//         response.count = res.rows[0].count;
+//         response.sum = res.rows[0].sum;
+//         response.mean = res.rows[0].mean;
+//         response.stddev = res.rows[0].stddev;
+//         response.min = res.rows[0].min;
+//         response.max = res.rows[0].max;
+//         response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
+//     }
+//     return response;
+// }
+
+// async function getAgddAreaStats(boundary, date, base, climate) {
+//     let dateString = date.toISOString().split('T')[0];
+//     let rastTable = await getAppropriateAgddTable(date, climate, boundary, dateString, base);
+//     let response = await getPostgisClippedRasterAgddStats(rastTable, boundary, dateString, base);
+//     return response;
+// }
+
+
+async function getAgddAreaStats(boundary, boundaryTable, boundaryColumn, date, base, climate, useConvexHullBoundary, anomaly) {
+    let rastTable = await getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly);
+    let response = await getPostgisClippedRasterAgddStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, base, false, useConvexHullBoundary);
+    return response;
+}
+
+async function getAgddAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, date, base, climate, useConvexHullBoundary, anomaly) {
+
+    let res = await checkAgddAreaStatsCache(boundary, date, base, climate);
+    let response = {};
+    if (res.rows.length > 0) {
+        response.date = date.format('YYYY-MM-DD');
         response.count = res.rows[0].count;
         response.sum = res.rows[0].sum;
         response.mean = res.rows[0].mean;
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
-        response.zippedShapeFile = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:fws_boundaries&CQL_FILTER=orgname='${boundary}'&maxFeatures=50&outputFormat=SHAPE-ZIP`;
+        response.percentComplete = res.rows[0].percent_complete;
+    } else {
+        let rastTable = await getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly);
+        response = await getPostgisClippedRasterAgddStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, base, true, useConvexHullBoundary);
     }
-    return response;
-}
-
-async function getAgddAreaStats(boundary, date, base, climate) {
-    let dateString = date.toISOString().split('T')[0];
-    let rastTable = await getAppropriateAgddTable(date, climate, boundary, dateString, base);
-    let response = await getPostgisClippedRasterAgddStats(rastTable, boundary, dateString, base);
     return response;
 }
 
@@ -157,3 +232,4 @@ async function getClippedAgddRaster() {
 module.exports.getClippedAgddImage = getClippedAgddImage;
 module.exports.getClippedAgddRaster = getClippedAgddRaster;
 module.exports.getAgddAreaStats = getAgddAreaStats;
+module.exports.getAgddAreaStatsWithCaching = getAgddAreaStatsWithCaching;
