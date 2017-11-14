@@ -4565,16 +4565,9 @@ paths:
                   in: query
                   description: for FWS boundaries select true to clip by the convex hull of the boundary
                   type: boolean
-                - name: climate
-                  in: query
-                  description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
-                  type: string
-                  enum:
-                    - NCEP
-                    - PRISM
                 - name: date
                   in: query
-                  description: the date to average over for example 2017-08-01. For historic yearly data specify January 1st. ie. 2013-01-01
+                  description: the date to average over for example 2017-08-01.
                   required: true
                   type: string
                   format: date
@@ -5203,16 +5196,9 @@ paths:
                     in: query
                     description: for FWS boundaries select true to clip by the convex hull of the boundary
                     type: boolean
-                  - name: climate
-                    in: query
-                    description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
-                    type: string
-                    enum:
-                      - NCEP
-                      - PRISM
                   - name: date
                     in: query
-                    description: the date to average over for example 2017-08-01. For historic yearly data specify January 1st. ie. 2013-01-01
+                    description: the date to average over for example 2017-08-01.
                     required: true
                     type: string
                     format: date
@@ -5843,16 +5829,9 @@ paths:
                   in: query
                   description: for FWS boundaries select true to clip by the convex hull of the boundary
                   type: boolean
-                - name: climate
-                  in: query
-                  description: the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year, BEST available from 1880-2013.
-                  type: string
-                  enum:
-                    - NCEP
-                    - PRISM
                 - name: date
                   in: query
-                  description: the date to average over for example 2017-08-01. For historic yearly data specify January 1st. ie. 2013-01-01
+                  description: the date to average over for example 2017-08-01.
                   required: true
                   type: string
                   format: date
@@ -6491,7 +6470,7 @@ paths:
                   type: boolean
                 - name: date
                   in: query
-                  description: the date to average over for example 2017-08-01. For historic yearly data specify January 1st. ie. 2013-01-01
+                  description: the date to average over for example 2017-08-01.
                   required: true
                   type: string
                   format: date

@@ -2,15 +2,13 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let agddController = require('../helpers/agdd.js');
 
-// function getClimateProviderFromLayerName(layerName) {
-//     if (layerName.includes('ncep')) {
-//         return 'NCEP';
-//     } else if (layerName.includes('prism')) {
-//         return 'PRISM';
-//     } else {
-//         return null;
-//     }
-// }
+function getBaseFromLayerName(layerName) {
+    if (layerName.includes('50')) {
+        return 50;
+    } else {
+        return 32;
+    }
+}
 
 function getParam(param) {
     if (param != null) {
@@ -43,18 +41,14 @@ function areaStatsInternal(req, res, anomaly) {
     let layerName = getParam(req.swagger.params['layerName']);
     let base = getParam(req.swagger.params['base']);
     let date = getParam(req.swagger.params['date']);
-    let climate = anomaly ? null : getParam(req.swagger.params['climate']);
+    let climate = anomaly ? null : 'NCEP';
     let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
     let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
     let useCache = getParam(req.swagger.params['useCache']);
 
-    // if (layerName) {
-    //     phenophase = getPhenophaseFromLayerName(layerName);
-    //     if (!anomaly) {
-    //         plant = getPlantFromLayerName(layerName);
-    //         climate = getClimateProviderFromLayerName(layerName);
-    //     }
-    // }
+    if (layerName) {
+        base = getBaseFromLayerName(layerName);
+    }
 
     let boundaryTable = "";
     let boundary = "";
@@ -86,26 +80,26 @@ function areaStatsInternal(req, res, anomaly) {
     }
 }
 
-async function areaStatsTimeSeries(req, res) {
-    let boundary = req.swagger.params['boundary'].value;
-    let startYear = req.swagger.params['yearStart'].value;
-    let endYear = req.swagger.params['yearEnd'].value;
-    let base = req.swagger.params['base'].value;
-    let climate = req.swagger.params['climate'].value;
-
-    let yearRange = [...Array(endYear - startYear + 1).keys()].map(i => startYear + i);
-
-    try {
-        let promiseResults = await Promise.all(yearRange.map(async (year) => {
-            let resultForYear = await agddController.getAgddAreaStats(boundary, moment.utc(new Date(year, 0, 1)), base, climate);
-            resultForYear.year = year;
-            return resultForYear;
-        }));
-        return res.status(200).send({timeSeries: promiseResults});
-    } catch(error) {
-        res.status(500).json({"message": error.message});
-    }
-}
+// async function areaStatsTimeSeries(req, res) {
+//     let boundary = req.swagger.params['boundary'].value;
+//     let startYear = req.swagger.params['yearStart'].value;
+//     let endYear = req.swagger.params['yearEnd'].value;
+//     let base = req.swagger.params['base'].value;
+//     let climate = req.swagger.params['climate'].value;
+//
+//     let yearRange = [...Array(endYear - startYear + 1).keys()].map(i => startYear + i);
+//
+//     try {
+//         let promiseResults = await Promise.all(yearRange.map(async (year) => {
+//             let resultForYear = await agddController.getAgddAreaStats(boundary, moment.utc(new Date(year, 0, 1)), base, climate);
+//             resultForYear.year = year;
+//             return resultForYear;
+//         }));
+//         return res.status(200).send({timeSeries: promiseResults});
+//     } catch(error) {
+//         res.status(500).json({"message": error.message});
+//     }
+// }
 
 /**
  * @param {{swagger}} req
@@ -132,14 +126,14 @@ function clippedImageInternal(req, res, anomaly) {
     let layerName = getParam(req.swagger.params['layerName']);
     let base = getParam(req.swagger.params['base']);
     let date = getParam(req.swagger.params['date']);
-    let climate = anomaly ? null : getParam(req.swagger.params['climate']);
+    let climate = anomaly ? null : 'NCEP';
     let style = getParam(req.swagger.params['style']);
     let fileFormat = getParam(req.swagger.params['fileFormat']);
     let useBufferedBoundary = getParam(req.swagger.params['useBufferedBoundary']) || false;
     let useConvexHullBoundary = getParam(req.swagger.params['useConvexHullBoundary']) || false;
 
     if (layerName) {
-        climate = 'NCEP';//getClimateProviderFromLayerName(layerName);
+        base = getBaseFromLayerName(layerName);
     }
 
     let boundaryTable = "";
@@ -176,4 +170,4 @@ module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.anomalyClippedImage = anomalyClippedImage;
-module.exports.areaStatsTimeSeries = areaStatsTimeSeries;
+// module.exports.areaStatsTimeSeries = areaStatsTimeSeries;
