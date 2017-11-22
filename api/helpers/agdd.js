@@ -49,10 +49,7 @@ async function getPostgisClippedRasterAgddStats(climate, rastTable, boundary, bo
 
     const query = {
         text: `
-        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true)).*,
-        ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true) AS data_in_boundary,
-        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '[-9999-0):8888,[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
-        ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), false) AS total_pixels_in_and_out_of_boundary
+        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true)).*
         FROM (
             SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
             ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
@@ -76,10 +73,6 @@ async function getPostgisClippedRasterAgddStats(climate, rastTable, boundary, bo
         response.stddev = res.rows[0].stddev;
         response.min = res.rows[0].min;
         response.max = res.rows[0].max;
-        // response.data_in_boundary = Number(res.rows[0].data_in_boundary);
-        // response.nodata_in_boundary = Number(res.rows[0].nodata_in_boundary);
-        // response.total_pixels_in_and_out_of_boundary = Number(res.rows[0].total_pixels_in_and_out_of_boundary);
-        response.percentComplete = Number(res.rows[0].count) / (Number(res.rows[0].nodata_in_boundary) + Number(res.rows[0].data_in_boundary)) * 100;
 
         // save the results to the caching table
         // if (saveToCache) {
