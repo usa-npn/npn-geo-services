@@ -241,14 +241,14 @@ FROM (
 }
 
 // gets si-x stats for functions params, if saveToCache is true, also saves result to the cache table
-async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, saveToCache, useConvexHullBoundary) {
+async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, saveToCache, useConvexHullBoundary, anomaly) {
     let buffer = getBufferSizeForTable(rastTable);
 
     const query = {
         text: `
         SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true)).*,
         ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true) AS data_in_boundary,
-        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '[-9999-0):8888,[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
+        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '${anomaly ? '-9999:8888' : '[-9999-0):8888'},[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
         ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), false) AS total_pixels_in_and_out_of_boundary
         FROM (
             SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
@@ -289,7 +289,7 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
 
 async function getSixAreaStats(boundary, boundaryTable, boundaryColumn, date, plant, phenophase, climate, useConvexHullBoundary, anomaly) {
     let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
-    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, false, useConvexHullBoundary);
+    let response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, false, useConvexHullBoundary, anomaly);
     return response;
 }
 
@@ -308,7 +308,7 @@ async function getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColum
         response.percentComplete = res.rows[0].percent_complete;
     } else {
         let rastTable = await getAppropriateSixTable(date, climate, boundary, boundaryTable, boundaryColumn, plant, phenophase, anomaly);
-        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true, useConvexHullBoundary);
+        response = await getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, true, useConvexHullBoundary, anomaly);
     }
     return response;
 }
