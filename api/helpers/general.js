@@ -72,7 +72,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 	<wps:DataInputs>
 		<wps:Input>
 			<ows:Identifier>coverage</ows:Identifier>
-			<wps:Reference mimeType="image/${fileFormat}" xlink:href="http://data-dev.usanpn.org:3006/${filename}" method="GET"/>
+			<wps:Reference mimeType="image/${fileFormat}" xlink:href="http://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}" method="GET"/>
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
@@ -131,9 +131,9 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                         console.log(`stderr: ${stderr}`);
                     });
 
-                    resolve(`http://data-dev.usanpn.org:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                    resolve(`http://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
                 } else {
-                    resolve(`http://data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+                    resolve(`http://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
                 }
 
                 //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
