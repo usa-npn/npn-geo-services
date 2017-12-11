@@ -37,7 +37,7 @@ function boundary(req, res) {
         res.status(500).json({"message": "Invalid Format"});
     }
 
-    let boundaryPath = `http://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${layer}&CQL_FILTER=${boundaryColumn}='${boundary}'&outputFormat=${outputFormat}`;
+    let boundaryPath = `http://${process.env.GEOSERVER_HOST}/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${layer}&CQL_FILTER=${boundaryColumn}='${boundary}'&outputFormat=${outputFormat}`;
     res.status(200).send({'boundary' : boundaryPath});
 }
 

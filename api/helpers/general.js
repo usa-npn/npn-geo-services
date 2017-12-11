@@ -76,7 +76,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
-            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://geoserver-dev.usanpn.org/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
+            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://${process.env.GEOSERVER_HOST}/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>

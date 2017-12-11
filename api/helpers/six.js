@@ -224,11 +224,11 @@ FROM (
                 console.log(`stderr: ${stderr}`);
             });
 
-            response.clippedImage = `http://data-dev.usanpn.org:${process.env.PORT}/` + filename.replace('.tiff', '.png');
+            response.clippedImage = `http://${process.env.SERVICES_HOST}:${process.env.PORT}/` + filename.replace('.tiff', '.png');
             response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
             return response;
         } else {
-            response.clippedImage = `http://data-dev.usanpn.org:${process.env.PORT}/` + filename;
+            response.clippedImage = `http://${process.env.SERVICES_HOST}:${process.env.PORT}/` + filename;
             response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
             response.bbox = bbox;
             return response;
