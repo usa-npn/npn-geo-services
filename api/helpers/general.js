@@ -87,13 +87,13 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 </wps:Execute>
             `;
 
-        var username = 'twellman';
-        var password = 'M0EV5xI1dN';
+        var username = `${process.env.GEOSERVER_USER}`;
+        var password = `${process.env.GEOSERVER_PASSWORD}`;
         var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
 
         var options = {
-            hostname: 'geoserver-dev.usanpn.org',
-            port: 80,
+            hostname: `${process.env.GEOSERVER_HOST}`,
+            port: `${process.env.GEOSERVER_PORT}`,
             path: '/geoserver/ows?service=WPS&version=1.0.0&request=execute',
             method: 'POST',
             headers: {
