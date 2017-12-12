@@ -1,8 +1,8 @@
 .idea
 node_modules
 logs/**
+static/rasters/**
 !.gitkeep
 !readme
 config/default.json
 npm-debug.log
-static/rasters/**
