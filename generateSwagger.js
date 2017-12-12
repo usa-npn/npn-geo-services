@@ -813,7 +813,7 @@ function sortObject(o) {
 }
 
 async function generate() {
-    let stateBoundaries = await getStateBoundaryNames();
+    // let stateBoundaries = await getStateBoundaryNames();
 
     // add definitions
 
