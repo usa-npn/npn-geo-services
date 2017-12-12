@@ -29,22 +29,17 @@ The command installs all dependencies listed in the package.json file into a fol
 Configuration is managed through environment variables. The following need to be set:
 
 ```
-NODE_ENV=development
-DEV_USANPN_HOST=localhost
-DEV_USANPN_USER=your_usanpn2_db_user
-DEV_USANPN_PASSWORD=your_usanpn2_db_password
-DEV_USANPN_DATABASE=usanpn2
-DEV_DRUPAL_HOST=localhost
-DEV_DRUPAL_USER=your_drupal_db_user
-DEV_DRUPAL_PASSWORD=your_drupal_db_password
-DEV_DRUPAL_DATABASE=drupal5
-SERVICES_HOST=localhost
+SERVICES_HOST=host_where_node_is_running
 PORT=port_for_services_to_listen_on
 PGPORT=postgres_port
 PGUSER=postgres_user
 PGPASSWORD=postgres_password
 PGDATABASE=postgres_database
 PGHOST=postgres_host
+GEOSERVER_HOST=geoserver_host
+GEOSERVER_USER=geoserver_wps_user
+GEOSERVER_PASSWORD=geoserver_wps_user_password
+GEOSERVER_PORT=geoserver_port
 ```
 
 Currently this project is pure js, no transpiling is required.
