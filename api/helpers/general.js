@@ -72,11 +72,11 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 	<wps:DataInputs>
 		<wps:Input>
 			<ows:Identifier>coverage</ows:Identifier>
-			<wps:Reference mimeType="image/${fileFormat}" xlink:href="http://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}" method="GET"/>
+			<wps:Reference mimeType="image/${fileFormat}" xlink:href="${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}" method="GET"/>
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
-            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://${process.env.GEOSERVER_HOST}/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
+            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="${process.env.PROTOCOL}://${process.env.GEOSERVER_HOST}/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>
@@ -131,9 +131,9 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                         console.log(`stderr: ${stderr}`);
                     });
 
-                    resolve(`http://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
                 } else {
-                    resolve(`http://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
                 }
 
                 //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
