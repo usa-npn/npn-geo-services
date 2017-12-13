@@ -2,6 +2,7 @@ var fs = require('fs');
 var os = require('os');
 let log = require('../../logger.js');
 const http = require('http');
+const https = require('https');
 const { exec } = require('child_process');
 const { spawnSync } = require('child_process');
 
@@ -107,48 +108,95 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 
-        var req = http.request(options, (res) => {
-            res.pipe(writeStream);
+        if(process.env.PROTOCOL === 'https') {
+            let req = https.request(options, (res) => {
+                res.pipe(writeStream);
 
-            res.on('data', (d) => {
-                console.log('recieving data from geoserver');
-                log.info('recieving data from geoserver');
-                // log.info(d.toString());
+                res.on('data', (d) => {
+                    console.log('recieving data from geoserver');
+                    log.info('recieving data from geoserver');
+                    // log.info(d.toString());
+                });
+
+                res.on('end', () => {
+                    log.info('finished writing styled raster.');
+
+                    if (fileFormat === 'png') {
+                        exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                            if (err) {
+                                // node couldn't execute the command
+                                reject(err);
+                            }
+
+                            // the *entire* stdout and stderr (buffered)
+                            console.log(`stdout: ${stdout}`);
+                            console.log(`stderr: ${stderr}`);
+                        });
+
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                    } else {
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
+                    }
+
+                    //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+                });
             });
 
-            res.on('end', () => {
-                log.info('finished writing styled raster.');
-
-                if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                        if (err) {
-                            // node couldn't execute the command
-                            reject(err);
-                        }
-
-                        // the *entire* stdout and stderr (buffered)
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                    });
-
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
-                } else {
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
-                }
-
-                //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+            req.on('error', (e) => {
+                log.error("there was an error with the geoserver request");
+                log.error(e);
+                console.error(e);
+                reject(e);
             });
-        });
 
-        req.on('error', (e) => {
-            log.error("there was an error with the geoserver request");
-            log.error(e);
-            console.error(e);
-            reject(e);
-        });
+            req.write(postData);
+            req.end();
+        } else {
+            let req = http.request(options, (res) => {
+                res.pipe(writeStream);
 
-        req.write(postData);
-        req.end();
+                res.on('data', (d) => {
+                    console.log('recieving data from geoserver');
+                    log.info('recieving data from geoserver');
+                    // log.info(d.toString());
+                });
+
+                res.on('end', () => {
+                    log.info('finished writing styled raster.');
+
+                    if (fileFormat === 'png') {
+                        exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                            if (err) {
+                                // node couldn't execute the command
+                                reject(err);
+                            }
+
+                            // the *entire* stdout and stderr (buffered)
+                            console.log(`stdout: ${stdout}`);
+                            console.log(`stderr: ${stderr}`);
+                        });
+
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                    } else {
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
+                    }
+
+                    //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+                });
+            });
+
+            req.on('error', (e) => {
+                log.error("there was an error with the geoserver request");
+                log.error(e);
+                console.error(e);
+                reject(e);
+            });
+
+            req.write(postData);
+            req.end();
+        }
+
+
     });
 }
 
