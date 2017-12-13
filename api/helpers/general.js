@@ -67,17 +67,24 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
+        let unstyledFileRef = "";
+        if (process.env.PROTOCOL === 'https') {
+            unstyledFileRef = `http://www.usanpn.org/files/gridded/cliped_images/${filename}`;
+        } else {
+            unstyledFileRef = `http://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}`;
+        }
+
         var postData = `
 <wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
 	<ows:Identifier>ras:StyleCoverage</ows:Identifier>
 	<wps:DataInputs>
 		<wps:Input>
 			<ows:Identifier>coverage</ows:Identifier>
-			<wps:Reference mimeType="image/${fileFormat}" xlink:href="${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}" method="GET"/>
+			<wps:Reference mimeType="image/${fileFormat}" xlink:href="${unstyledFileRef}" method="GET"/>
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
-            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="${process.env.PROTOCOL}://${process.env.GEOSERVER_HOST}/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
+            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://${process.env.GEOSERVER_HOST}/geoserver/wms?request=GetStyles&amp;layers=${layerName}&amp;service=wms&amp;version=1.1.1" method="GET"/>
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>
@@ -108,39 +115,38 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 
-        if(process.env.PROTOCOL === 'https') {
-            let req = https.request(options, (res) => {
-                res.pipe(writeStream);
+        let req = http.request(options, (res) => {
+            res.pipe(writeStream);
 
-                res.on('data', (d) => {
-                    console.log('recieving data from geoserver');
-                    log.info('recieving data from geoserver');
-                    log.info(d.toString());
-                });
-
-                res.on('end', () => {
-                    log.info('finished writing styled raster.');
-
-                    if (fileFormat === 'png') {
-                        exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                            if (err) {
-                                // node couldn't execute the command
-                                reject(err);
-                            }
-
-                            // the *entire* stdout and stderr (buffered)
-                            console.log(`stdout: ${stdout}`);
-                            console.log(`stderr: ${stderr}`);
-                        });
-
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
-                    } else {
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
-                    }
-
-                    //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
-                });
+            res.on('data', (d) => {
+                console.log('recieving data from geoserver');
+                log.info('recieving data from geoserver');
+                log.info(d.toString());
             });
+
+            res.on('end', () => {
+                log.info('finished writing styled raster.');
+
+                if (fileFormat === 'png') {
+                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                        if (err) {
+                            // node couldn't execute the command
+                            reject(err);
+                        }
+
+                        // the *entire* stdout and stderr (buffered)
+                        console.log(`stdout: ${stdout}`);
+                        console.log(`stderr: ${stderr}`);
+                    });
+
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                } else {
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
+                }
+
+                //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+            });
+        });
 
             req.on('error', (e) => {
                 log.error("there was an error with the geoserver request");
@@ -151,51 +157,6 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 
             req.write(postData);
             req.end();
-        } else {
-            let req = http.request(options, (res) => {
-                res.pipe(writeStream);
-
-                res.on('data', (d) => {
-                    console.log('recieving data from geoserver');
-                    log.info('recieving data from geoserver');
-                    log.info(d.toString());
-                });
-
-                res.on('end', () => {
-                    log.info('finished writing styled raster.');
-
-                    if (fileFormat === 'png') {
-                        exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                            if (err) {
-                                // node couldn't execute the command
-                                reject(err);
-                            }
-
-                            // the *entire* stdout and stderr (buffered)
-                            console.log(`stdout: ${stdout}`);
-                            console.log(`stderr: ${stderr}`);
-                        });
-
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
-                    } else {
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
-                    }
-
-                    //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
-                });
-            });
-
-            req.on('error', (e) => {
-                log.error("there was an error with the geoserver request");
-                log.error(e);
-                console.error(e);
-                reject(e);
-            });
-
-            req.write(postData);
-            req.end();
-        }
-
 
     });
 }
