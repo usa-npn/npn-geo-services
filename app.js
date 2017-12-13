@@ -7,8 +7,28 @@ var path = require("path");
 var morgan = require('morgan');
 let log = require('./logger.js');
 let generateSwagger = require('./generateSwagger.js');
+let http = require("http");
+let https = require("https");
 
 generateSwagger.generate().then(() => {
+
+
+    function getServer() {
+        if (process.env.PROTOCOL === "https" ) {
+            let certificate = fs.readFileSync(process.env.SSL_CERT);
+            let privateKey = fs.readFileSync(process.env.SSL_KEY);
+            log.info("creating https server");
+            let server = https.createServer({key: privateKey, cert: certificate}, app);
+            server.setTimeout(0);
+            return server;
+        }
+        else {
+            log.info("creating http server");
+            let server = http.createServer(app);
+            server.setTimeout(0);
+            return server;
+        }
+    }
 
     var app = express();
 
@@ -57,11 +77,20 @@ generateSwagger.generate().then(() => {
         // install middleware
         swaggerExpress.register(app);
 
-        //todo 3006 is here because 'swagger project test' doesn't pick up the env port
-        app.listen(process.env.PORT || 3006);
+        let server = getServer();
 
-        log.info('listening on port 3006');
-        log.error('this is a test error!');
+        server.listen(process.env.PORT || 3006, () => {
+            log.info("Server listening on port " + (process.env.PORT || 3006));
+        });
+
+        // // install middleware
+        // swaggerExpress.register(app);
+        //
+        // //todo 3006 is here because 'swagger project test' doesn't pick up the env port
+        // app.listen(process.env.PORT || 3006);
+        //
+        // log.info('listening on port 3006');
+        // log.error('this is a test error!');
 
         setInterval(function() {
             console.log('HeapUsed in MB: ' + process.memoryUsage().heapUsed / 1048576);
