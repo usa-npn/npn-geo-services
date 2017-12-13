@@ -17,13 +17,13 @@ generateSwagger.generate().then(() => {
         if (process.env.PROTOCOL === "https" ) {
             let certificate = fs.readFileSync(process.env.SSL_CERT);
             let privateKey = fs.readFileSync(process.env.SSL_KEY);
-            console.log("creating https server");
+            log.info("creating https server");
             let server = https.createServer({key: privateKey, cert: certificate}, app);
             server.setTimeout(0);
             return server;
         }
         else {
-            console.log("creating http server");
+            log.info("creating http server");
             let server = http.createServer(app);
             server.setTimeout(0);
             return server;
@@ -80,7 +80,7 @@ generateSwagger.generate().then(() => {
         let server = getServer();
 
         server.listen(process.env.PORT || 3006, () => {
-            console.log("Server listening on port " + (process.env.PORT || 3006));
+            log.info("Server listening on port " + (process.env.PORT || 3006));
         });
 
         // // install middleware
