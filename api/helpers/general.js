@@ -111,6 +111,9 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
             }
         };
 
+        log.info(postData);
+        log.info(JSON.stringify(options));
+
         let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
@@ -121,7 +124,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
             res.on('data', (d) => {
                 console.log('recieving data from geoserver');
                 log.info('recieving data from geoserver');
-                log.info(d.toString());
+                // log.info(d.toString());
             });
 
             res.on('end', () => {
