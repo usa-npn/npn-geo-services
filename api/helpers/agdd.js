@@ -245,15 +245,15 @@ FROM (
         SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN ($2)
+        WHERE p.${boundaryColumn} IN ('Arizona', 'New Mexico')
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
-    AND r.rast_date = $3
-    AND r.base = $4
-    AND r.scale = $5
+    AND r.rast_date = $2
+    AND r.base = $3
+    AND r.scale = $4
 ) AS bar
-    `, values: [buffer, stateNames, date.format('YYYY-MM-DD'), base, 'fahrenheit']
+    `, values: [buffer, date.format('YYYY-MM-DD'), base, 'fahrenheit']
     };
 
 
