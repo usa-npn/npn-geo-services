@@ -101,6 +101,21 @@ function areaStatsInternal(req, res, anomaly) {
 //     }
 // }
 
+
+/**
+ * @param {{swagger}} req
+ */
+function pestMap(req, res) {
+    let species = getParam(req.swagger.params['species']);
+    let date = getParam(req.swagger.params['date']);
+
+    return agddController.getPestMap(species, moment.utc(date))
+        .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+        .catch((error) => res.status(500).json({"message": error.message}));
+
+    res.status(500).json({"message": 'not yet implemented'});
+}
+
 /**
  * @param {{swagger}} req
  */
@@ -169,5 +184,6 @@ function clippedImageInternal(req, res, anomaly) {
 module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
+module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

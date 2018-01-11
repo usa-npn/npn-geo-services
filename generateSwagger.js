@@ -1027,6 +1027,39 @@ async function generate() {
             responses: getResponses('ImageResponse')
         };
 
+
+    swaggerDefinition['paths']['/agdd/pestMap'] = {};
+    swaggerDefinition['paths']['/agdd/pestMap']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/pestMap']['get'] =
+        {
+            summary: `gets pest agdd threshold map`,
+            description: `Gets pest agdd threshold map for a specified species and date.`,
+            tags: ['accumlated growing degree days'],
+            operationId: `pestMap`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [
+                {
+                    name: 'species',
+                    in: 'query',
+                    description: 'the species to retrieve map for',
+                    type: 'string',
+                    enum: ['Emerald Ash Borer', 'Winter Moth', 'Lilac/Ash Borer', 'Apple Maggot']
+                },
+                {
+                    name: 'date',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to average over for example 2017-08-01.',
+                    type: 'string',
+                    format: 'date'
+                }
+            ],
+            responses: getResponses('ImageResponse')
+        };
+
+
+
+
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage'] = {};
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage']['x-swagger-router-controller'] = 'agdd';
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage']['get'] =

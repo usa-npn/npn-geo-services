@@ -222,6 +222,61 @@ async function getClippedAgddRaster() {
 
 }
 
+
+// saves to disk and returns path to styled tiff for six clipping
+async function getPestMap(species, date) {
+    let base = 50;
+    let rastTable = `agdd_${date.year()}`;
+    let layerName = `gdd:agdd_50f`;
+    let buffer = getBufferSizeForTable(rastTable);
+
+    let boundaryTable = "state_boundaries";
+    let boundaryColumn = "name";
+    let stateNames = ['Arizona', 'New Mexico'];
+
+    let query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
+        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        FROM ${boundaryTable} p
+        WHERE p.${boundaryColumn} IN ($2)
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $3
+    AND r.base = $4
+    AND r.scale = $5
+) AS bar
+    `, values: [buffer, stateNames.join(','), date.format('YYYY-MM-DD'), base, 'fahrenheit']
+    };
+
+
+
+    console.log(query);
+    log.info(query);
+    const res = await db.pgPool.query(query);
+    log.info('query complete');
+
+    let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
+    if (res.rows.length > 0) {
+        let d = new Date();
+        let filename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_${d.getTime()}.png`;
+        await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
+        response.clippedImage = await helpers.stylizeFile(filename, imagePath, 'png', layerName);
+        response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+        return response;
+    } else {
+        return response;
+    }
+}
+
+module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;
 module.exports.getClippedAgddRaster = getClippedAgddRaster;
 module.exports.getAgddAreaStats = getAgddAreaStats;
