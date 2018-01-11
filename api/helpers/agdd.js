@@ -232,7 +232,12 @@ async function getPestMap(species, date) {
 
     let boundaryTable = "state_boundaries";
     let boundaryColumn = "name";
-    let stateNames = ["'Arizona'", "'New Mexico'", "'California'"];
+    let stateNames = ["'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
+        "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
+        "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
+        "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
+        "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
+        "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
 
     let query = {text: `
 SELECT
