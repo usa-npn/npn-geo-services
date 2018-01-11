@@ -273,7 +273,7 @@ FROM (
         let d = new Date();
         let filename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_${d.getTime()}.png`;
         await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
-        response.clippedImage = await helpers.stylizeFile(filename, imagePath, 'png', layerName);
+        response.clippedImage = await helpers.stylizePestMap(filename, imagePath, 'png', layerName);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {
