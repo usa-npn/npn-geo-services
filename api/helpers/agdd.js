@@ -232,7 +232,7 @@ async function getPestMap(species, date) {
 
     let boundaryTable = "state_boundaries";
     let boundaryColumn = "name";
-    let stateNames = ['Arizona', 'New Mexico'];
+    let stateNames = ['Arizona', 'New Mexico', 'California'];
 
     let query = {text: `
 SELECT
@@ -245,7 +245,7 @@ FROM (
         SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN ('Arizona', 'New Mexico')
+        WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
