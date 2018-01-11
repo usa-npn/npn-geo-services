@@ -253,7 +253,7 @@ FROM (
     AND r.base = $4
     AND r.scale = $5
 ) AS bar
-    `, values: [buffer, stateNames.join(','), date.format('YYYY-MM-DD'), base, 'fahrenheit']
+    `, values: [buffer, stateNames, date.format('YYYY-MM-DD'), base, 'fahrenheit']
     };
 
 
