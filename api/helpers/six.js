@@ -43,18 +43,18 @@ async function getAppropriateSixTable(date, climate, boundary, boundaryTable, bo
     let now = moment();
 
     if (anomaly) {
-        if (date.year() < now.year())
-            return 'six_anomaly_historic';
-        else
+        // if (date.year() < now.year())
+        //     return 'six_anomaly_historic';
+        // else
             return 'six_anomaly'
     } else if (climate === 'PRISM') {
         return 'prism_spring_index';
     } else if (climate === 'BEST') {
         return 'best_spring_index';
     } else if (climate === 'NCEP') {
-        if (date.year() < now.year()) {
-            return 'ncep_spring_index_historic';
-        } else {
+        // if (date.year() < now.year()) {
+        //     return 'ncep_spring_index_historic';
+        // } else {
             let rasterCellsInBoundary = await boundaryRasterIntersections('ncep_spring_index_alaska', boundary, boundaryTable, boundaryColumn, date, plant, phenophase);
             if (rasterCellsInBoundary > 0) {
                 return 'ncep_spring_index_alaska';
@@ -62,7 +62,7 @@ async function getAppropriateSixTable(date, climate, boundary, boundaryTable, bo
                 return 'ncep_spring_index';
             }
 
-        }
+        // }
     }
 }
 
