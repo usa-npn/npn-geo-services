@@ -1,6 +1,7 @@
 let log = require('../../logger.js');
 const moment = require('moment');
 let sixController = require('../helpers/six.js');
+let general = require('../helpers/general.js');
 
 function getPlantFromLayerName(layerName) {
     if (layerName.includes('lilac')) {
@@ -76,12 +77,17 @@ function clippedImageInternal(req, res, anomaly) {
     if(fwsBoundary) {
         if(useBufferedBoundary) {
             boundaryTable = "fws_boundaries_buff30km";
+            useConvexHullBoundary = false;
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";
@@ -161,12 +167,17 @@ function areaStatsInternal(req, res, anomaly) {
     if(fwsBoundary) {
         if(useBufferedBoundary) {
             boundaryTable = "fws_boundaries_buff30km";
+            useConvexHullBoundary = false;
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";
@@ -211,12 +222,17 @@ async function areaStatsTimeSeries(req, res) {
     if(fwsBoundary) {
         if(useBufferedBoundary) {
             boundaryTable = "fws_boundaries_buff30km";
+            useConvexHullBoundary = false;
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";
@@ -232,7 +248,7 @@ async function areaStatsTimeSeries(req, res) {
             if (useCache) {
                 resultForYear = await sixController.getSixAreaStatsWithCaching(boundary, boundaryTable, boundaryColumn, moment.utc(new Date(year, 0, 1)), plant, phenophase, climate, anomaly);
             } else {
-                resultForYear = await sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(new Date(year, 0, 1)), plant, phenophase, climate, anomaly);
+                resultForYear = await sixController.getSixAreaStats(boundary, boundaryTable, boundaryColumn, moment.utc(new Date(year, 0, 1)), plant, phenophase, climate, useConvexHullBoundary, anomaly);
             }
             resultForYear.year = year;
             return resultForYear;

@@ -1,6 +1,7 @@
 let log = require('../../logger.js');
 const moment = require('moment');
 let agddController = require('../helpers/agdd.js');
+let general = require('../helpers/general.js');
 
 function getBaseFromLayerName(layerName) {
     if (layerName.includes('50')) {
@@ -55,13 +56,18 @@ function areaStatsInternal(req, res, anomaly) {
     let boundaryColumn = "";
     if(fwsBoundary) {
         if(useBufferedBoundary) {
+            useConvexHullBoundary = false;
             boundaryTable = "fws_boundaries_buff30km";
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";
@@ -157,12 +163,17 @@ function clippedImageInternal(req, res, anomaly) {
     if(fwsBoundary) {
         if(useBufferedBoundary) {
             boundaryTable = "fws_boundaries_buff30km";
+            useConvexHullBoundary = false;
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";

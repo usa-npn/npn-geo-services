@@ -174,7 +174,31 @@ async function getClippedAgddImage(boundary, boundaryTable, boundaryColumn, date
 
     let buffer = getBufferSizeForTable(rastTable);
 
-    let query = {text: `
+    let query = {};
+
+    if(useConvexHullBoundary) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Union(p.geom) AS convex_hull_boundary
+        FROM ${boundaryTable}_convexhull p
+        WHERE p.${boundaryColumn} = $1
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $2
+    AND r.base = $3
+    AND r.scale = $4
+) AS bar
+    `, values: [boundary, date.format('YYYY-MM-DD'), base, 'fahrenheit']
+        };
+    } else {
+        query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
@@ -194,7 +218,30 @@ FROM (
     AND r.scale = $5
 ) AS bar
     `, values: [buffer, boundary, date.format('YYYY-MM-DD'), base, 'fahrenheit']
-    };
+        };
+    }
+
+//     let query = {text: `
+// SELECT
+// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+// FROM (
+//     SELECT ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)) AS clipped_raster
+//     FROM
+//     (
+//         SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
+//         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+//         FROM ${boundaryTable} p
+//         WHERE p.${boundaryColumn} = $2
+//     ) AS foo
+//     INNER JOIN ${rastTable} r
+//     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+//     AND r.rast_date = $3
+//     AND r.base = $4
+//     AND r.scale = $5
+// ) AS bar
+//     `, values: [buffer, boundary, date.format('YYYY-MM-DD'), base, 'fahrenheit']
+//     };
 
 
 

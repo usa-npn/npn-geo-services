@@ -6,6 +6,13 @@ const https = require('https');
 const { exec } = require('child_process');
 const { spawnSync } = require('child_process');
 
+const mustUseConvexHull = [
+    "YUKON DELTA NATIONAL WILDLIFE REFUGE",
+    "YUKON FLATS NATIONAL WILDLIFE REFUGE",
+    "ALASKA MARITIME NATIONAL WILDLIFE REFUGE",
+    "CHASSAHOWITZKA NATIONAL WILDLIFE REFUGE"
+];
+
 // helper function to allow awaiting on writeFile
 function WriteFile(fileName, data)
 {
@@ -273,3 +280,4 @@ module.exports.stylizePestMap = stylizePestMap;
 module.exports.WriteFile = WriteFile;
 module.exports.getDatesRangeArray = getDatesRangeArray;
 module.exports.extractFloatsFromString = extractFloatsFromString;
+module.exports.mustUseConvexHull = mustUseConvexHull;
