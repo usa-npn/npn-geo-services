@@ -1052,7 +1052,14 @@ async function generate() {
                     description: 'the date to average over for example 2017-08-01.',
                     type: 'string',
                     format: 'date'
-                }
+                },
+                {
+                    name: 'aprilStartDate',
+                    in: 'query',
+                    required: true,
+                    description: 'select true for an April 1 start date.',
+                    type: 'boolean'
+                },
             ],
             responses: getResponses('ImageResponse')
         };

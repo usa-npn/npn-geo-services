@@ -271,7 +271,7 @@ async function getClippedAgddRaster() {
 
 
 // saves to disk and returns path to styled tiff for six clipping
-async function getPestMap(species, date) {
+async function getPestMap(species, date, aprilStartDate) {
     let base = 50;
     let rastTable = `agdd_${date.year()}`;
     let layerName = `gdd:agdd_50f`;
@@ -286,7 +286,37 @@ async function getPestMap(species, date) {
         "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
         "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
 
-    let query = {text: `
+    let query = {};
+    if(aprilStartDate) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(ST_MapAlgebra(r.rast, r2.rast, '([rast1]-[rast2])'), foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Union(p.geom) AS boundary,
+        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        FROM ${boundaryTable} p
+        WHERE p.${boundaryColumn} IN (${stateNames})
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $1
+    AND r.base = $2
+    AND r.scale = $3
+    INNER JOIN ${rastTable} r2
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND ST_Intersects(r.rast, r2.rast)
+    AND r2.rast_date = $4
+    AND r2.base = $5
+    AND r2.scale = $6
+) AS bar
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit', '2017-04-01', base, 'fahrenheit']
+        };
+    } else {
+        query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
@@ -306,7 +336,29 @@ FROM (
     AND r.scale = $3
 ) AS bar
     `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
-    };
+        };
+    }
+//     let query = {text: `
+// SELECT
+// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+// FROM (
+//     SELECT ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+//     FROM
+//     (
+//         SELECT ST_Union(p.geom) AS boundary,
+//         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+//         FROM ${boundaryTable} p
+//         WHERE p.${boundaryColumn} IN (${stateNames})
+//     ) AS foo
+//     INNER JOIN ${rastTable} r
+//     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+//     AND r.rast_date = $1
+//     AND r.base = $2
+//     AND r.scale = $3
+// ) AS bar
+//     `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+//     };
 
 
 

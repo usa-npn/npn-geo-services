@@ -114,8 +114,9 @@ function areaStatsInternal(req, res, anomaly) {
 function pestMap(req, res) {
     let species = getParam(req.swagger.params['species']);
     let date = getParam(req.swagger.params['date']);
+    let aprilStartDate = getParam(req.swagger.params['aprilStartDate']);
 
-    return agddController.getPestMap(species, moment.utc(date))
+    return agddController.getPestMap(species, moment.utc(date), aprilStartDate)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 
