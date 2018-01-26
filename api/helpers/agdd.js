@@ -297,7 +297,7 @@ FROM (
     FROM
     (
         SELECT ST_Union(p.geom) AS boundary,
-        ST_Simplify(ST_Union(p.geom), 50) AS convex_hull_boundary
+        ST_Boundary(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
@@ -310,10 +310,10 @@ FROM (
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
     AND ST_Contains(r.rast, r2.rast)
     AND r2.rast_date = '2017-04-01'
-    AND r2.base = $5
-    AND r2.scale = $6
+    AND r2.base = $4
+    AND r2.scale = $5
 ) AS bar
-    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit', '2017-04-01', base, 'fahrenheit']
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit', base, 'fahrenheit']
         };
     } else {
         query = {text: `
@@ -325,7 +325,7 @@ FROM (
     FROM
     (
         SELECT ST_Union(p.geom) AS boundary,
-        ST_Simplify(ST_Union(p.geom), 50) AS convex_hull_boundary
+        ST_Boundary(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
