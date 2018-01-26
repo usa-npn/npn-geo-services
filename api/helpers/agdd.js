@@ -297,7 +297,7 @@ FROM (
     FROM
     (
         SELECT ST_Union(p.geom) AS boundary,
-        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        ST_Simplify(ST_ExteriorRing(ST_Union(p.geom)), 500) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
@@ -309,7 +309,7 @@ FROM (
     INNER JOIN ${rastTable} r2
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
     AND ST_Contains(r.rast, r2.rast)
-    AND r2.rast_date = $4
+    AND r2.rast_date = '2017-04-01'
     AND r2.base = $5
     AND r2.scale = $6
 ) AS bar
@@ -325,7 +325,7 @@ FROM (
     FROM
     (
         SELECT ST_Union(p.geom) AS boundary,
-        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        ST_Simplify(ST_ExteriorRing(ST_Union(p.geom)), 500) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
