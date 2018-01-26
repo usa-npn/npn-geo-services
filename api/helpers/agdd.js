@@ -308,7 +308,7 @@ FROM (
     AND r.scale = $3
     INNER JOIN ${rastTable} r2
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
-    AND ST_Intersects(r.rast, r2.rast)
+    AND ST_Contains(r.rast, r2.rast)
     AND r2.rast_date = $4
     AND r2.base = $5
     AND r2.scale = $6
