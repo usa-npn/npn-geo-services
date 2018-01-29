@@ -297,7 +297,7 @@ FROM (
     FROM
     (
         SELECT ST_Union(p.geom) AS boundary,
-        ST_Boundary(ST_Union(p.geom)) AS convex_hull_boundary
+        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
@@ -325,7 +325,7 @@ FROM (
     FROM
     (
         SELECT ST_Union(p.geom) AS boundary,
-        ST_Boundary(ST_Union(p.geom)) AS convex_hull_boundary
+        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
