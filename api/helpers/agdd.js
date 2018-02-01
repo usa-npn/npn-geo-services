@@ -282,7 +282,7 @@ async function getPestMap(species, date, aprilStartDate) {
         let response = {
             date: date.format('YYYY-MM-DD'),
             layerClippedFrom: layerName,
-            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName,
+            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps` + styledFileName,
             bbox: [
                 -109.0712618165,
                 25.8324511400651,
