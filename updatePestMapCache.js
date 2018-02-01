@@ -1,11 +1,13 @@
 const moment = require('moment');
 const https = require('https');
 
-function doRequest(url) {
+function doRequest(path) {
     let options = {
         "rejectUnauthorized": false,
-        "url": url,
-        "method": "GET"
+        "hostname": "data-dev.usanpn.org",
+        "path": path,
+        "method": "GET",
+        "port": 3006
     };
     return new Promise ((resolve, reject) => {
         let req = https.request(options);
@@ -34,7 +36,7 @@ async function update() {
 
         try {
             console.log(`generating pest map: ${species} ${dateString}`);
-            await doRequest(`https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=${species}&date=${dateString}&aprilStartDate=${aprilStartDate}`);
+            await doRequest(`/v0/agdd/pestMap?species=${species}&date=${dateString}&aprilStartDate=${aprilStartDate}`);
             //await agddController.getPestMap(species, start, aprilStartDate);
         } catch(error) {
             console.log(error);
