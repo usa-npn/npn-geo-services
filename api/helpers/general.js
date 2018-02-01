@@ -147,9 +147,10 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                         // the *entire* stdout and stderr (buffered)
                         console.log(`stdout: ${stdout}`);
                         console.log(`stderr: ${stderr}`);
+
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
                     });
 
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
                 } else {
                     resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
                 }
@@ -172,17 +173,12 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 }
 
 
-// calls wps to apply sld style to input raster, returns promise to the path of the stylized tiff
-function stylizePestMap(filename, rasterpath, fileFormat, layerName){
+// calls wps to apply sld style to input raster, returns promise to the path of the stylized png
+function stylizePestMap(filename, rasterpath, fileFormat, sldName){
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
         let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/${filename}`;
-        // if (process.env.PROTOCOL === 'https') {
-        //     unstyledFileRef = `http://www.usanpn.org/files/gridded/cliped_images/${filename}`;
-        // } else {
-        //     unstyledFileRef = `http://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}`;
-        // }
 
         var postData = `
 <wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
@@ -194,7 +190,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, layerName){
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>
-            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://${process.env.GEOSERVER_HOST}/geoserver/rest/workspaces/gdd/styles/emerald_ash_borer.sld" method="GET"/>
+            <wps:Reference mimeType="text/xml; subtype=sld/1.1.1" xlink:href="http://${process.env.GEOSERVER_HOST}/geoserver/rest/workspaces/gdd/styles/${sldName}" method="GET"/>
 		</wps:Input>
 	</wps:DataInputs>
 	<wps:ResponseForm>

@@ -275,6 +275,27 @@ async function getClippedAgddRaster() {
 async function getPestMap(species, date, aprilStartDate) {
 
     let layerName = `gdd:agdd_50f`;
+    let bounds = [];
+    let stateNames = [];
+    let sldName = '';
+
+    if(species === 'Emerald Ash Borer') {
+        sldName = 'emerald_ash_borer.sld';
+        bounds = [
+            -109.0712618165,
+            25.8324511400651,
+            -69.9161870337683,
+            49.4107288273616
+        ];
+        stateNames = ["'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
+            "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
+            "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
+            "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
+            "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
+            "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
+    } else {
+        //todo other species
+    }
 
     //if file exists don't recompute it
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
@@ -283,12 +304,7 @@ async function getPestMap(species, date, aprilStartDate) {
             date: date.format('YYYY-MM-DD'),
             layerClippedFrom: layerName,
             clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
-            bbox: [
-                -109.0712618165,
-                25.8324511400651,
-                -69.9161870337683,
-                49.4107288273616
-            ]
+            bbox: bounds
         };
         return response;
     }
@@ -299,12 +315,6 @@ async function getPestMap(species, date, aprilStartDate) {
 
     let boundaryTable = "state_boundaries";
     let boundaryColumn = "name";
-    let stateNames = ["'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
-        "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
-        "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
-        "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
-        "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
-        "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
 
     let query = {};
     if(aprilStartDate) {
@@ -368,7 +378,7 @@ FROM (
     if (res.rows.length > 0) {
         let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
-        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', layerName);
+        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', sldName);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {
