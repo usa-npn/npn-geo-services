@@ -177,7 +177,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, layerName){
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
-        let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}`;
+        let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/${filename}`;
         // if (process.env.PROTOCOL === 'https') {
         //     unstyledFileRef = `http://www.usanpn.org/files/gridded/cliped_images/${filename}`;
         // } else {
@@ -234,30 +234,26 @@ function stylizePestMap(filename, rasterpath, fileFormat, layerName){
             res.on('data', (d) => {
                 console.log('recieving data from geoserver');
                 log.info('recieving data from geoserver');
-                log.info(d.toString());
+                // log.info(d.toString());
             });
 
             res.on('end', () => {
                 log.info('finished writing styled raster.');
 
-                if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                        if (err) {
-                            // node couldn't execute the command
-                            reject(err);
-                        }
+                exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                    if (err) {
+                        reject(err);
+                    }
 
-                        // the *entire* stdout and stderr (buffered)
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                    });
+                    // the *entire* stdout and stderr (buffered)
+                    console.log(`stdout: ${stdout}`);
+                    console.log(`stderr: ${stderr}`);
 
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
-                } else {
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
-                }
+                    //delete the unstyled file
+                    fs.unlinkSync(rasterpath + filename);
 
-                //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
+                });
             });
         });
 
