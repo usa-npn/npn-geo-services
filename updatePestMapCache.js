@@ -1,6 +1,20 @@
-let agddController = require('./api/helpers/agdd.js');
+//let agddController = require('./api/helpers/agdd.js');
 const moment = require('moment');
+const https = require('https');
 
+function doRequest(options) {
+    return new Promise ((resolve, reject) => {
+        let req = https.request(options);
+
+        req.on('response', res => {
+            resolve(res);
+        });
+
+        req.on('error', err => {
+            reject(err);
+        });
+    });
+}
 
 async function update() {
 
@@ -16,7 +30,8 @@ async function update() {
 
         try {
             console.log(`generating pest map: ${species} ${dateString}`);
-            await agddController.getPestMap(species, start, aprilStartDate);
+            await doRequest(`https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=${species}&date=${dateString}&aprilStartDate=${aprilStartDate}`);
+            //await agddController.getPestMap(species, start, aprilStartDate);
         } catch(error) {
             console.log(error);
         }
