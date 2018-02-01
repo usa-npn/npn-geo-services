@@ -313,10 +313,10 @@ SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
-    SELECT ST_Union(ST_Clip(ST_MapAlgebra(r.rast, r2.rast, '([rast1]-[rast2])'), foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+    SELECT ST_Union(ST_Clip(ST_MapAlgebra(r.rast, r2.rast, '([rast1]-[rast2])'), foo.boundary, -9999, true)) AS clipped_raster
     FROM
     (
-        SELECT ST_Union(p.geom) AS boundary,
+        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
@@ -341,10 +341,10 @@ SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
-    SELECT ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
     FROM
     (
-        SELECT ST_Union(p.geom) AS boundary,
+        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
@@ -358,29 +358,6 @@ FROM (
     `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
         };
     }
-//     let query = {text: `
-// SELECT
-// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
-// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
-// FROM (
-//     SELECT ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)) AS clipped_raster
-//     FROM
-//     (
-//         SELECT ST_Union(p.geom) AS boundary,
-//         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
-//         FROM ${boundaryTable} p
-//         WHERE p.${boundaryColumn} IN (${stateNames})
-//     ) AS foo
-//     INNER JOIN ${rastTable} r
-//     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
-//     AND r.rast_date = $1
-//     AND r.base = $2
-//     AND r.scale = $3
-// ) AS bar
-//     `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
-//     };
-
-
 
     console.log(query);
     log.info(query);
