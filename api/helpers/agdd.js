@@ -286,8 +286,8 @@ async function getPestMap(species, date, aprilStartDate) {
             bbox: [
                 -109.0712618165,
                 25.8324511400651,
-                -69.9386512189563,
-                49.389657980456
+                -69.9161870337683,
+                49.4107288273616
             ]
         };
         return response;
