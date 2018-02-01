@@ -5,7 +5,7 @@ function doRequest(path) {
     let options = {
         "rejectUnauthorized": false,
         "hostname": "data-dev.usanpn.org",
-        "path": path,
+        "path": encodeURI(path),
         "method": "GET",
         "port": 3006
     };
