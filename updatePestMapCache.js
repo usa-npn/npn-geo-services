@@ -1,8 +1,12 @@
-//let agddController = require('./api/helpers/agdd.js');
 const moment = require('moment');
 const https = require('https');
 
-function doRequest(options) {
+function doRequest(url) {
+    let options = {
+        "rejectUnauthorized": false,
+        "url": url,
+        "method": "GET"
+    };
     return new Promise ((resolve, reject) => {
         let req = https.request(options);
 
@@ -22,7 +26,7 @@ async function update() {
     let aprilStartDate = false;
 
     var start = moment.utc("2017-01-01");
-    var end = moment.utc("2017-12-31");
+    var end = moment.utc("2017-01-31");
 
     while(start <= end){
 
