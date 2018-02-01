@@ -1,25 +1,27 @@
 let agddController = require('./api/helpers/agdd.js');
+const moment = require('moment');
+
 
 async function update() {
 
     let species = 'Emerald Ash Borer';
     let aprilStartDate = false;
 
-    var start = new Date("2017-01-01");
-    var end = new Date("2017-12-31");
+    var start = moment.utc("2017-01-01");
+    var end = moment.utc("2017-12-31");
 
     while(start <= end){
 
-        let dateString = start.toISOString().substring(0,10);
+        let dateString = start.format('YYYY-MM-DD');
 
         try {
             console.log(`generating pest map: ${species} ${dateString}`);
-            await agddController.getPestMap(species, dateString, aprilStartDate);
+            await agddController.getPestMap(species, start, aprilStartDate);
         } catch(error) {
             console.log(error);
         }
 
-        start = new Date(start.setDate(start.getDate() + 1)); //date increase by 1
+        start.add(1, 'days');
     }
 }
 
