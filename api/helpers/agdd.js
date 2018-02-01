@@ -2,9 +2,10 @@ let db = require('./database.js');
 let log = require('../../logger.js');
 const moment = require('moment');
 let helpers = require('./general');
-
+var fs = require('fs');
 
 const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
+const pestImagePath = imagePath + 'pest_maps/';
 
 // to pick up all pixels inside boundary we need to buffer around the shapefile before doing a clip,
 // the size of this buffer depends on the dataset resolution. This function returns the correct buffer size.
@@ -272,9 +273,28 @@ async function getClippedAgddRaster() {
 
 // saves to disk and returns path to styled tiff for six clipping
 async function getPestMap(species, date, aprilStartDate) {
+
+    let layerName = `gdd:agdd_50f`;
+
+    //if file exists don't recompute it
+    let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+    if (fs.existsSync(pestImagePath + styledFileName)) {
+        let response = {
+            date: date.format('YYYY-MM-DD'),
+            layerClippedFrom: layerName,
+            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName,
+            bbox: [
+                -109.0712618165,
+                25.8324511400651,
+                -69.9386512189563,
+                49.389657980456
+            ]
+        };
+        return response;
+    }
+
     let base = 50;
     let rastTable = `agdd_${date.year()}`;
-    let layerName = `gdd:agdd_50f`;
     let buffer = getBufferSizeForTable(rastTable);
 
     let boundaryTable = "state_boundaries";
@@ -369,10 +389,9 @@ FROM (
 
     let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
     if (res.rows.length > 0) {
-        let d = new Date();
-        let filename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_${d.getTime()}.png`;
-        await helpers.WriteFile(imagePath + filename, res.rows[0].tiff);
-        response.clippedImage = await helpers.stylizePestMap(filename, imagePath, 'png', layerName);
+        let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+        await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
+        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', layerName);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {
