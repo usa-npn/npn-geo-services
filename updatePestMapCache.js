@@ -1,10 +1,10 @@
 //let agddController = require('./api/helpers/agdd.js');
 const moment = require('moment');
-const https = require('https');
+const http = require('http');
 
 function doRequest(options) {
     return new Promise ((resolve, reject) => {
-        let req = https.request(options);
+        let req = http.request(options);
 
         req.on('response', res => {
             resolve(res);
