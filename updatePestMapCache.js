@@ -1,4 +1,4 @@
-let agddController = require('../helpers/agdd.js');
+let agddController = require('./api/helpers/agdd.js');
 
 async function update() {
 
