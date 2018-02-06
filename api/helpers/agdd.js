@@ -276,6 +276,7 @@ async function getPestMap(species, date, aprilStartDate) {
 
     let layerName = `gdd:agdd_50f`;
     let bounds = [];
+    //if stateNames is left empty, no clipping will occur
     let stateNames = [];
     let sldName = '';
 
@@ -293,6 +294,15 @@ async function getPestMap(species, date, aprilStartDate) {
             "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
             "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
             "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
+    } else if(species === 'Apple Maggot') {
+        sldName = 'apple_maggot.sld';
+        stateNames = [];
+        bounds = [
+            -109.0712618165,
+            25.8324511400651,
+            -69.9161870337683,
+            49.4107288273616
+        ];
     } else {
         //todo other species
     }
@@ -317,7 +327,21 @@ async function getPestMap(species, date, aprilStartDate) {
     let boundaryColumn = "name";
 
     let query = {};
-    if(aprilStartDate) {
+    if(stateNames == []) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.conus_raster)) AS extent
+FROM (
+    SELECT ST_Union(r.rast) AS conus_raster
+    FROM ${rastTable} r
+    WHERE r.rast_date = $1
+    AND r.base = $2
+    AND r.scale = $3
+) AS bar
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+        };
+    } else if(aprilStartDate) {
         query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
