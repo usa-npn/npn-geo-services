@@ -327,7 +327,7 @@ async function getPestMap(species, date, aprilStartDate) {
     let boundaryColumn = "name";
 
     let query = {};
-    if(stateNames == []) {
+    if(stateNames.length < 1) {
         query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
