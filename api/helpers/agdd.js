@@ -298,10 +298,10 @@ async function getPestMap(species, date, aprilStartDate) {
         sldName = 'apple_maggot.sld';
         stateNames = [];
         bounds = [
-            -109.0712618165,
-            25.8324511400651,
-            -69.9161870337683,
-            49.4107288273616
+            -125.0208333,
+            24.0625,
+            -66.4791667000001,
+            49.9375
         ];
     } else {
         //todo other species
