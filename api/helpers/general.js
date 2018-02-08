@@ -121,7 +121,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
         log.info(postData);
         log.info(JSON.stringify(options));
 
-        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
+        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`).replace('(', '').replace(')', '');
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 
@@ -138,7 +138,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                 log.info('finished writing styled raster.');
 
                 if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('(', '\(').replace(')', '\)').replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                         if (err) {
                             // node couldn't execute the command
                             reject(err);
