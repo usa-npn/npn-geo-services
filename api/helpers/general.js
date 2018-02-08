@@ -138,7 +138,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                 log.info('finished writing styled raster.');
 
                 if (fileFormat === 'png') {
-                    exec(`convert ${rasterpath + styledFileName} -transparent white '${rasterpath + styledFileName.replace('.tiff', '.png')}'`, (err, stdout, stderr) => {
+                    exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('(', '\\(').replace(')', '\\)').replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                         if (err) {
                             // node couldn't execute the command
                             reject(err);
