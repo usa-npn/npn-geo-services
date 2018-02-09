@@ -279,6 +279,7 @@ async function getPestMap(species, date, aprilStartDate) {
     //if stateNames is left empty, no clipping will occur
     let stateNames = [];
     let sldName = '';
+    let base = 50;
 
     if(species === 'Emerald Ash Borer') {
         sldName = 'emerald_ash_borer_solid.sld';
@@ -303,6 +304,21 @@ async function getPestMap(species, date, aprilStartDate) {
             -66.4791667000001,
             49.9375
         ];
+    } else if(species === 'Hemlock Woolly Adelgid') {
+        layerName = `gdd:agdd`;
+        base = 32;
+        sldName = 'hemlock_woolly_adelgid.sld';
+        bounds = [
+            -125.0208333,
+            24.0625,
+            -66.4791667000001,
+            49.9375
+        ];
+        stateNames = ["'Maine'", "'Vermont'", "'New Hampshire'", "'New York'", "'Connecticut'", "'Massachusetts'",
+            "'Rhode Island'", "'New Jersey'", "'Pennsylvania'", "'Delaware'", "'Maryland'", "'Virginia'",
+            "'West Virginia'", "'Ohio'", "'Kentucky'", "'Michigan'", "'Tennessee'", "'North Carolina'",
+            "'South Carolina'", "'Alabama'", "'Georgia'", "'Wisconsin'", "'Minnesota'", "'Indiana'",
+            "'Washington'", "'Oregon'", "'California'", "'Idaho'", "'Montana'"];
     } else {
         //todo other species
     }
@@ -319,7 +335,7 @@ async function getPestMap(species, date, aprilStartDate) {
         return response;
     }
 
-    let base = 50;
+
     let rastTable = `agdd_${date.year()}`;
     let buffer = getBufferSizeForTable(rastTable);
 

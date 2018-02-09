@@ -37,12 +37,12 @@ function doRequest(path) {
 
 async function update() {
 
-    let speciesArr = ['Emerald Ash Borer', 'Apple Maggot'];
+    let speciesArr = ['Hemlock Woolly Adelgid']; //, 'Apple Maggot'
     let aprilStartDate = false;
 
     for(var species of speciesArr) {
-        var start = moment.utc("2018-01-01");
-        var end = moment.utc("2018-02-06");
+        var start = moment.utc("2017-01-01");
+        var end = moment.utc("2018-02-08");
 
         while(start <= end){
 
