@@ -309,10 +309,10 @@ async function getPestMap(species, date, aprilStartDate) {
         base = 32;
         sldName = 'hemlock_woolly_adelgid.sld';
         bounds = [
-            -125.0208333,
-            24.0625,
-            -66.4791667000001,
-            49.9375
+            -124.773727262932,
+            30.2151872964169,
+            -66.9509145889486,
+            49.4107288273616
         ];
         stateNames = ["'Maine'", "'Vermont'", "'New Hampshire'", "'New York'", "'Connecticut'", "'Massachusetts'",
             "'Rhode Island'", "'New Jersey'", "'Pennsylvania'", "'Delaware'", "'Maryland'", "'Virginia'",
