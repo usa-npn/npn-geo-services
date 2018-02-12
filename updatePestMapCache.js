@@ -1,5 +1,6 @@
 const moment = require('moment');
 const https = require('https');
+var fs = require('fs');
 
 function doRequest(path) {
     // let options = {
@@ -35,14 +36,35 @@ function doRequest(path) {
     });
 }
 
+async function deleteForecastDays(species) {
+    var start = moment.utc().subtract(2,'days');
+    var end = moment.utc().add(5,'days');
+
+    let pestImagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/pest_maps/';
+    while(start <= end) {
+        let dateString = start.format('YYYY-MM-DD');
+        let fileName = `${species.replace(/\s/g, '_')}_${dateString}_styled.png`;
+
+        if (fs.existsSync(pestImagePath + fileName)) {
+            console.log(`deleting file for regineration: ${pestImagePath + fileName}`);
+            fs.unlinkSync(pestImagePath + fileName);
+        }
+
+        start.add(1, 'days');
+    }
+}
+
 async function update() {
 
-    let speciesArr = ['Hemlock Woolly Adelgid']; //, 'Apple Maggot'
+    let speciesArr = ['Emerald Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid']; //, 'Apple Maggot'
     let aprilStartDate = false;
 
     for(var species of speciesArr) {
+
+        await deleteForecastDays(species);
+
         var start = moment.utc("2017-01-01");
-        var end = moment.utc("2018-02-08");
+        var end = moment.utc().add(5,'days');
 
         while(start <= end){
 

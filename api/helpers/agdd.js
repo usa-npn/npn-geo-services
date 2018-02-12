@@ -319,6 +319,15 @@ async function getPestMap(species, date, aprilStartDate) {
             "'West Virginia'", "'Ohio'", "'Kentucky'", "'Michigan'", "'Tennessee'", "'North Carolina'",
             "'South Carolina'", "'Alabama'", "'Georgia'", "'Wisconsin'", "'Minnesota'", "'Indiana'",
             "'Washington'", "'Oregon'", "'California'", "'Idaho'", "'Montana'"];
+    } else if(species === 'Winter Moth') {
+        sldName = 'winter_moth.sld';
+        bounds = [
+            -124.773727262932,
+            30.2151872964169,
+            -66.9509145889486,
+            49.4107288273616
+        ];
+        stateNames = ["'New York'", "'Connecticut'", "'New Hampshire'", "'Vermont'", "'Maine'", "'Massachusetts'"];
     } else {
         //todo other species
     }
