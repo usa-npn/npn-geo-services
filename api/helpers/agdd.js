@@ -322,10 +322,10 @@ async function getPestMap(species, date, aprilStartDate) {
     } else if(species === 'Winter Moth') {
         sldName = 'winter_moth.sld';
         bounds = [
-            -124.773727262932,
-            30.2151872964169,
+            -79.7779643313124,
+            40.4766897394137,
             -66.9509145889486,
-            49.4107288273616
+            47.4722109120521
         ];
         stateNames = ["'New York'", "'Connecticut'", "'New Hampshire'", "'Vermont'", "'Maine'", "'Massachusetts'"];
     } else if(species === 'Lilac-Ash Borer') {
