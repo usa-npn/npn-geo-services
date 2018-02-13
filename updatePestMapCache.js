@@ -43,7 +43,7 @@ async function deleteForecastDays(species) {
     let pestImagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/pest_maps/';
     while(start <= end) {
         let dateString = start.format('YYYY-MM-DD');
-        let fileName = `${species.replace(/\s/g, '_').replace('-', '_')}_${dateString}_styled.png`;
+        let fileName = `${species.replace(/\s/g, '_')}_${dateString}_styled.png`;
 
         if (fs.existsSync(pestImagePath + fileName)) {
             console.log(`deleting file for regineration: ${pestImagePath + fileName}`);

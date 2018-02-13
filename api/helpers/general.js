@@ -121,7 +121,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
         log.info(postData);
         log.info(JSON.stringify(options));
 
-        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`).replace('-', '_').replace('(', '').replace(')', '');
+        let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`).replace('(', '').replace(')', '');
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 
