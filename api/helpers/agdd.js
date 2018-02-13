@@ -341,7 +341,7 @@ async function getPestMap(species, date, aprilStartDate) {
     }
 
     //if file exists don't recompute it
-    let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+    let styledFileName = `${species.replace(/ /g, '_').replace('-', '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
     if (fs.existsSync(pestImagePath + styledFileName)) {
         let response = {
             date: date.format('YYYY-MM-DD'),
