@@ -200,7 +200,8 @@ let fwsBoundaries = [
     "BROWNS PARK NATIONAL WILDLIFE REFUGE",
     "BUCK ISLAND NATIONAL WILDLIFE REFUGE",
     "BUENOS AIRES NATIONAL WILDLIFE REFUGE",
-    "BUFFALO LAKE NATIONAL WILDLIFE REFUGE",
+    "BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)",
+    "BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)",
     "CABEZA PRIETA NATIONAL WILDLIFE REFUGE",
     "CABO ROJO NATIONAL WILDLIFE REFUGE",
     "CACHE RIVER NATIONAL WILDLIFE REFUGE",
@@ -1026,6 +1027,46 @@ async function generate() {
             ],
             responses: getResponses('ImageResponse')
         };
+
+
+    swaggerDefinition['paths']['/agdd/pestMap'] = {};
+    swaggerDefinition['paths']['/agdd/pestMap']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/pestMap']['get'] =
+        {
+            summary: `gets pest agdd threshold map`,
+            description: `Gets pest agdd threshold map for a specified species and date.`,
+            tags: ['accumlated growing degree days'],
+            operationId: `pestMap`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [
+                {
+                    name: 'species',
+                    in: 'query',
+                    description: 'the species to retrieve map for',
+                    type: 'string',
+                    enum: ['Emerald Ash Borer', 'Winter Moth', 'Lilac/Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid']
+                },
+                {
+                    name: 'date',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to average over for example 2017-08-01.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'aprilStartDate',
+                    in: 'query',
+                    required: true,
+                    description: 'select true for an April 1 start date.',
+                    type: 'boolean'
+                },
+            ],
+            responses: getResponses('ImageResponse')
+        };
+
+
+
 
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage'] = {};
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage']['x-swagger-router-controller'] = 'agdd';

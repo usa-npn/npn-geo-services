@@ -2,9 +2,10 @@ let db = require('./database.js');
 let log = require('../../logger.js');
 const moment = require('moment');
 let helpers = require('./general');
-
+var fs = require('fs');
 
 const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
+const pestImagePath = imagePath + 'pest_maps/';
 
 // to pick up all pixels inside boundary we need to buffer around the shapefile before doing a clip,
 // the size of this buffer depends on the dataset resolution. This function returns the correct buffer size.
@@ -174,7 +175,31 @@ async function getClippedAgddImage(boundary, boundaryTable, boundaryColumn, date
 
     let buffer = getBufferSizeForTable(rastTable);
 
-    let query = {text: `
+    let query = {};
+
+    if(useConvexHullBoundary) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Union(p.geom) AS convex_hull_boundary
+        FROM ${boundaryTable}_convexhull p
+        WHERE p.${boundaryColumn} = $1
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $2
+    AND r.base = $3
+    AND r.scale = $4
+) AS bar
+    `, values: [boundary, date.format('YYYY-MM-DD'), base, 'fahrenheit']
+        };
+    } else {
+        query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
@@ -194,7 +219,30 @@ FROM (
     AND r.scale = $5
 ) AS bar
     `, values: [buffer, boundary, date.format('YYYY-MM-DD'), base, 'fahrenheit']
-    };
+        };
+    }
+
+//     let query = {text: `
+// SELECT
+// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+// FROM (
+//     SELECT ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)) AS clipped_raster
+//     FROM
+//     (
+//         SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
+//         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+//         FROM ${boundaryTable} p
+//         WHERE p.${boundaryColumn} = $2
+//     ) AS foo
+//     INNER JOIN ${rastTable} r
+//     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+//     AND r.rast_date = $3
+//     AND r.base = $4
+//     AND r.scale = $5
+// ) AS bar
+//     `, values: [buffer, boundary, date.format('YYYY-MM-DD'), base, 'fahrenheit']
+//     };
 
 
 
@@ -222,6 +270,172 @@ async function getClippedAgddRaster() {
 
 }
 
+
+// saves to disk and returns path to styled tiff for six clipping
+async function getPestMap(species, date, aprilStartDate) {
+
+    let layerName = `gdd:agdd_50f`;
+    let bounds = [];
+    //if stateNames is left empty, no clipping will occur
+    let stateNames = [];
+    let sldName = '';
+    let base = 50;
+
+    if(species === 'Emerald Ash Borer') {
+        sldName = 'emerald_ash_borer_solid.sld';
+        bounds = [
+            -109.0712618165,
+            25.8324511400651,
+            -69.9161870337683,
+            49.4107288273616
+        ];
+        stateNames = ["'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
+            "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
+            "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
+            "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
+            "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
+            "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
+    } else if(species === 'Apple Maggot') {
+        sldName = 'apple_maggot.sld';
+        stateNames = [];
+        bounds = [
+            -125.0208333,
+            24.0625,
+            -66.4791667000001,
+            49.9375
+        ];
+    } else if(species === 'Hemlock Woolly Adelgid') {
+        layerName = `gdd:agdd`;
+        base = 32;
+        sldName = 'hemlock_woolly_adelgid.sld';
+        bounds = [
+            -124.773727262932,
+            30.2151872964169,
+            -66.9509145889486,
+            49.4107288273616
+        ];
+        stateNames = ["'Maine'", "'Vermont'", "'New Hampshire'", "'New York'", "'Connecticut'", "'Massachusetts'",
+            "'Rhode Island'", "'New Jersey'", "'Pennsylvania'", "'Delaware'", "'Maryland'", "'Virginia'",
+            "'West Virginia'", "'Ohio'", "'Kentucky'", "'Michigan'", "'Tennessee'", "'North Carolina'",
+            "'South Carolina'", "'Alabama'", "'Georgia'", "'Wisconsin'", "'Minnesota'", "'Indiana'",
+            "'Washington'", "'Oregon'", "'California'", "'Idaho'", "'Montana'"];
+    } else if(species === 'Winter Moth') {
+        sldName = 'winter_moth.sld';
+        bounds = [
+            -124.773727262932,
+            30.2151872964169,
+            -66.9509145889486,
+            49.4107288273616
+        ];
+        stateNames = ["'New York'", "'Connecticut'", "'New Hampshire'", "'Vermont'", "'Maine'", "'Massachusetts'"];
+    } else {
+        //todo other species
+    }
+
+    //if file exists don't recompute it
+    let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+    if (fs.existsSync(pestImagePath + styledFileName)) {
+        let response = {
+            date: date.format('YYYY-MM-DD'),
+            layerClippedFrom: layerName,
+            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
+            bbox: bounds
+        };
+        return response;
+    }
+
+
+    let rastTable = `agdd_${date.year()}`;
+    let buffer = getBufferSizeForTable(rastTable);
+
+    let boundaryTable = "state_boundaries";
+    let boundaryColumn = "name";
+
+    let query = {};
+    if(stateNames.length < 1) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.conus_raster)) AS extent
+FROM (
+    SELECT ST_Union(r.rast) AS conus_raster
+    FROM ${rastTable} r
+    WHERE r.rast_date = $1
+    AND r.base = $2
+    AND r.scale = $3
+) AS bar
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+        };
+    } else if(aprilStartDate) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(ST_MapAlgebra(r.rast, r2.rast, '([rast1]-[rast2])'), foo.boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
+        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        FROM ${boundaryTable} p
+        WHERE p.${boundaryColumn} IN (${stateNames})
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $1
+    AND r.base = $2
+    AND r.scale = $3
+    INNER JOIN ${rastTable} r2
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND ST_Contains(r.rast, r2.rast)
+    AND r2.rast_date = '2017-04-01'
+    AND r2.base = $4
+    AND r2.scale = $5
+) AS bar
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit', base, 'fahrenheit']
+        };
+    } else {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
+        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        FROM ${boundaryTable} p
+        WHERE p.${boundaryColumn} IN (${stateNames})
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $1
+    AND r.base = $2
+    AND r.scale = $3
+) AS bar
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+        };
+    }
+
+    console.log(query);
+    log.info(query);
+    const res = await db.pgPool.query(query);
+    log.info('query complete');
+
+    let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
+    if (res.rows.length > 0) {
+        let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+        await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
+        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', sldName);
+        response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+        return response;
+    } else {
+        return response;
+    }
+}
+
+module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;
 module.exports.getClippedAgddRaster = getClippedAgddRaster;
 module.exports.getAgddAreaStats = getAgddAreaStats;

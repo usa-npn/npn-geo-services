@@ -1,6 +1,7 @@
 let log = require('../../logger.js');
 const moment = require('moment');
 let agddController = require('../helpers/agdd.js');
+let general = require('../helpers/general.js');
 
 function getBaseFromLayerName(layerName) {
     if (layerName.includes('50')) {
@@ -55,13 +56,18 @@ function areaStatsInternal(req, res, anomaly) {
     let boundaryColumn = "";
     if(fwsBoundary) {
         if(useBufferedBoundary) {
+            useConvexHullBoundary = false;
             boundaryTable = "fws_boundaries_buff30km";
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";
@@ -100,6 +106,22 @@ function areaStatsInternal(req, res, anomaly) {
 //         res.status(500).json({"message": error.message});
 //     }
 // }
+
+
+/**
+ * @param {{swagger}} req
+ */
+function pestMap(req, res) {
+    let species = getParam(req.swagger.params['species']);
+    let date = getParam(req.swagger.params['date']);
+    let aprilStartDate = getParam(req.swagger.params['aprilStartDate']);
+
+    return agddController.getPestMap(species, moment.utc(date), aprilStartDate)
+        .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+        .catch((error) => res.status(500).json({"message": error.message}));
+
+    res.status(500).json({"message": 'not yet implemented'});
+}
 
 /**
  * @param {{swagger}} req
@@ -142,12 +164,17 @@ function clippedImageInternal(req, res, anomaly) {
     if(fwsBoundary) {
         if(useBufferedBoundary) {
             boundaryTable = "fws_boundaries_buff30km";
+            useConvexHullBoundary = false;
         } else {
             boundaryTable = "fws_boundaries";
+            if(general.mustUseConvexHull.includes(fwsBoundary)) {
+                useConvexHullBoundary = true;
+            }
         }
         boundary = fwsBoundary;
         boundaryColumn = "orgname";
     } else if(stateBoundary) {
+        useConvexHullBoundary = false;
         boundaryTable = "state_boundaries";
         boundary = stateBoundary;
         boundaryColumn = "name";
@@ -169,5 +196,6 @@ function clippedImageInternal(req, res, anomaly) {
 module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
+module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

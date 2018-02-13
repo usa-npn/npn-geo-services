@@ -43,18 +43,18 @@ async function getAppropriateSixTable(date, climate, boundary, boundaryTable, bo
     let now = moment();
 
     if (anomaly) {
-        if (date.year() < now.year())
-            return 'six_anomaly_historic';
-        else
+        // if (date.year() < now.year())
+        //     return 'six_anomaly_historic';
+        // else
             return 'six_anomaly'
     } else if (climate === 'PRISM') {
         return 'prism_spring_index';
     } else if (climate === 'BEST') {
         return 'best_spring_index';
     } else if (climate === 'NCEP') {
-        if (date.year() < now.year()) {
-            return 'ncep_spring_index_historic';
-        } else {
+        // if (date.year() < now.year()) {
+        //     return 'ncep_spring_index_historic';
+        // } else {
             let rasterCellsInBoundary = await boundaryRasterIntersections('ncep_spring_index_alaska', boundary, boundaryTable, boundaryColumn, date, plant, phenophase);
             if (rasterCellsInBoundary > 0) {
                 return 'ncep_spring_index_alaska';
@@ -62,7 +62,7 @@ async function getAppropriateSixTable(date, climate, boundary, boundaryTable, bo
                 return 'ncep_spring_index';
             }
 
-        }
+        // }
     }
 }
 
@@ -126,12 +126,36 @@ async function getClippedSixImage(boundary, boundaryTable, boundaryColumn, date,
 
     let buffer = getBufferSizeForTable(rastTable);
 
-    let query = {text: `
+    let query = {};
+
+    if(useConvexHullBoundary) {
+        query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
-    SELECT ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)) AS clipped_raster
+    SELECT ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)) AS clipped_raster
+    FROM
+    (
+        SELECT ST_Union(p.geom) AS convex_hull_boundary
+        FROM ${boundaryTable}_convexhull p
+        WHERE p.${boundaryColumn} = $1
+    ) AS foo
+    INNER JOIN ${rastTable} r
+    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    AND r.rast_date = $2
+    AND r.plant = $3
+    AND r.phenophase = $4
+) AS bar
+    `, values: [boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+        };
+    } else {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+FROM (
+    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
     FROM
     (
         SELECT ST_Buffer(ST_Union(p.geom), $1) AS boundary,
@@ -146,10 +170,8 @@ FROM (
     AND r.phenophase = $5
 ) AS bar
     `, values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-    };
-
-
-
+        };
+    }
     console.log(query);
     log.info(query);
     const res = await db.pgPool.query(query);
@@ -244,8 +266,28 @@ FROM (
 async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, boundaryTable, boundaryColumn, date, plant, phenophase, saveToCache, useConvexHullBoundary, anomaly) {
     let buffer = getBufferSizeForTable(rastTable);
 
-    const query = {
-        text: `
+    let query = {};
+    if(useConvexHullBoundary) {
+        query = {
+            text: `
+        SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)), true)).*,
+        ST_Count(ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)), true) AS data_in_boundary,
+        ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '${anomaly ? '-9999:8888' : '[-9999-0):8888'},[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
+        ST_Count(ST_Union(ST_Clip(r.rast, foo.convex_hull_boundary, -9999, true)), false) AS total_pixels_in_and_out_of_boundary
+        FROM (
+            SELECT ST_Union(p.geom) AS convex_hull_boundary
+            FROM ${boundaryTable}_convexhull p
+            WHERE p.${boundaryColumn} = $1
+        ) as foo
+        INNER JOIN ${rastTable} r ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+        AND r.rast_date = $2
+        AND r.plant = $3
+        AND r.phenophase = $4`,
+            values: [boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+        };
+    } else {
+        query = {
+            text: `
         SELECT (ST_SummaryStats(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true)).*,
         ST_Count(ST_Union(ST_Clip(r.rast, ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), true) AS data_in_boundary,
         ST_ValueCount(ST_Union(ST_Clip(ST_Reclass(r.rast, '${anomaly ? '-9999:8888' : '[-9999-0):8888'},[0-500]:[0-500]', '16BUI'), ${useConvexHullBoundary ? 'foo.convex_hull_boundary' : 'foo.boundary'}, -9999, true)), 1, false, 8888) AS nodata_in_boundary,
@@ -260,8 +302,9 @@ async function getPostgisClippedRasterSixStats(climate, rastTable, boundary, bou
         AND r.rast_date = $3
         AND r.plant = $4
         AND r.phenophase = $5`,
-        values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
-    };
+            values: [buffer, boundary, date.format('YYYY-MM-DD'), plant, phenophase]
+        };
+    }
     console.log(query.text);
 
     const res = await db.pgPool.query(query);
