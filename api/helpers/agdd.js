@@ -282,7 +282,7 @@ async function getPestMap(species, date, aprilStartDate) {
     let base = 50;
 
     if(species === 'Emerald Ash Borer') {
-        sldName = 'emerald_ash_borer_solid.sld';
+        sldName = 'emerald_ash_borer.sld';
         bounds = [
             -109.0712618165,
             25.8324511400651,

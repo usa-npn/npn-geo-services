@@ -56,7 +56,7 @@ async function deleteForecastDays(species) {
 
 async function update() {
 
-    let speciesArr = ['Emerald Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid']; //, 'Apple Maggot'
+    let speciesArr = ['Emerald Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid', 'Lilac-Ash Borer', 'Winter Moth'];
     let aprilStartDate = false;
 
     for(var species of speciesArr) {
