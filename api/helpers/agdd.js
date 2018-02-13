@@ -328,7 +328,7 @@ async function getPestMap(species, date, aprilStartDate) {
             49.4107288273616
         ];
         stateNames = ["'New York'", "'Connecticut'", "'New Hampshire'", "'Vermont'", "'Maine'", "'Massachusetts'"];
-    } else if(species === 'Lilac - Ash Borer') {
+    } else if(species === 'Lilac-Ash Borer') {
         sldName = 'lilac_ash_borer.sld';
         bounds = [
             -125.0208333,
