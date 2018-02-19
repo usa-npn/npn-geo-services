@@ -115,8 +115,9 @@ function pestMap(req, res) {
     let species = getParam(req.swagger.params['species']);
     let date = getParam(req.swagger.params['date']);
     let aprilStartDate = getParam(req.swagger.params['aprilStartDate']);
+    let preserveExtent = getParam(req.swagger.params['preserveExtent']);
 
-    return agddController.getPestMap(species, moment.utc(date), aprilStartDate)
+    return agddController.getPestMap(species, moment.utc(date), preserveExtent)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
         .catch((error) => res.status(500).json({"message": error.message}));
 

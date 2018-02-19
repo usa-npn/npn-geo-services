@@ -1055,12 +1055,12 @@ async function generate() {
                     format: 'date'
                 },
                 {
-                    name: 'aprilStartDate',
+                    name: 'preserveExtent',
                     in: 'query',
-                    required: true,
-                    description: 'select true for an April 1 start date.',
+                    required: false,
+                    description: 'preserve extent after clipping.',
                     type: 'boolean'
-                },
+                }
             ],
             responses: getResponses('ImageResponse')
         };

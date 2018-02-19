@@ -272,7 +272,7 @@ async function getClippedAgddRaster() {
 
 
 // saves to disk and returns path to styled tiff for six clipping
-async function getPestMap(species, date, aprilStartDate) {
+async function getPestMap(species, date, preserveExtent) {
 
     let layerName = `gdd:agdd_50f`;
     let bounds = [];
@@ -342,7 +342,7 @@ async function getPestMap(species, date, aprilStartDate) {
 
     //if file exists don't recompute it
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
-    if (fs.existsSync(pestImagePath + styledFileName)) {
+    if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
         let response = {
             date: date.format('YYYY-MM-DD'),
             layerClippedFrom: layerName,
@@ -360,11 +360,11 @@ async function getPestMap(species, date, aprilStartDate) {
     let boundaryColumn = "name";
 
     let query = {};
-    if(stateNames.length < 1) {
+    if(preserveExtent && stateNames.length < 1) {
         query = {text: `
 SELECT
-ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
-ST_Extent(ST_Envelope(bar.conus_raster)) AS extent
+ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null), 3857)) AS tiff,
+ST_Extent(ST_Envelope(ST_Transform(bar.conus_raster, 3857))) AS extent
 FROM (
     SELECT ST_Union(r.rast) AS conus_raster
     FROM ${rastTable} r
@@ -374,13 +374,13 @@ FROM (
 ) AS bar
     `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
         };
-    } else if(aprilStartDate) {
+    } else if(preserveExtent) {
         query = {text: `
 SELECT
-ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
-ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null), 3857) AS tiff,
+ST_Extent(ST_Envelope(ST_Transform(bar.clipped_raster))) AS extent
 FROM (
-    SELECT ST_Union(ST_Clip(ST_MapAlgebra(r.rast, r2.rast, '([rast1]-[rast2])'), foo.boundary, -9999, true)) AS clipped_raster
+    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, false)) AS clipped_raster
     FROM
     (
         SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
@@ -393,14 +393,22 @@ FROM (
     AND r.rast_date = $1
     AND r.base = $2
     AND r.scale = $3
-    INNER JOIN ${rastTable} r2
-    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
-    AND ST_Contains(r.rast, r2.rast)
-    AND r2.rast_date = '2017-04-01'
-    AND r2.base = $4
-    AND r2.scale = $5
 ) AS bar
-    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit', base, 'fahrenheit']
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+        };
+    } else if(stateNames.length < 1) {
+        query = {text: `
+SELECT
+ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
+ST_Extent(ST_Envelope(bar.conus_raster)) AS extent
+FROM (
+    SELECT ST_Union(r.rast) AS conus_raster
+    FROM ${rastTable} r
+    WHERE r.rast_date = $1
+    AND r.base = $2
+    AND r.scale = $3
+) AS bar
+    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
         };
     } else {
         query = {text: `
@@ -434,6 +442,9 @@ FROM (
     let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
     if (res.rows.length > 0) {
         let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+        if (preserveExtent) {
+            pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
+        }
         await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
         response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', sldName);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);

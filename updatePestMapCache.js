@@ -61,7 +61,7 @@ async function update() {
 
     for(var species of speciesArr) {
 
-        await deleteForecastDays(species);
+        //await deleteForecastDays(species);
 
         var start = moment.utc("2017-01-01");
         var end = moment.utc().add(5,'days');
