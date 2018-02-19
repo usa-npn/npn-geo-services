@@ -377,7 +377,7 @@ FROM (
     } else if(preserveExtent) {
         query = {text: `
 SELECT
-ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Union(ST_Clip(bar.whole_rast, bar.whole_boundary, -9999, false)), 1, null), 3857)) AS tiff,
+ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(bar.whole_rast), ST_Union(bar.whole_boundary), -9999, false), 1, null), 3857)) AS tiff,
 ST_Extent(ST_Transform(ST_Envelope(bar.whole_rast), 3857)) AS extent
 FROM (
     SELECT r.rast AS whole_rast,
@@ -388,7 +388,7 @@ FROM (
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
-    JOIN ${rastTable} r
+    INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.boundary)
     AND r.rast_date = $1
     AND r.base = $2
