@@ -389,7 +389,7 @@ FROM (
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
     INNER JOIN ${rastTable} r
-    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+    ON ST_Intersects(r.rast, foo.boundary)
     AND r.rast_date = $1
     AND r.base = $2
     AND r.scale = $3
