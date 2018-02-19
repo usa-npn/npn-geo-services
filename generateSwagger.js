@@ -1058,7 +1058,7 @@ async function generate() {
                     name: 'preserveExtent',
                     in: 'query',
                     required: false,
-                    description: 'preserve extent after clipping.',
+                    description: 'preserve extent when clipping.',
                     type: 'boolean'
                 }
             ],
