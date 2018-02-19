@@ -380,7 +380,7 @@ SELECT
 ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(bar.whole_rast), ST_Union(bar.whole_boundary), -9999, false), 1, null), 3857)) AS tiff,
 ST_Extent(ST_Transform(ST_Envelope(bar.whole_rast), 3857)) AS extent
 FROM (
-    SELECT ST_Union(r.rast) AS whole_rast,
+    SELECT ST_Union(foo.rast) AS whole_rast,
     ST_Buffer(ST_Union(p.geom), .01) as whole_boundary
     FROM
     (
