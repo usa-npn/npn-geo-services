@@ -389,7 +389,7 @@ FROM (
         AND r.base = $2
         AND r.scale = $3
     ) AS foo
-    INNER JOIN ${boundaryTable} p
+    JOIN ${boundaryTable} p
     ON ST_Intersects(foo.rast, p.geom)
     AND p.${boundaryColumn} IN (${stateNames})
 ) AS bar
