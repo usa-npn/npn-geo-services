@@ -380,19 +380,19 @@ SELECT
 ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(bar.whole_rast), ST_Union(bar.whole_boundary), -9999, false), 1, null), 3857)) AS tiff,
 ST_Extent(ST_Transform(ST_Envelope(bar.whole_rast), 3857)) AS extent
 FROM (
-    SELECT r.rast AS whole_rast,
-    foo.boundary as whole_boundary
+    SELECT ST_Union(r.rast) AS whole_rast,
+    ST_Buffer(ST_Union(p.geom), .01) as whole_boundary
     FROM
     (
-        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary
-        FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN (${stateNames})
+        SELECT r.rast as rast
+        FROM ${rastTable} r
+        WHERE r.rast_date = $1
+        AND r.base = $2
+        AND r.scale = $3
     ) AS foo
-    INNER JOIN ${rastTable} r
-    ON ST_Intersects(r.rast, foo.boundary)
-    AND r.rast_date = $1
-    AND r.base = $2
-    AND r.scale = $3
+    INNER JOIN ${boundaryTable} p
+    ON ST_Intersects(foo.rast, p.geom)
+    AND p.${boundaryColumn} IN (${stateNames})
 ) AS bar
     `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
         };
