@@ -246,7 +246,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName){
                     console.log(`stderr: ${stderr}`);
 
                     //delete the unstyled file
-                    fs.unlinkSync(rasterpath + filename);
+                    //fs.unlinkSync(rasterpath + filename);
 
                     resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
                 });
