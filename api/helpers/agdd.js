@@ -384,8 +384,7 @@ FROM (
     ST_Buffer(ST_Union(p.geom), .01) as whole_boundary
     FROM
     (
-        SELECT r.rast as rast
-        FROM ${rastTable} r
+        SELECT r.rast as rast FROM ${rastTable} r
         WHERE r.rast_date = $1
         AND r.base = $2
         AND r.scale = $3
