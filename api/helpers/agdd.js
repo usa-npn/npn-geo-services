@@ -380,11 +380,11 @@ SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
 ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
 FROM (
-    SELECT ST_Transform(ST_Union(ST_Clip(r.rast, foo.boundary, -9999, false)), 3857) AS clipped_raster
+    SELECT ST_Union(ST_Clip(ST_Transform(r.rast, 3857), foo.boundary, -9999, false)) AS clipped_raster
     FROM
     (
-        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
-        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+        SELECT ST_Buffer(ST_Union(ST_Transform(p.geom, 3857)), .01) AS boundary,
+        ST_ConvexHull(ST_Union(ST_Transform(p.geom, 3857))) AS convex_hull_boundary
         FROM ${boundaryTable} p
         WHERE p.${boundaryColumn} IN (${stateNames})
     ) AS foo
