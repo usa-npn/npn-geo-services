@@ -113,6 +113,7 @@ function areaStatsInternal(req, res, anomaly) {
  */
 function pestMap(req, res) {
     let species = getParam(req.swagger.params['species']);
+    species = species.replace(/_/g, " ");
     let date = getParam(req.swagger.params['date']);
     let aprilStartDate = getParam(req.swagger.params['aprilStartDate']);
     let preserveExtent = getParam(req.swagger.params['preserveExtent']);
