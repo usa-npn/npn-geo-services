@@ -1044,7 +1044,7 @@ async function generate() {
                     in: 'query',
                     description: 'the species to retrieve map for',
                     type: 'string',
-                    enum: ['Apple Maggot', 'Emerald Ash Borer',  'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth', 'Emerald_Ash_Borer']
+                    enum: ['Apple Maggot', 'Emerald Ash Borer',  'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth']
                 },
                 {
                     name: 'date',
