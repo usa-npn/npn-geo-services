@@ -230,7 +230,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName){
             res.on('data', (d) => {
                 console.log('recieving data from geoserver');
                 log.info('recieving data from geoserver');
-                log.info(d.toString());
+                // log.info(d.toString());
             });
 
             res.on('end', () => {
@@ -246,7 +246,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName){
                     console.log(`stderr: ${stderr}`);
 
                     //delete the unstyled file
-                    //fs.unlinkSync(rasterpath + filename);
+                    fs.unlinkSync(rasterpath + filename);
 
                     resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
                 });
