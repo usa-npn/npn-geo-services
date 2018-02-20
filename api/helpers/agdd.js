@@ -328,8 +328,8 @@ async function getPestMap(species, date, preserveExtent) {
             47.4722109120521
         ];
         stateNames = ["'New York'", "'Connecticut'", "'New Hampshire'", "'Vermont'", "'Maine'", "'Massachusetts'"];
-    } else if(species === 'Lilac-Ash Borer') {
-        sldName = 'lilac_ash_borer.sld';
+    } else if(species === 'Lilac Borer') {
+        sldName = 'lilac_borer.sld';
         bounds = [
             -125.0208333,
             24.0625,
@@ -376,24 +376,17 @@ FROM (
         };
     } else if(preserveExtent) {
         query = {text: `
-SELECT
-ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(bar.whole_rast), ST_Union(bar.whole_boundary), -9999, false), 1, null), 3857)) AS tiff,
-ST_Extent(ST_Transform(ST_Envelope(bar.whole_rast), 3857)) AS extent
-FROM (
-    SELECT ST_Union(foo.rast) AS whole_rast,
-    ST_Buffer(ST_Union(p.geom), .01) as whole_boundary
-    FROM
-    (
-        SELECT r.rast as rast FROM ${rastTable} r
-        WHERE r.rast_date = $1
-        AND r.base = $2
-        AND r.scale = $3
-    ) AS foo
-    JOIN ${boundaryTable} p
-    ON ST_Intersects(foo.rast, p.geom)
-    AND p.${boundaryColumn} IN (${stateNames})
-) AS bar
-    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+WITH boundary AS (
+SELECT ST_Buffer(ST_Union(p.geom), .01) AS states
+FROM ${boundaryTable} p
+WHERE p.${boundaryColumn} IN (${stateNames})
+)
+SELECT ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(r.rast), (SELECT states FROM boundary), -9999, false), 1, null), 3857)) AS tiff
+FROM ${rastTable} r
+WHERE r.rast_date = $1
+AND r.base = $2
+AND r.scale = $3
+`, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
         };
     } else if(stateNames.length < 1) {
         query = {text: `
