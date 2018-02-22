@@ -7,7 +7,7 @@ let log = require('./logger.js');
 // hits the geo services pestMap endpoint to generate image
 function doRequest(path) {
     let options = {
-        hostname: (os.hostname() == 'npnweb-dev.npn.edu') ? 'data-dev.usanpn.org' : 'data.usanpn.org',
+        hostname: (os.hostname() == 'npnweb-dev.npn.edu' || os.hostname() == 'jeff-work') ? 'data-dev.usanpn.org' : 'data.usanpn.org',
         port: 3006,
         path: encodeURI(path),
         method: 'GET',
@@ -15,9 +15,12 @@ function doRequest(path) {
     };
     return new Promise ((resolve, reject) => {
         // 'https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=Emerald%20Ash%20Borer&date=2017-01-05'
+        console.log(options.hostname);
         https.get(options, (response) => {
+            console.log('resolved');
             resolve(response);
         }).on('error', (e) => {
+            console.log('rejected' + e);
             reject(e);
         });
     });
@@ -44,7 +47,7 @@ async function update() {
         log.info("updating cached pest images.");
         let speciesArr = ['Emerald Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth'];
         for(var species of speciesArr) {
-            await deleteForecastDays(species);
+            //await deleteForecastDays(species);
             let start = moment.utc("2017-01-01");
             let end = moment.utc().add(6,'days');
             while(start <= end){
