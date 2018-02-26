@@ -1044,7 +1044,7 @@ async function generate() {
                     in: 'query',
                     description: 'the species to retrieve map for',
                     type: 'string',
-                    enum: ['Emerald Ash Borer', 'Winter Moth', 'Lilac/Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid']
+                    enum: ['Apple Maggot', 'Emerald Ash Borer',  'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth']
                 },
                 {
                     name: 'date',
@@ -1055,12 +1055,12 @@ async function generate() {
                     format: 'date'
                 },
                 {
-                    name: 'aprilStartDate',
+                    name: 'preserveExtent',
                     in: 'query',
-                    required: true,
-                    description: 'select true for an April 1 start date.',
+                    required: false,
+                    description: 'preserve extent when clipping.',
                     type: 'boolean'
-                },
+                }
             ],
             responses: getResponses('ImageResponse')
         };

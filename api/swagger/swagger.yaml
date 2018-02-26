@@ -184,7 +184,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -834,7 +835,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -1473,7 +1475,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -2125,7 +2128,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -2602,6 +2606,49 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ErrorResponse'
+  /agdd/pestMap:
+    x-swagger-router-controller: agdd
+    get:
+      summary: gets pest agdd threshold map
+      description: Gets pest agdd threshold map for a specified species and date.
+      tags:
+        - accumlated growing degree days
+      operationId: pestMap
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: species
+          in: query
+          description: the species to retrieve map for
+          type: string
+          enum:
+            - Apple Maggot
+            - Emerald Ash Borer
+            - Hemlock Woolly Adelgid
+            - Lilac Borer
+            - Winter Moth
+        - name: date
+          in: query
+          required: true
+          description: the date to average over for example 2017-08-01.
+          type: string
+          format: date
+        - name: preserveExtent
+          in: query
+          required: false
+          description: preserve extent after clipping.
+          type: boolean
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /si-x/anomaly/area/clippedImage:
     x-swagger-router-controller: six
     get:
@@ -2764,7 +2811,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -3416,7 +3464,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -4050,7 +4099,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -4742,7 +4792,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -5440,7 +5491,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
@@ -6130,7 +6182,8 @@ paths:
             - BROWNS PARK NATIONAL WILDLIFE REFUGE
             - BUCK ISLAND NATIONAL WILDLIFE REFUGE
             - BUENOS AIRES NATIONAL WILDLIFE REFUGE
-            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (ND)
+            - BUFFALO LAKE NATIONAL WILDLIFE REFUGE (TX)
             - CABEZA PRIETA NATIONAL WILDLIFE REFUGE
             - CABO ROJO NATIONAL WILDLIFE REFUGE
             - CACHE RIVER NATIONAL WILDLIFE REFUGE
