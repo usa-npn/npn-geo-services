@@ -285,10 +285,14 @@ async function getPestMap(species, date, preserveExtent) {
         sldName = 'emerald_ash_borer.sld';
         bounds = [
             -109.0712618165,
-            25.8324511400651,
-            -69.9161870337683,
+            24.5049877850162,
+            -66.9509145889486,
             49.4107288273616
         ];
+        // -109.0712618165,
+        //     25.8324511400651,
+        //     -69.9161870337683,
+        //     49.4107288273616
         stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
             "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
             "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
