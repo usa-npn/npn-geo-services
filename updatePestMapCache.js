@@ -52,14 +52,14 @@ async function update() {
             let start = moment.utc("2017-01-01");
             let end = moment.utc().add(6,'days');
             while(start <= end){
-                let dateString = start.format('YYYY-MM-DD');
+                let dateString = end.format('YYYY-MM-DD');
                 try {
                     console.log(`generating pest map: ${species} ${dateString}`);
                     await doRequest(`/v0/agdd/pestMap?species=${species}&date=${dateString}`);
                 } catch(error) {
                     console.log(error);
                 }
-                start.add(1, 'days');
+                end.subtract(1, 'days');
             }
         }
         log.info("finished updating cached pest images.");
