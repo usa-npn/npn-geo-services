@@ -289,12 +289,12 @@ async function getPestMap(species, date, preserveExtent) {
             -69.9161870337683,
             49.4107288273616
         ];
-        stateNames = ["'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
+        stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
             "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
             "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
             "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
             "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
-            "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'"];
+            "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
     } else if(species === 'Apple Maggot') {
         sldName = 'apple_maggot.sld';
         stateNames = [];
