@@ -471,7 +471,7 @@ async function getDynamicAgdd(startDate, endDate, base) {
                 console.log('STDOUT: ' + result.stdout)
                 console.log('STDERR: ' + result.stderr)
 
-                let tifFile = `agdd_dynamic_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
+                let tifFile = `agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
 
                 client.scp({
                     host: 'geoserver-dev.usanpn.org',
