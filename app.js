@@ -67,9 +67,10 @@ generateSwagger.generate().then(() => {
     app.use(express.static('api/swagger'));
 
     const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images';
-
-// app.use(express.static('static/rasters'));
     app.use(express.static(imagePath));
+
+    const dynamicAgddPath = '/var/www/data-site/files/npn-geo-services/agdd_maps/';
+    app.use(express.static(dynamicAgddPath));
 
     SwaggerExpress.create(config, (err, swaggerExpress) => {
         if (err) { throw err; }

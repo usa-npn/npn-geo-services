@@ -6,9 +6,11 @@ var fs = require('fs');
 
 let node_ssh = require('node-ssh');
 let ssh = new node_ssh();
+let client = require('scp2');
 
 const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
 const pestImagePath = imagePath + 'pest_maps/';
+const dynamicAgddPath = '/var/www/data-site/files/npn-geo-services/agdd_maps/';
 
 // to pick up all pixels inside boundary we need to buffer around the shapefile before doing a clip,
 // the size of this buffer depends on the dataset resolution. This function returns the correct buffer size.
@@ -461,10 +463,30 @@ async function getDynamicAgdd(startDate, endDate, base) {
         password: process.env.GEOSERVER_SSH_PASSWORD
       })
       .then(function() {
-            ssh.execCommand(`/usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
-                { cwd:'/usr/local/scripts/gridded_models' }).then(function(result) {
+            ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
+                { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` }).then(function(result) {
                 console.log('STDOUT: ' + result.stdout)
                 console.log('STDERR: ' + result.stderr)
+
+                let tifFile = `agdd_dynamic_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
+
+                client.scp({
+                    host: 'geoserver-dev.usanpn.org',
+                    username: process.env.GEOSERVER_SSH_USER,
+                    password: process.env.GEOSERVER_SSH_PASSWORD,
+                    path: `/geo-vault/gridded_models/agdd_dynamic/${tiffFile}`
+                }, `/Users/npn/Desktop/${tiffFile}`, function(err) {
+                    console.log(err);
+                    if(!err) {
+                        let response = {
+                            startDate: startDate.format('YYYY-MM-DD'),
+                            endDate: endDate.format('YYYY-MM-DD'),
+                            base: base,
+                            clippedImage: dynamicAgddPath + tiffFile                        };
+                        return response;
+                    }
+                })
+
             });
       });
 

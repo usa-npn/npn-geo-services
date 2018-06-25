@@ -19,7 +19,8 @@
     "mysql2": "^1.1.2",
     "pg": "^7.1.2",
     "swagger-express-mw": "^0.7.0",
-    "node-ssh": "^5.1.2"
+    "node-ssh": "^5.1.2",
+    "scp2": "^0.5.0"
   },
   "devDependencies": {
     "should": "^7.1.0",
