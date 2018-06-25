@@ -484,7 +484,7 @@ async function getDynamicAgdd(startDate, endDate, base) {
                             startDate: startDate.format('YYYY-MM-DD'),
                             endDate: endDate.format('YYYY-MM-DD'),
                             base: base,
-                            clippedImage: dynamicAgddPath + tifFile   
+                            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}${dynamicAgddPath}${tifFile}`   
                         };
                         resolve(response);
                     } else {
