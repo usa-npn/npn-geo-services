@@ -479,11 +479,11 @@ async function getDynamicAgdd(startDate, endDate, base) {
                 }, `${dynamicAgddPath}${tifFile}`, function(err) {
                     console.log(err);
                     if(!err) {
-                        let response = {
-                            startDate: startDate.format('YYYY-MM-DD'),
-                            endDate: endDate.format('YYYY-MM-DD'),
-                            base: base,
-                            clippedImage: dynamicAgddPath + tifFile   
+                        let response = { testing: 'testing'
+                            // startDate: startDate.format('YYYY-MM-DD'),
+                            // endDate: endDate.format('YYYY-MM-DD'),
+                            // base: base,
+                            // clippedImage: dynamicAgddPath + tifFile   
                         };
                         return response;
                     }
