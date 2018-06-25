@@ -203,7 +203,7 @@ function dynamicAgdd(req, res) {
     let base = getParam(req.swagger.params['base']);
 
     return agddController.getDynamicAgdd(moment.utc(startDate), moment.utc(endDate), base)
-        .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+        .then((dynamicAgddJson) => res.status(200).send(dynamicAgddJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
 

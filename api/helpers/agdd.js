@@ -457,14 +457,15 @@ FROM (
 
 async function getDynamicAgdd(startDate, endDate, base) {
     // call python script to compute agdd
-    ssh.connect({
+    return ssh.connect({
         host: 'geoserver-dev.usanpn.org',
         username: process.env.GEOSERVER_SSH_USER,
         password: process.env.GEOSERVER_SSH_PASSWORD
       })
       .then(function() {
             ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
-                { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` }).then(function(result) {
+                { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
+                .then(function(result) {
                 console.log('STDOUT: ' + result.stdout)
                 console.log('STDERR: ' + result.stderr)
 
@@ -482,7 +483,8 @@ async function getDynamicAgdd(startDate, endDate, base) {
                             startDate: startDate.format('YYYY-MM-DD'),
                             endDate: endDate.format('YYYY-MM-DD'),
                             base: base,
-                            clippedImage: dynamicAgddPath + tifFile                        };
+                            clippedImage: dynamicAgddPath + tifFile   
+                        };
                         return response;
                     }
                 })
