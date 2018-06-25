@@ -456,8 +456,10 @@ FROM (
 }
 
 async function getDynamicAgdd(startDate, endDate, base) {
-    // call python script to compute agdd
-    return ssh.connect({
+    return new Promise((resolve, reject) =>
+    {
+    // call python script on geoserver to compute agdd
+      ssh.connect({
         host: 'geoserver-dev.usanpn.org',
         username: process.env.GEOSERVER_SSH_USER,
         password: process.env.GEOSERVER_SSH_PASSWORD
@@ -477,21 +479,21 @@ async function getDynamicAgdd(startDate, endDate, base) {
                     password: process.env.GEOSERVER_SSH_PASSWORD,
                     path: `/geo-vault/gridded_models/agdd_dynamic/${tifFile}`
                 }, `${dynamicAgddPath}${tifFile}`, function(err) {
-                    console.log(err);
                     if(!err) {
-                        let response = { testing: 'testing'
-                            // startDate: startDate.format('YYYY-MM-DD'),
-                            // endDate: endDate.format('YYYY-MM-DD'),
-                            // base: base,
-                            // clippedImage: dynamicAgddPath + tifFile   
+                        let response = {
+                            startDate: startDate.format('YYYY-MM-DD'),
+                            endDate: endDate.format('YYYY-MM-DD'),
+                            base: base,
+                            clippedImage: dynamicAgddPath + tifFile   
                         };
-                        return response;
+                        resolve(response);
+                    } else {
+                        reject(err);
                     }
-                })
-
+                });
             });
       });
-
+    });
 }
 
 module.exports.getDynamicAgdd = getDynamicAgdd;
