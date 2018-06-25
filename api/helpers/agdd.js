@@ -474,15 +474,15 @@ async function getDynamicAgdd(startDate, endDate, base) {
                     host: 'geoserver-dev.usanpn.org',
                     username: process.env.GEOSERVER_SSH_USER,
                     password: process.env.GEOSERVER_SSH_PASSWORD,
-                    path: `/geo-vault/gridded_models/agdd_dynamic/${tiffFile}`
-                }, `${dynamicAgddPath}${tiffFile}`, function(err) {
+                    path: `/geo-vault/gridded_models/agdd_dynamic/${tifFile}`
+                }, `${dynamicAgddPath}${tifFile}`, function(err) {
                     console.log(err);
                     if(!err) {
                         let response = {
                             startDate: startDate.format('YYYY-MM-DD'),
                             endDate: endDate.format('YYYY-MM-DD'),
                             base: base,
-                            clippedImage: dynamicAgddPath + tiffFile                        };
+                            clippedImage: dynamicAgddPath + tifFile                        };
                         return response;
                     }
                 })
