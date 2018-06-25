@@ -475,7 +475,7 @@ async function getDynamicAgdd(startDate, endDate, base) {
                     username: process.env.GEOSERVER_SSH_USER,
                     password: process.env.GEOSERVER_SSH_PASSWORD,
                     path: `/geo-vault/gridded_models/agdd_dynamic/${tiffFile}`
-                }, `/Users/npn/Desktop/${tiffFile}`, function(err) {
+                }, `${dynamicAgddPath}${tiffFile}`, function(err) {
                     console.log(err);
                     if(!err) {
                         let response = {

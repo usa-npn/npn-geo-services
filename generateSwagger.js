@@ -848,6 +848,24 @@ async function generate() {
         }
     };
 
+    swaggerDefinition['definitions']['DynamicAgddResponse'] = {
+        required: ['startDate', 'endDate', 'base', 'clippedImage'],
+        properties: {
+            startDate: {
+                type: "string"
+            },
+            endDate: {
+                type: "string"
+            },
+            base: {
+                type: "number"
+            },
+            clippedImage: {
+                type: "string"
+            }
+        }
+    };
+
     swaggerDefinition['definitions']['BoundaryResponse'] = {
         required: ['boundary'],
         properties: {
@@ -1100,7 +1118,7 @@ async function generate() {
                     type: 'integer'
                 }
             ],
-            responses: getResponses('ImageResponse')
+            responses: getResponses('DynamicAgddResponse')
         };
 
 
