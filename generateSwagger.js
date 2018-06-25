@@ -1065,6 +1065,44 @@ async function generate() {
             responses: getResponses('ImageResponse')
         };
 
+    
+    swaggerDefinition['paths']['/agdd/dynamicAgdd'] = {};
+    swaggerDefinition['paths']['/agdd/dynamicAgdd']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/dynamicAgdd']['get'] =
+        {
+            summary: `gets agdd from startDate through endDate for given base`,
+            description: `Gets agdd from startDate through endDate for given base.`,
+            tags: ['accumlated growing degree days'],
+            operationId: `dynamicAgdd`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [
+                {
+                    name: 'startDate',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'endDate',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-02-41.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'base',
+                    in: 'query',
+                    required: true,
+                    description: 'the base in fahrenheit used to compute the agdd',
+                    type: 'integer'
+                }
+            ],
+            responses: getResponses('ImageResponse')
+        };
+
 
 
 

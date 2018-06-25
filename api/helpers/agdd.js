@@ -4,6 +4,9 @@ const moment = require('moment');
 let helpers = require('./general');
 var fs = require('fs');
 
+let node_ssh = require('node-ssh');
+let ssh = new node_ssh();
+
 const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
 const pestImagePath = imagePath + 'pest_maps/';
 
@@ -450,6 +453,24 @@ FROM (
     }
 }
 
+async function getDynamicAgdd(startDate, endDate, base) {
+    // call python script to compute agdd
+    ssh.connect({
+        host: 'geoserver-dev.usanpn.org',
+        username: process.env.GEOSERVER_USER,
+        password: process.env.GEOSERVER_PASSWORD
+      })
+      .then(function() {
+            ssh.execCommand(`/usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
+                { cwd:'/usr/local/scripts/gridded_models' }).then(function(result) {
+                console.log('STDOUT: ' + result.stdout)
+                console.log('STDERR: ' + result.stderr)
+            });
+      });
+
+}
+
+module.exports.getDynamicAgdd = getDynamicAgdd;
 module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;
 module.exports.getClippedAgddRaster = getClippedAgddRaster;

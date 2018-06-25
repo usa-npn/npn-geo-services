@@ -194,9 +194,23 @@ function clippedImageInternal(req, res, anomaly) {
     }
 }
 
+/**
+ * @param {{swagger}} req
+ */
+function dynamicAgdd(req, res) {
+    let startDate = getParam(req.swagger.params['startDate']);
+    let endDate = getParam(req.swagger.params['endDate']);
+    let base = getParam(req.swagger.params['base']);
+
+    return agddController.getDynamicAgdd(moment.utc(startDate), moment.utc(endDate), base)
+        .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
+        .catch((error) => res.status(500).json({"message": error.message}));
+}
+
 module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
+module.exports.dynamicAgdd = dynamicAgdd;
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;
