@@ -207,10 +207,26 @@ function dynamicAgdd(req, res) {
         .catch((error) => res.status(500).json({"message": error.message}));
 }
 
+/**
+ * @param {{swagger}} req
+ */
+function dynamicAgddTimeSeries(req, res) {
+    let startDate = getParam(req.swagger.params['startDate']);
+    let endDate = getParam(req.swagger.params['endDate']);
+    let base = getParam(req.swagger.params['base']);
+    let lat = getParam(req.swagger.params['latitude']);
+    let long = getParam(req.swagger.params['longitude']);
+
+    return agddController.getDynamicAgddTimeSeries(moment.utc(startDate), moment.utc(endDate), base, lat, long)
+        .then((dynamicAgddTimeseriesJson) => res.status(200).send(dynamicAgddTimeseriesJson))
+        .catch((error) => res.status(500).json({"message": error.message}));
+}
+
 module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
 module.exports.dynamicAgdd = dynamicAgdd;
+module.exports.dynamicAgddTimeSeries = dynamicAgddTimeSeries;
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

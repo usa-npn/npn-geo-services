@@ -1122,6 +1122,58 @@ async function generate() {
         };
 
 
+    swaggerDefinition['paths']['/agdd/dynamicAgddTimeSeries'] = {};
+    swaggerDefinition['paths']['/agdd/dynamicAgddTimeSeries']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/dynamicAgddTimeSeries']['get'] =
+        {
+            summary: `gets agdd timeseries from startDate through endDate for given base, latitude, and longitude`,
+            description: `Gets agdd from startDate through endDate for given base.`,
+            tags: ['accumlated growing degree days'],
+            operationId: `dynamicAgddTimeSeries`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [
+                {
+                    name: 'startDate',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'endDate',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-02-41.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'base',
+                    in: 'query',
+                    required: true,
+                    description: 'the base in fahrenheit used to compute the agdd',
+                    type: 'integer'
+                },
+                {
+                    name: 'latitude',
+                    in: 'query',
+                    required: true,
+                    description: 'the latitude used to compute the agdd',
+                    type: 'number'
+                },
+                {
+                    name: 'longitude',
+                    in: 'query',
+                    required: true,
+                    description: 'the longitude used to compute the agdd',
+                    type: 'number'
+                }
+            ],
+            responses: getResponses('DynamicAgddResponse')
+        };
+
+
 
 
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage'] = {};

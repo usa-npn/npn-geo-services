@@ -455,6 +455,25 @@ FROM (
     }
 }
 
+// selects and returns row from the cache table matching function params
+async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
+    const query = {
+        text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM prism_tavg
+                WHERE rast_date >= $3
+                AND rast_date <= $4
+                AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($5, $6),4269))
+                ORDER BY rast_date`,
+        values: [long, lat, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), long, lat]
+    };
+    console.log(query);
+    const res = await db.pgPool.query(query);
+
+    return res['rows'].map(row => {
+        return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base }
+    });
+    //return res;
+}
+
 async function getDynamicAgdd(startDate, endDate, base) {
     return new Promise((resolve, reject) =>
     {
@@ -497,6 +516,7 @@ async function getDynamicAgdd(startDate, endDate, base) {
 }
 
 module.exports.getDynamicAgdd = getDynamicAgdd;
+module.exports.getDynamicAgddTimeSeries = getDynamicAgddTimeSeries;
 module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;
 module.exports.getClippedAgddRaster = getClippedAgddRaster;
