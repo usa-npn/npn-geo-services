@@ -456,7 +456,7 @@ FROM (
 }
 
 // selects and returns row from the cache table matching function params
-async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
+async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long, threshold) {
     const query = {
         text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM prism_tavg
                 WHERE rast_date >= $3
@@ -468,6 +468,8 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
     console.log(query);
     const res = await db.pgPool.query(query);
 
+    let dateAgddThresholdMet = null;
+
     let timeSeries = res['rows'].map(row => {
         return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base }
     }).reduce(function (accum, item) {
@@ -476,17 +478,25 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
         else
             item.agdd = item.gdd;
         accum.push(item);
+        if(threshold && item.agdd >= threshold) {
+            dateAgddThresholdMet = item.date;
+        }
         return accum;
     }, []);
-    
-    return {
+
+    response = {
         "startDate": startDate.format('YYYY-MM-DD'),
         "endDate": endDate.format('YYYY-MM-DD'),
         "base": base,
         "latitude": lat,
-        "longitude": long,
-        "timeSeries": timeSeries
-        };
+        "longitude": long
+    };
+    if (threshold) {
+        response["threshold"] = dateAgddThresholdMet;
+        response["dateAgddThresholdMet"] = dateAgddThresholdMet;
+    }
+    response["timeSeries"] = timeSeries;
+    return response;
 }
 
 async function getDynamicAgdd(startDate, endDate, base) {

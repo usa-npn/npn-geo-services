@@ -216,8 +216,9 @@ function agddPointTimeSeries(req, res) {
     let base = getParam(req.swagger.params['base']);
     let lat = getParam(req.swagger.params['latitude']);
     let long = getParam(req.swagger.params['longitude']);
+    let threshold = getParam(req.swagger.params['threshold']);
 
-    return agddController.getDynamicAgddTimeSeries(moment.utc(startDate), moment.utc(endDate), base, lat, long)
+    return agddController.getDynamicAgddTimeSeries(moment.utc(startDate), moment.utc(endDate), base, lat, long, threshold)
         .then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }

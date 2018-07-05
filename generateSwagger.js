@@ -884,6 +884,12 @@ async function generate() {
             longitude: {
                 type: "number"
             },
+            threshold: {
+                type: "number"
+            },
+            dateAgddThresholdMet: {
+                type: "string"
+            },
             timeSeries: {
                 type: "array",
                 items: {
@@ -1194,6 +1200,12 @@ async function generate() {
                     in: 'query',
                     required: true,
                     description: 'the longitude used to compute the agdd',
+                    type: 'number'
+                },
+                {
+                    name: 'agddThreshold',
+                    in: 'query',
+                    description: 'if provided, response will include date Agdd threshold was met',
                     type: 'number'
                 }
             ],
