@@ -848,8 +848,8 @@ async function generate() {
         }
     };
 
-    swaggerDefinition['definitions']['DynamicAgddResponse'] = {
-        required: ['startDate', 'endDate', 'base', 'clippedImage'],
+    swaggerDefinition['definitions']['AgddMapResponse'] = {
+        required: ['startDate', 'endDate', 'base', 'mapFilePath'],
         properties: {
             startDate: {
                 type: "string"
@@ -860,8 +860,35 @@ async function generate() {
             base: {
                 type: "number"
             },
-            clippedImage: {
+            mapFilePath: {
                 type: "string"
+            }
+        }
+    };
+
+    swaggerDefinition['definitions']['AgddPointTimeseriesResponse'] = {
+        required: ['startDate', 'endDate', 'base', 'latitude', 'longitude', 'timeSeries'],
+        properties: {
+            startDate: {
+                type: "string"
+            },
+            endDate: {
+                type: "string"
+            },
+            base: {
+                type: "number"
+            },
+            latitude: {
+                type: "number"
+            },
+            longitude: {
+                type: "number"
+            },
+            timeSeries: {
+                type: "array",
+                items: {
+                    type: "number"
+                }
             }
         }
     };
@@ -1084,14 +1111,14 @@ async function generate() {
         };
 
     
-    swaggerDefinition['paths']['/agdd/dynamicAgdd'] = {};
-    swaggerDefinition['paths']['/agdd/dynamicAgdd']['x-swagger-router-controller'] = 'agdd';
-    swaggerDefinition['paths']['/agdd/dynamicAgdd']['get'] =
+    swaggerDefinition['paths']['/agdd/agddMap'] = {};
+    swaggerDefinition['paths']['/agdd/agddMap']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/agddMap']['get'] =
         {
             summary: `gets agdd from startDate through endDate for given base`,
             description: `Gets agdd from startDate through endDate for given base.`,
             tags: ['accumlated growing degree days'],
-            operationId: `dynamicAgdd`,
+            operationId: `agddMap`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1106,7 +1133,7 @@ async function generate() {
                     name: 'endDate',
                     in: 'query',
                     required: true,
-                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-02-41.',
+                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-08-04.',
                     type: 'string',
                     format: 'date'
                 },
@@ -1118,18 +1145,18 @@ async function generate() {
                     type: 'integer'
                 }
             ],
-            responses: getResponses('DynamicAgddResponse')
+            responses: getResponses('AgddMapResponse')
         };
 
 
-    swaggerDefinition['paths']['/agdd/dynamicAgddTimeSeries'] = {};
-    swaggerDefinition['paths']['/agdd/dynamicAgddTimeSeries']['x-swagger-router-controller'] = 'agdd';
-    swaggerDefinition['paths']['/agdd/dynamicAgddTimeSeries']['get'] =
+    swaggerDefinition['paths']['/agdd/agddPointTimeSeries'] = {};
+    swaggerDefinition['paths']['/agdd/agddPointTimeSeries']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/agddPointTimeSeries']['get'] =
         {
-            summary: `gets agdd timeseries from startDate through endDate for given base, latitude, and longitude`,
-            description: `Gets agdd from startDate through endDate for given base.`,
+            summary: `gets agdd timeseries at a lat,long from startDate through endDate for given base`,
+            description: `Gets agdd timeseries at a lat,long from startDate through endDate for given base.`,
             tags: ['accumlated growing degree days'],
-            operationId: `dynamicAgddTimeSeries`,
+            operationId: `agddPointTimeSeries`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1170,7 +1197,7 @@ async function generate() {
                     type: 'number'
                 }
             ],
-            responses: getResponses('DynamicAgddResponse')
+            responses: getResponses('AgddPointTimeSeriesResponse')
         };
 
 

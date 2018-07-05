@@ -197,20 +197,20 @@ function clippedImageInternal(req, res, anomaly) {
 /**
  * @param {{swagger}} req
  */
-function dynamicAgdd(req, res) {
+function agddMap(req, res) {
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
 
     return agddController.getDynamicAgdd(moment.utc(startDate), moment.utc(endDate), base)
-        .then((dynamicAgddJson) => res.status(200).send(dynamicAgddJson))
+        .then((agddMapJson) => res.status(200).send(agddMapJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
 
 /**
  * @param {{swagger}} req
  */
-function dynamicAgddTimeSeries(req, res) {
+function agddPointTimeSeries(req, res) {
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
@@ -218,7 +218,7 @@ function dynamicAgddTimeSeries(req, res) {
     let long = getParam(req.swagger.params['longitude']);
 
     return agddController.getDynamicAgddTimeSeries(moment.utc(startDate), moment.utc(endDate), base, lat, long)
-        .then((dynamicAgddTimeseriesJson) => res.status(200).send(dynamicAgddTimeseriesJson))
+        .then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
 
@@ -227,6 +227,6 @@ module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
-module.exports.dynamicAgdd = dynamicAgdd;
-module.exports.dynamicAgddTimeSeries = dynamicAgddTimeSeries;
+module.exports.agddMap = agddMap;
+module.exports.agddPointTimeSeries = agddPointTimeSeries;
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;
