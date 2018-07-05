@@ -470,7 +470,14 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
 
     return res['rows'].map(row => {
         return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base }
-    });
+    }).reduce(function (accum, item) {
+        if (accum.length > 0)
+            item.agdd = item.gdd + accum[accum.length-1].agdd;
+        else
+            item.agdd = item.gdd;
+        accum.push(item);
+        return accum;
+    }, []);
     //return res;
 }
 
