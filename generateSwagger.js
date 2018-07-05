@@ -773,13 +773,13 @@ function getResponses(definitionName) {
 
 
 let host = `${process.env.SERVICES_HOST}:${process.env.PORT}`;
-const version = "0.0.1";
-const basePath = "/v0";
+const version = "1.0.0";
+const basePath = "/v1";
 
 let swaggerDefinition = {
     swagger: "2.0",
     info: {
-        description: "Welcome to the USA-NPN geospatial services. More description to come!",
+        description: "Welcome to the USA-NPN geospatial services. These services allow one to access geospatial data hosted at the USA-NPN in various ways including timeseries at a lat/long, GeoTIFF maps bounded by a polygon, and aggregated statistics over a ploygon.",
         version: version,
         title: "National Phenology Network Web Services",
         termsOfService: "TODO: Add terms of service here",
@@ -792,7 +792,7 @@ let swaggerDefinition = {
     host: host,
     basePath: basePath,
     tags: [],
-    schemes: ["http", "https"],
+    schemes: ["https", "http"],
     securityDefinitions: {
         token: {
             type: "apiKey",
@@ -866,7 +866,7 @@ async function generate() {
         }
     };
 
-    swaggerDefinition['definitions']['AgddPointTimeseriesResponse'] = {
+    swaggerDefinition['definitions']['AgddPointTimeSeriesResponse'] = {
         required: ['startDate', 'endDate', 'base', 'latitude', 'longitude', 'timeSeries'],
         properties: {
             startDate: {
