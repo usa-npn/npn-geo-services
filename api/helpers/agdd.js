@@ -468,7 +468,7 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
     console.log(query);
     const res = await db.pgPool.query(query);
 
-    return res['rows'].map(row => {
+    let timeSeries = res['rows'].map(row => {
         return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base }
     }).reduce(function (accum, item) {
         if (accum.length > 0)
@@ -478,7 +478,15 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long) {
         accum.push(item);
         return accum;
     }, []);
-    //return res;
+    
+    return {
+        "startDate": startDate.format('YYYY-MM-DD'),
+        "endDate": endDate.format('YYYY-MM-DD'),
+        "base": base,
+        "latitude": lat,
+        "longitude": long,
+        "timeSeries": timeSeries
+        };
 }
 
 async function getDynamicAgdd(startDate, endDate, base) {
