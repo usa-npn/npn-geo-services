@@ -1185,27 +1185,27 @@ async function generate() {
                     name: 'base',
                     in: 'query',
                     required: true,
-                    description: 'the base in fahrenheit used to compute the agdd',
+                    description: 'the base in fahrenheit used to compute the agdd - for example 12',
                     type: 'integer'
                 },
                 {
                     name: 'latitude',
                     in: 'query',
                     required: true,
-                    description: 'the latitude used to compute the agdd',
+                    description: 'the latitude used to compute the agdd - for example -32.2',
                     type: 'number'
                 },
                 {
                     name: 'longitude',
                     in: 'query',
                     required: true,
-                    description: 'the longitude used to compute the agdd',
+                    description: 'the longitude used to compute the agdd - for example -110',
                     type: 'number'
                 },
                 {
                     name: 'agddThreshold',
                     in: 'query',
-                    description: 'if provided, response will include date Agdd threshold was met',
+                    description: 'if provided, response will include the date that the agdd threshold was met - for example 1000',
                     type: 'number'
                 }
             ],
