@@ -1192,7 +1192,7 @@ async function generate() {
                     name: 'latitude',
                     in: 'query',
                     required: true,
-                    description: 'the latitude used to compute the agdd - for example -32.2',
+                    description: 'the latitude used to compute the agdd - for example 32.2',
                     type: 'number'
                 },
                 {

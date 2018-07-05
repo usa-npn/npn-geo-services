@@ -478,7 +478,7 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long, thr
         else
             item.agdd = item.gdd;
         accum.push(item);
-        if(dateAgddThresholdMet != null && threshold && item.agdd >= threshold) {
+        if(dateAgddThresholdMet == null && threshold && item.agdd >= threshold) {
             dateAgddThresholdMet = item.date;
         }
         return accum;
