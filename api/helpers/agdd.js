@@ -3,6 +3,7 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let helpers = require('./general');
 var fs = require('fs');
+const https = require('https');
 
 let node_ssh = require('node-ssh');
 let ssh = new node_ssh();
@@ -502,41 +503,53 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long, thr
 async function getDynamicAgdd(startDate, endDate, base) {
     return new Promise((resolve, reject) =>
     {
-    // call python script on geoserver to compute agdd
-      ssh.connect({
-        host: 'geoserver-dev.usanpn.org',
-        username: process.env.GEOSERVER_SSH_USER,
-        password: process.env.GEOSERVER_SSH_PASSWORD
-      })
-      .then(function() {
-            ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
-                { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
-                .then(function(result) {
-                console.log('STDOUT: ' + result.stdout)
-                console.log('STDERR: ' + result.stderr)
+        //check if file already exists, if so don't do all the work
+        let tifFile = `agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
+        let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
+        
+        //for local testing
+        //tifUrl = "https://data-dev.usanpn.org:3006/agdd_1994-02-02_through_1994-02-20_base13.tif";
 
-                let tifFile = `agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
+        let response = {
+            startDate: startDate.format('YYYY-MM-DD'),
+            endDate: endDate.format('YYYY-MM-DD'),
+            base: base,
+            mapUrl: tifUrl   
+        };
 
-                client.scp({
+        helpers.urlExists(tifUrl, (err, exists) => {
+            if(!err && exists) {
+                resolve(response);
+            } else {
+                // file didn't exist so do work: call python script on geoserver to compute agdd
+                ssh.connect({
                     host: 'geoserver-dev.usanpn.org',
                     username: process.env.GEOSERVER_SSH_USER,
-                    password: process.env.GEOSERVER_SSH_PASSWORD,
-                    path: `/geo-vault/gridded_models/agdd_dynamic/${tifFile}`
-                }, `${dynamicAgddPath}${tifFile}`, function(err) {
-                    if(!err) {
-                        let response = {
-                            startDate: startDate.format('YYYY-MM-DD'),
-                            endDate: endDate.format('YYYY-MM-DD'),
-                            base: base,
-                            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`   
-                        };
-                        resolve(response);
-                    } else {
-                        reject(err);
-                    }
+                    password: process.env.GEOSERVER_SSH_PASSWORD
+                })
+                .then(function() {
+                    ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
+                        { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
+                        .then(function(result) {
+                        console.log('STDOUT: ' + result.stdout)
+                        console.log('STDERR: ' + result.stderr)
+
+                        client.scp({
+                            host: 'geoserver-dev.usanpn.org',
+                            username: process.env.GEOSERVER_SSH_USER,
+                            password: process.env.GEOSERVER_SSH_PASSWORD,
+                            path: `/geo-vault/gridded_models/agdd_dynamic/${tifFile}`
+                        }, `${dynamicAgddPath}${tifFile}`, function(err) {
+                            if(!err) {
+                                resolve(response);
+                            } else {
+                                reject(err);
+                            }
+                        });
+                    });
                 });
-            });
-      });
+            }
+        });
     });
 }
 

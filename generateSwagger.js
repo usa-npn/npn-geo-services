@@ -849,7 +849,7 @@ async function generate() {
     };
 
     swaggerDefinition['definitions']['AgddMapResponse'] = {
-        required: ['startDate', 'endDate', 'base', 'mapFilePath'],
+        required: ['startDate', 'endDate', 'base', 'mapUrl'],
         properties: {
             startDate: {
                 type: "string"
@@ -860,7 +860,7 @@ async function generate() {
             base: {
                 type: "number"
             },
-            mapFilePath: {
+            mapUrl: {
                 type: "string"
             }
         }

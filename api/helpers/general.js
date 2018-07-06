@@ -5,6 +5,7 @@ const http = require('http');
 const https = require('https');
 const { exec } = require('child_process');
 const { spawnSync } = require('child_process');
+var request = require('request');
 
 const mustUseConvexHull = [
     "YUKON DELTA NATIONAL WILDLIFE REFUGE",
@@ -266,6 +267,13 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName){
     });
 }
 
+function urlExists(url, cb) {
+    request({ url: url, method: 'HEAD', "rejectUnauthorized": false }, function(err, res) {
+        if (err) return cb(null, false);
+        cb(null, /4\d\d/.test(res.statusCode) === false);
+    });
+}
+
 
 module.exports.stylizeFile = stylizeFile;
 module.exports.stylizePestMap = stylizePestMap;
@@ -273,3 +281,4 @@ module.exports.WriteFile = WriteFile;
 module.exports.getDatesRangeArray = getDatesRangeArray;
 module.exports.extractFloatsFromString = extractFloatsFromString;
 module.exports.mustUseConvexHull = mustUseConvexHull;
+module.exports.urlExists = urlExists;
