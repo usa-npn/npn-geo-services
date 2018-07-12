@@ -773,8 +773,8 @@ function getResponses(definitionName) {
 
 
 let host = `${process.env.SERVICES_HOST}:${process.env.PORT}`;
-const version = "1.0.0";
-const basePath = "/v1";
+const version = "0.0.1";
+const basePath = "/v0";
 
 let swaggerDefinition = {
     swagger: "2.0",
@@ -1093,6 +1093,7 @@ async function generate() {
                 {
                     name: 'species',
                     in: 'query',
+                    required: true,
                     description: 'the species to retrieve map for',
                     type: 'string',
                     enum: ['Apple Maggot', 'Emerald Ash Borer',  'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth']
@@ -1109,7 +1110,7 @@ async function generate() {
                     name: 'preserveExtent',
                     in: 'query',
                     required: false,
-                    description: 'preserve extent when clipping.',
+                    description: 'preserve extent to Contiguous United States when clipping.',
                     type: 'boolean'
                 }
             ],
