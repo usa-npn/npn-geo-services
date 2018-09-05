@@ -472,7 +472,7 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long, thr
     let dateAgddThresholdMet = null;
 
     let timeSeries = res['rows'].map(row => {
-        return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base }
+        return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base > 0 ? row['st_value'] - base : 0 }
     }).reduce(function (accum, item) {
         if (accum.length > 0)
             item.agdd = item.gdd + accum[accum.length-1].agdd;
