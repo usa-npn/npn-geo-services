@@ -851,6 +851,9 @@ async function generate() {
     swaggerDefinition['definitions']['AgddMapResponse'] = {
         required: ['startDate', 'endDate', 'base', 'mapUrl'],
         properties: {
+            climateProvider: {
+                type: "string"
+            },
             startDate: {
                 type: "string"
             },
@@ -1131,6 +1134,16 @@ async function generate() {
             operationId: `agddMap`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
+                {
+                    name: 'climateProvider',
+                    in: 'query',
+                    description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
+                    type: 'string',
+                    enum: [
+                        "PRISM",
+                        "NCEP"
+                    ]
+                },
                 {
                     name: 'startDate',
                     in: 'query',

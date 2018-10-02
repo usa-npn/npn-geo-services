@@ -501,17 +501,18 @@ async function getDynamicAgddTimeSeries(climateProvider, startDate, endDate, bas
     return response;
 }
 
-async function getDynamicAgdd(startDate, endDate, base) {
+async function getDynamicAgdd(climateProvider, startDate, endDate, base) {
     return new Promise((resolve, reject) =>
     {
         //check if file already exists, if so don't do all the work
-        let tifFile = `agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
+        let tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
         let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
         
         //for local testing
         //tifUrl = "https://data-dev.usanpn.org:3006/agdd_1994-02-02_through_1994-02-20_base13.tif";
 
         let response = {
+            climateProvider: climateProvider,
             startDate: startDate.format('YYYY-MM-DD'),
             endDate: endDate.format('YYYY-MM-DD'),
             base: base,
@@ -529,7 +530,7 @@ async function getDynamicAgdd(startDate, endDate, base) {
                     password: process.env.GEOSERVER_SSH_PASSWORD
                 })
                 .then(function() {
-                    ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
+                    ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
                         { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
                         .then(function(result) {
                         console.log('STDOUT: ' + result.stdout)
@@ -539,7 +540,7 @@ async function getDynamicAgdd(startDate, endDate, base) {
                             host: 'geoserver-dev.usanpn.org',
                             username: process.env.GEOSERVER_SSH_USER,
                             password: process.env.GEOSERVER_SSH_PASSWORD,
-                            path: `/geo-vault/gridded_models/agdd_dynamic/${tifFile}`
+                            path: `/geo-data/gridded_models/agdd_dynamic/${tifFile}`
                         }, `${dynamicAgddPath}${tifFile}`, function(err) {
                             if(!err) {
                                 resolve(response);

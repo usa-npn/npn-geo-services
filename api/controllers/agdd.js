@@ -197,11 +197,12 @@ function clippedImageInternal(req, res, anomaly) {
  * @param {{swagger}} req
  */
 function agddMap(req, res) {
+    let climateProvider = getParam(req.swagger.params['climateProvider']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
 
-    return agddController.getDynamicAgdd(moment.utc(startDate), moment.utc(endDate), base)
+    return agddController.getDynamicAgdd(climateProvider, moment.utc(startDate), moment.utc(endDate), base)
         .then((agddMapJson) => res.status(200).send(agddMapJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
