@@ -114,7 +114,6 @@ function areaStatsInternal(req, res, anomaly) {
 function pestMap(req, res) {
     let species = getParam(req.swagger.params['species']);
     let date = getParam(req.swagger.params['date']);
-    let aprilStartDate = getParam(req.swagger.params['aprilStartDate']);
     let preserveExtent = getParam(req.swagger.params['preserveExtent']);
 
     return agddController.getPestMap(species, moment.utc(date), preserveExtent)
@@ -211,6 +210,7 @@ function agddMap(req, res) {
  * @param {{swagger}} req
  */
 function agddPointTimeSeries(req, res) {
+    let climateProvider = getParam(req.swagger.params['climateProvider']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
@@ -218,7 +218,7 @@ function agddPointTimeSeries(req, res) {
     let long = getParam(req.swagger.params['longitude']);
     let agddThreshold = getParam(req.swagger.params['agddThreshold']);
 
-    return agddController.getDynamicAgddTimeSeries(moment.utc(startDate), moment.utc(endDate), base, lat, long, agddThreshold)
+    return agddController.getDynamicAgddTimeSeries(climateProvider, moment.utc(startDate), moment.utc(endDate), base, lat, long, agddThreshold)
         .then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }

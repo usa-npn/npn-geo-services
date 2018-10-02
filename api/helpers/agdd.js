@@ -457,9 +457,9 @@ FROM (
 }
 
 // selects and returns row from the cache table matching function params
-async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long, threshold) {
+async function getDynamicAgddTimeSeries(climateProvider, startDate, endDate, base, lat, long, threshold) {
     const query = {
-        text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM prism_tavg
+        text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${climateProvider.toLowerCase()}_tavg
                 WHERE rast_date >= $3
                 AND rast_date <= $4
                 AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($5, $6),4269))
@@ -486,6 +486,7 @@ async function getDynamicAgddTimeSeries(startDate, endDate, base, lat, long, thr
     }, []);
 
     response = {
+        "climateProvider": climateProvider,
         "startDate": startDate.format('YYYY-MM-DD'),
         "endDate": endDate.format('YYYY-MM-DD'),
         "base": base,
