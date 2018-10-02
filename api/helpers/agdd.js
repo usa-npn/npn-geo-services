@@ -530,7 +530,7 @@ async function getDynamicAgdd(climateProvider, startDate, endDate, base) {
                     password: process.env.GEOSERVER_SSH_PASSWORD
                 })
                 .then(function() {
-                    ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
+                    ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
                         { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
                         .then(function(result) {
                         console.log('STDOUT: ' + result.stdout)
