@@ -329,6 +329,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 
     exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
         if (err) {
+            log.error('could not slice pestmap to boundary: ' + err);
             // node couldn't execute the command
             // todo error handle
             return;
