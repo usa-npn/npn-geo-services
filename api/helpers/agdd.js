@@ -278,6 +278,7 @@ async function getClippedAgddRaster() {
 }
 
 async function getCustomAgddPestMap(species, date, preserveExtent) {
+    log.info('in custom agdd pest map');
     let sldName = 'eastern_tent_caterpillar.sld';
     let base = 50;
     let currentYear = moment().utc().year();
@@ -354,8 +355,11 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 async function getPestMap(species, date, preserveExtent) {
 
     if(species === 'Eastern Tent Caterpillar') {
+        log.info('calling custom agdd pest map');
         return getCustomAgddPestMap(species, date, preserveExtent);
     }
+
+    log.info('are we here?');
 
     let layerName = `gdd:agdd_50f`;
     let bounds = [];
