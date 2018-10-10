@@ -4,6 +4,7 @@ const moment = require('moment');
 let helpers = require('./general');
 var fs = require('fs');
 const https = require('https');
+const { exec } = require('child_process');
 
 let node_ssh = require('node-ssh');
 let ssh = new node_ssh();
@@ -276,9 +277,79 @@ async function getClippedAgddRaster() {
 
 }
 
+async function getCustomAgddPestMap(species, date, preserveExtent) {
+    let sldName = 'eastern_tent_caterpillar.sld';
+    let base = 50;
+    let currentYear = moment().utc().year();
+    let climateProvider = "ncep";
+    let startDate = moment.utc(`${currentYear}-03-01`);
+    let bounds = [
+        -109.0712618165,
+        24.5049877850162,
+        -66.9509145889486,
+        49.4107288273616
+    ];
+    let stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
+        "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
+        "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
+        "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
+        "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
+        "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
+
+    // get the png from disk if already exists
+    let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+    if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
+        let response = {
+            date: date.format('YYYY-MM-DD'),
+            layerClippedFrom: layerName,
+            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
+            bbox: bounds
+        };
+        return response;
+    }
+    // otherwise generate tiff via custom agdd endpoint
+    let result = await getDynamicAgdd(climateProvider, startDate, date, base);
+    let tiffFileUrl = result.mapUrl;
+    let tiffFileName = tiffFileUrl.split('/').pop();
+    let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
+    // copy tif to pestMap directory
+    fs.createReadStream(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`)
+    .pipe(fs.createWriteStream(pestMapTiffPath));
+    // slice the tiff
+    let shapefile = '';
+    let croppedFileName = `cropped_${tiffFileName}`;
+    let croppedPestMap = `${pestImagePath}${croppedFileName}`;
+
+    exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, (err, stdout, stderr) => {
+        if (err) {
+            // node couldn't execute the command
+            // todo error handle
+            return;
+        }
+        // remove the uncropped tiff
+        fs.unlink(pestImagePath);
+
+        // style the tiff into png
+        let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
+        response.clippedImage = await helpers.stylizePestMap(croppedFileName, pestImagePath, 'png', sldName);
+        response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+
+        // return png
+        return respose;
+
+
+        // the *entire* stdout and stderr (buffered)
+        // console.log(`stdout: ${stdout}`);
+        // console.log(`stderr: ${stderr}`);
+    });
+}
 
 // saves to disk and returns path to styled tiff for six clipping
 async function getPestMap(species, date, preserveExtent) {
+
+    if(species === 'Eastern Tent Caterpillar') {
+        return getCustomAgddPestMap(species, date, preserveExtent);
+    }
 
     let layerName = `gdd:agdd_50f`;
     let bounds = [];
