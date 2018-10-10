@@ -307,6 +307,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         };
         return response;
     }
+    log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${base}`);
     // otherwise generate tiff via custom agdd endpoint
     let result = await getDynamicAgdd(climateProvider, startDate, date, base);
     let tiffFileUrl = result.mapUrl;
@@ -315,8 +316,13 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     // copy tif to pestMap directory
     fs.createReadStream(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`)
     .pipe(fs.createWriteStream(pestMapTiffPath));
+
+    //todo get the shape file
+    //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
+    //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
+
     // slice the tiff
-    let shapefile = '';
+    let shapefile = '/var/www/data-site/files/npn-geo-services/shape_files/states-5/states.shp';
     let croppedFileName = `cropped_${tiffFileName}`;
     let croppedPestMap = `${pestImagePath}${croppedFileName}`;
 
