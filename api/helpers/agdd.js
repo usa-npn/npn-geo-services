@@ -327,7 +327,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     let croppedFileName = `cropped_${tiffFileName}`;
     let croppedPestMap = `${pestImagePath}${croppedFileName}`;
 
-    exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, (err, stdout, stderr) => {
+    exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
         if (err) {
             // node couldn't execute the command
             // todo error handle
