@@ -335,7 +335,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                 return;
             }
             // remove the uncropped tiff
-            fs.unlink(pestImagePath);
+            fs.unlink(pestMapTiffPath);
 
             // style the tiff into png
             let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
