@@ -290,12 +290,19 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         -66.9509145889486,
         49.4107288273616
     ];
-    let stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
-        "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
-        "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
-        "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
-        "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
-        "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
+    // let stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
+    //     "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
+    //     "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
+    //     "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
+    //     "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
+    //     "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
+
+    let stateNames = ['Maine', 'Vermont', 'Colorado', 'Nebraska', 'Kansas', 'Oklahoma', 'Texas', 'Minnesota',
+        'Iowa', 'Missouri', 'Arkansas', 'Louisiana', 'Wisconsin', 'Illinois',
+        'Kentucky', 'Tennessee', 'Mississippi', 'Michigan', 'Indiana', 'Alabama',
+        'Ohio', 'Alabama', 'Georgia', 'South Carolina', 'North Carolina', 'Virginia',
+        'West Virginia', 'District of Columbia', 'Maryland', 'Delaware', 'New Jersey', 'Pennsylvania',
+        'New York', 'Connecticut', 'Rhode Island', 'Massachusetts', 'New Hampshire', 'Florida'];
 
     // get the png from disk if already exists
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
@@ -318,12 +325,12 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     fs.copyFile(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`, pestMapTiffPath, (err) => {
         if (err) throw err;
 
-        //todo get the shape file
+        //can talk about geting the shape file dynamically from geoserver, but extra processing
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
         //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
-
+        //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
         // slice the tiff
-        let shapefile = '/var/www/data-site/files/npn-geo-services/shape_files/states-5/states.shp';
+        let shapefile = `/var/www/data-site/files/npn-geo-services/shape_files/${species.replace(/ /g, '_').toLowerCase()}/states.shp`;
         let croppedPngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
