@@ -341,7 +341,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                  // style the tiff into png
                 let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
                 response.clippedImage = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
-                response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+                response.bbox = bounds;
 
                 // return png
                 return response;
