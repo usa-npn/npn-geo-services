@@ -330,20 +330,23 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
             if (err) {
                 log.error('could not slice pestmap to boundary: ' + err);
-                // node couldn't execute the command
-                // todo error handle
-                return;
+                throw err;
             }
             // remove the uncropped tiff
-            fs.unlink(pestMapTiffPath);
+            fs.unlink(pestMapTiffPath, async (err) => {
+                if (err) {
+                    log.error('could not delete uncropped tif file: ' + err);
+                    throw err;
+                }
+                 // style the tiff into png
+                let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
+                response.clippedImage = await helpers.stylizePestMap(croppedFileName, pestImagePath, 'png', sldName);
+                response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
 
-            // style the tiff into png
-            let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
-            response.clippedImage = await helpers.stylizePestMap(croppedFileName, pestImagePath, 'png', sldName);
-            response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+                // return png
+                return respose;
 
-            // return png
-            return respose;
+            });
         });
     }); 
 }
