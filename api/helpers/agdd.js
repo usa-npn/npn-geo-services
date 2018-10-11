@@ -324,7 +324,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 
         // slice the tiff
         let shapefile = '/var/www/data-site/files/npn-geo-services/shape_files/states-5/states.shp';
-        let croppedFileName = `cropped_${tiffFileName}`;
+        let croppedFileName = `cropped_${tiffFileName}`.replace('tif', 'png');
         let croppedPestMap = `${pestImagePath}${croppedFileName}`;
 
         exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
