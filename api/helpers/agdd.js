@@ -315,41 +315,37 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
     // copy tif to pestMap directory
-    fs.createReadStream(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`)
-    .pipe(fs.createWriteStream(pestMapTiffPath));
+    fs.copyFile(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`, pestMapTiffPath, (err) => {
+        if (err) throw err;
 
-    //todo get the shape file
-    //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
-    //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
+        //todo get the shape file
+        //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
+        //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
 
-    // slice the tiff
-    let shapefile = '/var/www/data-site/files/npn-geo-services/shape_files/states-5/states.shp';
-    let croppedFileName = `cropped_${tiffFileName}`;
-    let croppedPestMap = `${pestImagePath}${croppedFileName}`;
+        // slice the tiff
+        let shapefile = '/var/www/data-site/files/npn-geo-services/shape_files/states-5/states.shp';
+        let croppedFileName = `cropped_${tiffFileName}`;
+        let croppedPestMap = `${pestImagePath}${croppedFileName}`;
 
-    exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
-        if (err) {
-            log.error('could not slice pestmap to boundary: ' + err);
-            // node couldn't execute the command
-            // todo error handle
-            return;
-        }
-        // remove the uncropped tiff
-        fs.unlink(pestImagePath);
+        exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
+            if (err) {
+                log.error('could not slice pestmap to boundary: ' + err);
+                // node couldn't execute the command
+                // todo error handle
+                return;
+            }
+            // remove the uncropped tiff
+            fs.unlink(pestImagePath);
 
-        // style the tiff into png
-        let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
-        response.clippedImage = await helpers.stylizePestMap(croppedFileName, pestImagePath, 'png', sldName);
-        response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+            // style the tiff into png
+            let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
+            response.clippedImage = await helpers.stylizePestMap(croppedFileName, pestImagePath, 'png', sldName);
+            response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
 
-        // return png
-        return respose;
-
-
-        // the *entire* stdout and stderr (buffered)
-        // console.log(`stdout: ${stdout}`);
-        // console.log(`stderr: ${stderr}`);
-    });
+            // return png
+            return respose;
+        });
+    }); 
 }
 
 // saves to disk and returns path to styled tiff for six clipping
