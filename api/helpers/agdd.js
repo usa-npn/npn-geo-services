@@ -324,8 +324,8 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 
         // slice the tiff
         let shapefile = '/var/www/data-site/files/npn-geo-services/shape_files/states-5/states.shp';
-        let croppedFileName = `cropped_${tiffFileName}`.replace('tif', 'png');
-        let croppedPestMap = `${pestImagePath}${croppedFileName}`;
+        let croppedPngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+        let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
         exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
             if (err) {
@@ -340,11 +340,11 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                 }
                  // style the tiff into png
                 let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
-                response.clippedImage = await helpers.stylizePestMap(croppedFileName, pestImagePath, 'png', sldName);
+                response.clippedImage = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
                 response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
 
                 // return png
-                return respose;
+                return response;
 
             });
         });
