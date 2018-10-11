@@ -302,7 +302,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
         let response = {
             date: date.format('YYYY-MM-DD'),
-            layerClippedFrom: layerName,
+            layerClippedFrom: 'custom',
             clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
             bbox: bounds
         };
@@ -339,7 +339,10 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                     throw err;
                 }
                  // style the tiff into png
-                let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: 'custom'};
+                let response = {
+                    date: date.format('YYYY-MM-DD'),
+                    layerClippedFrom: 'custom'
+                };
                 response.clippedImage = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
                 response.bbox = bounds;
 
