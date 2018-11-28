@@ -7,12 +7,12 @@ let general = require('../helpers/general.js');
  * @param {{swagger}} req
  */
 function pointTimeSeries(req, res) {
-    let climateProvider = getParam(req.swagger.params['climateProvider']);
-    let climateVariable = getParam(req.swagger.params['climateVariable']);
-    let startDate = getParam(req.swagger.params['startDate']);
-    let endDate = getParam(req.swagger.params['endDate']);
-    let lat = getParam(req.swagger.params['latitude']);
-    let long = getParam(req.swagger.params['longitude']);
+    let climateProvider = general.getParam(req.swagger.params['climateProvider']);
+    let climateVariable = general.getParam(req.swagger.params['climateVariable']);
+    let startDate = general.getParam(req.swagger.params['startDate']);
+    let endDate = general.getParam(req.swagger.params['endDate']);
+    let lat = general.getParam(req.swagger.params['latitude']);
+    let long = general.getParam(req.swagger.params['longitude']);
 
     return climateController.getClimatePointTimeSeries(
         climateProvider, 
