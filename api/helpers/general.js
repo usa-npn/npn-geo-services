@@ -279,6 +279,13 @@ function urlExists(url, cb) {
     });
 }
 
+function getParam(param) {
+    if (param != null) {
+        return param.value
+    } else {
+        return null;
+    }
+}
 
 module.exports.stylizeFile = stylizeFile;
 module.exports.stylizePestMap = stylizePestMap;
@@ -287,3 +294,4 @@ module.exports.getDatesRangeArray = getDatesRangeArray;
 module.exports.extractFloatsFromString = extractFloatsFromString;
 module.exports.mustUseConvexHull = mustUseConvexHull;
 module.exports.urlExists = urlExists;
+module.exports.getParam = getParam;
