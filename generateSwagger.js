@@ -1324,7 +1324,7 @@ async function generate() {
                     name: 'climateProvider',
                     in: 'query',
                     required: true,
-                    description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
+                    description: 'the backing climate data provider.',
                     type: 'string',
                     enum: [
                         "PRISM"
@@ -1344,7 +1344,7 @@ async function generate() {
                     name: 'startDate',
                     in: 'query',
                     required: true,
-                    description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                    description: 'the date to start the timeseries for example 2017-02-15.',
                     type: 'string',
                     format: 'date'
                 },
@@ -1352,7 +1352,7 @@ async function generate() {
                     name: 'endDate',
                     in: 'query',
                     required: true,
-                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-02-41.',
+                    description: 'the date to stop the timeseries (inclusive) for example 2017-02-41.',
                     type: 'string',
                     format: 'date'
                 },
@@ -1360,14 +1360,14 @@ async function generate() {
                     name: 'latitude',
                     in: 'query',
                     required: true,
-                    description: 'the latitude used to compute the agdd - for example 32.2',
+                    description: 'the latitude used to compute the timeseries - for example 32.2',
                     type: 'number'
                 },
                 {
                     name: 'longitude',
                     in: 'query',
                     required: true,
-                    description: 'the longitude used to compute the agdd - for example -110',
+                    description: 'the longitude used to compute the timeseries - for example -110',
                     type: 'number'
                 }
             ],

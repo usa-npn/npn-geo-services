@@ -6,7 +6,7 @@ let general = require('../helpers/general.js');
 /**
  * @param {{swagger}} req
  */
-function climatePointTimeSeries(req, res) {
+function pointTimeSeries(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
     let climateVariable = getParam(req.swagger.params['climateVariable']);
     let startDate = getParam(req.swagger.params['startDate']);
@@ -21,8 +21,8 @@ function climatePointTimeSeries(req, res) {
         moment.utc(endDate), 
         lat, 
         long)
-        .then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
+        .then((pointTimeSeriesJson) => res.status(200).send(pointTimeSeriesJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
 
-module.exports.agddPointTimeSeries = agddPointTimeSeries;
+module.exports.pointTimeSeries = pointTimeSeries;
