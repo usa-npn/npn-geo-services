@@ -31,7 +31,7 @@ let sixLayers = [
     "si-x:average_bloom_ncep",
     "si-x:average_bloom_prism",
     "si-x:average_leaf_best",
-    "si-x:average_leaf_historic",
+    "si-x:average_leaf_ncep_historic",
     "si-x:average_leaf_ncep",
     "si-x:average_leaf_prism",
     "si-x:lilac_bloom_ncep_historic",
@@ -905,6 +905,36 @@ async function generate() {
         }
     };
 
+    swaggerDefinition['definitions']['ClimateTimeSeriesResponse'] = {
+        required: ['startDate', 'endDate', 'latitude', 'longitude', 'timeSeries'],
+        properties: {
+            climateProvider: {
+                type: "string"
+            },
+            climateVariable: {
+                type: "string"
+            },
+            startDate: {
+                type: "string"
+            },
+            endDate: {
+                type: "string"
+            },
+            latitude: {
+                type: "number"
+            },
+            longitude: {
+                type: "number"
+            },
+            timeSeries: {
+                type: "array",
+                items: {
+                    type: "number"
+                }
+            }
+        }
+    };
+
     swaggerDefinition['definitions']['BoundaryResponse'] = {
         required: ['boundary'],
         properties: {
@@ -1276,6 +1306,72 @@ async function generate() {
                 getImageFormatParam()
             ],
             responses: getResponses('ImageResponse')
+        };
+
+    //climate
+
+    swaggerDefinition['paths']['/climate/pointTimeSeries'] = {};
+    swaggerDefinition['paths']['/climate/pointTimeSeries']['x-swagger-router-controller'] = 'climate';
+    swaggerDefinition['paths']['/climate/pointTimeSeries']['get'] =
+        {
+            summary: `gets timeseries at a lat,long from startDate through endDate for a given climate provider and variable`,
+            description: `Gets timeseries at a lat,long from startDate through endDate for a given climate provider and variable.`,
+            tags: ['climate data'],
+            operationId: `pointTimeSeries`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [
+                {
+                    name: 'climateProvider',
+                    in: 'query',
+                    required: true,
+                    description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
+                    type: 'string',
+                    enum: [
+                        "PRISM"
+                    ]
+                },
+                {
+                    name: 'climateVariable',
+                    in: 'query',
+                    required: true,
+                    description: 'the climate variable.',
+                    type: 'string',
+                    enum: [
+                        "precip"
+                    ]
+                },
+                {
+                    name: 'startDate',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'endDate',
+                    in: 'query',
+                    required: true,
+                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-02-41.',
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    name: 'latitude',
+                    in: 'query',
+                    required: true,
+                    description: 'the latitude used to compute the agdd - for example 32.2',
+                    type: 'number'
+                },
+                {
+                    name: 'longitude',
+                    in: 'query',
+                    required: true,
+                    description: 'the longitude used to compute the agdd - for example -110',
+                    type: 'number'
+                }
+            ],
+            responses: getResponses('ClimateTimeSeriesResponse')
         };
 
     //si-x
