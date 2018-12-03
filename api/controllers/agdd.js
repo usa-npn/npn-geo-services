@@ -210,39 +210,52 @@ function agddMap(req, res) {
 /**
  * @param {{swagger}} req
  */
-function agddPointTimeSeries(req, res) {
+function simplePointTimeSeries(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
-    let agddCalcMethod = getParam(req.swagger.params['agddCalcMethod']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
     let lat = getParam(req.swagger.params['latitude']);
     let long = getParam(req.swagger.params['longitude']);
-    let agddThreshold = getParam(req.swagger.params['agddThreshold']);
 
-    if (agddCalcMethod === 'double-sine') {
-        return agddController.getDoubleSineAgddTimeSeries(
-            climateProvider, 
-            moment.utc(startDate), 
-            moment.utc(endDate), 
-            base, 
-            lat, 
-            long, 
-            agddThreshold
-            ).then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
-            .catch((error) => res.status(500).json({"message": error.message}));
-    } else {
-        return agddController.getSimpleAgddTimeSeries(
-            climateProvider, 
-            moment.utc(startDate), 
-            moment.utc(endDate), 
-            base, 
-            lat, 
-            long, 
-            agddThreshold
-            ).then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
-            .catch((error) => res.status(500).json({"message": error.message}));
-    }
+    return agddController.getSimpleAgddTimeSeries(
+        climateProvider, 
+        moment.utc(startDate), 
+        moment.utc(endDate), 
+        base, 
+        lat, 
+        long, 
+        agddThreshold
+        ).then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
+        .catch((error) => res.status(500).json({"message": error.message}));
+
+    
+}
+
+/**
+ * @param {{swagger}} req
+ */
+function doubleSinePointTimeSeries(req, res) {
+    let climateProvider = getParam(req.swagger.params['climateProvider']);
+    let startDate = getParam(req.swagger.params['startDate']);
+    let endDate = getParam(req.swagger.params['endDate']);
+    let lowerThreshold = getParam(req.swagger.params['lowerThreshold']);
+    let upperThreshold = getParam(req.swagger.params['upperThreshold']);
+    let lat = getParam(req.swagger.params['latitude']);
+    let long = getParam(req.swagger.params['longitude']);
+
+    return agddController.getDoubleSineAgddTimeSeries(
+        climateProvider, 
+        moment.utc(startDate), 
+        moment.utc(endDate), 
+        lowerThreshold,
+        upperThreshold, 
+        lat, 
+        long, 
+        agddThreshold
+        ).then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
+        .catch((error) => res.status(500).json({"message": error.message}));
+
     
 }
 
@@ -252,5 +265,7 @@ module.exports.clippedImage = clippedImage;
 module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
 module.exports.agddMap = agddMap;
-module.exports.agddPointTimeSeries = agddPointTimeSeries;
+module.exports.simplePointTimeSeries = simplePointTimeSeries;
+module.exports.doubleSinePointTimeSeries = doubleSinePointTimeSeries;
+
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

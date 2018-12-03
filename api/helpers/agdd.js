@@ -544,8 +544,8 @@ FROM (
     }
 }
 
-async function getDoubleSineAgddTimeSeries() {
-
+async function getDoubleSineAgddTimeSeries(climateProvider, startDate, endDate, lowerThreshold, upperThreshold, lat, long, threshold) {
+    return {};
 }
 
 // selects and returns row from the cache table matching function params

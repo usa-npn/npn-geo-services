@@ -869,13 +869,10 @@ async function generate() {
         }
     };
 
-    swaggerDefinition['definitions']['AgddPointTimeSeriesResponse'] = {
+    swaggerDefinition['definitions']['SimplePointTimeSeriesResponse'] = {
         required: ['startDate', 'endDate', 'base', 'latitude', 'longitude', 'timeSeries'],
         properties: {
             climateProvider: {
-                type: "string"
-            },
-            agddCalcMethod: {
                 type: "string"
             },
             startDate: {
@@ -885,6 +882,45 @@ async function generate() {
                 type: "string"
             },
             base: {
+                type: "number"
+            },
+            latitude: {
+                type: "number"
+            },
+            longitude: {
+                type: "number"
+            },
+            threshold: {
+                type: "number"
+            },
+            dateAgddThresholdMet: {
+                type: "string"
+            },
+            timeSeries: {
+                type: "array",
+                items: {
+                    type: "number"
+                }
+            }
+        }
+    };
+
+    swaggerDefinition['definitions']['DoubleSinePointTimeSeriesResponse'] = {
+        required: ['startDate', 'endDate', 'lowerThreshold', 'upperThreshold', 'latitude', 'longitude', 'timeSeries'],
+        properties: {
+            climateProvider: {
+                type: "string"
+            },
+            startDate: {
+                type: "string"
+            },
+            endDate: {
+                type: "string"
+            },
+            lowerThreshold: {
+                type: "number"
+            },
+            upperThreshold: {
                 type: "number"
             },
             latitude: {
@@ -1205,14 +1241,14 @@ async function generate() {
         };
 
 
-    swaggerDefinition['paths']['/agdd/agddPointTimeSeries'] = {};
-    swaggerDefinition['paths']['/agdd/agddPointTimeSeries']['x-swagger-router-controller'] = 'agdd';
-    swaggerDefinition['paths']['/agdd/agddPointTimeSeries']['get'] =
+    swaggerDefinition['paths']['/agdd/simple/pointTimeSeries'] = {};
+    swaggerDefinition['paths']['/agdd/simple/pointTimeSeries']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/simple/pointTimeSeries']['get'] =
         {
             summary: `gets agdd timeseries at a lat,long from startDate through endDate for given base`,
             description: `Gets agdd timeseries at a lat,long from startDate through endDate for given base.`,
             tags: ['accumlated growing degree days'],
-            operationId: `agddPointTimeSeries`,
+            operationId: `simplePointTimeSeries`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1223,17 +1259,6 @@ async function generate() {
                     enum: [
                         "PRISM",
                         "NCEP"
-                    ]
-                },
-                {
-                    name: 'agddCalcMethod',
-                    in: 'query',
-                    required: true,
-                    description: 'the method used to calculate the agdd.',
-                    type: 'string',
-                    enum: [
-                        "simple",
-                        "double-sine"
                     ]
                 },
                 {
@@ -1280,10 +1305,83 @@ async function generate() {
                     type: 'number'
                 }
             ],
-            responses: getResponses('AgddPointTimeSeriesResponse')
+            responses: getResponses('SimplePointTimeSeriesResponse')
         };
 
-
+    
+        swaggerDefinition['paths']['/agdd/double-sine/pointTimeSeries'] = {};
+        swaggerDefinition['paths']['/agdd/double-sine/pointTimeSeries']['x-swagger-router-controller'] = 'agdd';
+        swaggerDefinition['paths']['/agdd/double-sine/pointTimeSeries']['get'] =
+            {
+                summary: `gets agdd timeseries at a lat,long from startDate through endDate for given lower and upper thresholds`,
+                description: `Gets agdd timeseries at a lat,long from startDate through endDate for given lower and upper thresholds.`,
+                tags: ['accumlated growing degree days'],
+                operationId: `doubleSinePointTimeSeries`,
+                consumes: ['application/x-www-form-urlencoded'],
+                parameters: [
+                    {
+                        name: 'climateProvider',
+                        in: 'query',
+                        description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
+                        type: 'string',
+                        enum: [
+                            "PRISM",
+                            "NCEP"
+                        ]
+                    },
+                    {
+                        name: 'startDate',
+                        in: 'query',
+                        required: true,
+                        description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                        type: 'string',
+                        format: 'date'
+                    },
+                    {
+                        name: 'endDate',
+                        in: 'query',
+                        required: true,
+                        description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-02-41.',
+                        type: 'string',
+                        format: 'date'
+                    },
+                    {
+                        name: 'lowerThreshold',
+                        in: 'query',
+                        required: true,
+                        description: 'the lower threshold in fahrenheit used to compute the agdd - for example 12',
+                        type: 'integer'
+                    },
+                    {
+                        name: 'upperTheshold',
+                        in: 'query',
+                        required: true,
+                        description: 'the upper threshold in fahrenheit used to compute the agdd - for example 22',
+                        type: 'integer'
+                    },
+                    {
+                        name: 'latitude',
+                        in: 'query',
+                        required: true,
+                        description: 'the latitude used to compute the agdd - for example 32.2',
+                        type: 'number'
+                    },
+                    {
+                        name: 'longitude',
+                        in: 'query',
+                        required: true,
+                        description: 'the longitude used to compute the agdd - for example -110',
+                        type: 'number'
+                    },
+                    {
+                        name: 'agddThreshold',
+                        in: 'query',
+                        description: 'if provided, response will include the date that the agdd threshold was met - for example 1000',
+                        type: 'number'
+                    }
+                ],
+                responses: getResponses('DoubleSinePointTimeSeriesResponse')
+            };    
 
 
     swaggerDefinition['paths']['/agdd/anomaly/area/clippedImage'] = {};
