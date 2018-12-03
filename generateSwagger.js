@@ -1341,6 +1341,7 @@ async function generate() {
                     description: 'the backing climate data provider.',
                     type: 'string',
                     enum: [
+                        "NCEP",
                         "PRISM"
                     ]
                 },
