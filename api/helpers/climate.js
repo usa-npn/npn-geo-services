@@ -11,7 +11,6 @@ let ssh = new node_ssh();
 let client = require('scp2');
 
 
-// selects and returns row from the cache table matching function params
 async function getClimatePointTimeSeries(climateProvider, climateVariable, startDate, endDate,lat, long) {
     
     let response = {
@@ -36,7 +35,33 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
         const res = await db.pgPool.query(query);
 
         let timeSeries = res['rows'].map(row => {
-            return { "date": row['rast_date'].toISOString().split("T")[0], "precip (mm)": row['st_value'] }
+            return {
+                "date": row['rast_date'].toISOString().split("T")[0],
+                "precip (mm)": row['st_value']
+            }
+        });
+
+        response["timeSeries"] = timeSeries;
+        return response;
+    } else if(climateProvider === "NCEP" && (climateVariable == "tmin" || climateVariable == "tmax")) {
+        const query = {
+            //todo generalize year
+            text: `SELECT rast_date, dataset, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${climateVariable}_2018
+                    WHERE rast_date >= $3
+                    AND rast_date <= $4
+                    AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($5, $6),4269))
+                    ORDER BY rast_date`,
+            values: [long, lat, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), long, lat]
+        };
+        console.log(query);
+        const res = await db.pgPool.query(query);
+
+        let timeSeries = res['rows'].map(row => {
+            return { 
+                "date": row['rast_date'].toISOString().split("T")[0], 
+                climateVariable: row['st_value'],
+                "dataset": row['dataset']
+            }
         });
 
         response["timeSeries"] = timeSeries;

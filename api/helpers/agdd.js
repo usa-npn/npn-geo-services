@@ -297,12 +297,12 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     //     "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
     //     "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
 
-    let stateNames = ['Maine', 'Vermont', 'Colorado', 'Nebraska', 'Kansas', 'Oklahoma', 'Texas', 'Minnesota',
-        'Iowa', 'Missouri', 'Arkansas', 'Louisiana', 'Wisconsin', 'Illinois',
-        'Kentucky', 'Tennessee', 'Mississippi', 'Michigan', 'Indiana', 'Alabama',
-        'Ohio', 'Alabama', 'Georgia', 'South Carolina', 'North Carolina', 'Virginia',
-        'West Virginia', 'District of Columbia', 'Maryland', 'Delaware', 'New Jersey', 'Pennsylvania',
-        'New York', 'Connecticut', 'Rhode Island', 'Massachusetts', 'New Hampshire', 'Florida'];
+    // let stateNames = ['Maine', 'Vermont', 'Colorado', 'Nebraska', 'Kansas', 'Oklahoma', 'Texas', 'Minnesota',
+    //     'Iowa', 'Missouri', 'Arkansas', 'Louisiana', 'Wisconsin', 'Illinois',
+    //     'Kentucky', 'Tennessee', 'Mississippi', 'Michigan', 'Indiana', 'Alabama',
+    //     'Ohio', 'Alabama', 'Georgia', 'South Carolina', 'North Carolina', 'Virginia',
+    //     'West Virginia', 'District of Columbia', 'Maryland', 'Delaware', 'New Jersey', 'Pennsylvania',
+    //     'New York', 'Connecticut', 'Rhode Island', 'Massachusetts', 'New Hampshire', 'Florida'];
 
     // get the png from disk if already exists
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
@@ -325,7 +325,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     fs.copyFile(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`, pestMapTiffPath, (err) => {
         if (err) throw err;
 
-        //can talk about geting the shape file dynamically from geoserver, but extra processing
+        //can talk about getting the shape file dynamically from geoserver, but extra processing
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
         //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
@@ -365,11 +365,8 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 async function getPestMap(species, date, preserveExtent) {
 
     if(species === 'Eastern Tent Caterpillar') {
-        log.info('calling custom agdd pest map');
         return getCustomAgddPestMap(species, date, preserveExtent);
     }
-
-    log.info('are we here?');
 
     let layerName = `gdd:agdd_50f`;
     let bounds = [];
@@ -547,8 +544,12 @@ FROM (
     }
 }
 
+async function getDoubleSineAgddTimeSeries() {
+
+}
+
 // selects and returns row from the cache table matching function params
-async function getDynamicAgddTimeSeries(climateProvider, startDate, endDate, base, lat, long, threshold) {
+async function getSimpleAgddTimeSeries(climateProvider, startDate, endDate, base, lat, long, threshold) {
     const query = {
         text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${climateProvider.toLowerCase()}_tavg
                 WHERE rast_date >= $3
@@ -563,7 +564,10 @@ async function getDynamicAgddTimeSeries(climateProvider, startDate, endDate, bas
     let dateAgddThresholdMet = null;
 
     let timeSeries = res['rows'].map(row => {
-        return { "date": row['rast_date'].toISOString().split("T")[0], "gdd": row['st_value'] - base > 0 ? row['st_value'] - base : 0 }
+        return { 
+            "date": row['rast_date'].toISOString().split("T")[0], 
+            "gdd": row['st_value'] - base > 0 ? row['st_value'] - base : 0 
+        }
     }).reduce(function (accum, item) {
         if (accum.length > 0)
             item.agdd = item.gdd + accum[accum.length-1].agdd;
@@ -647,7 +651,8 @@ async function getDynamicAgdd(climateProvider, startDate, endDate, base) {
 }
 
 module.exports.getDynamicAgdd = getDynamicAgdd;
-module.exports.getDynamicAgddTimeSeries = getDynamicAgddTimeSeries;
+module.exports.getSimpleAgddTimeSeries = getSimpleAgddTimeSeries;
+module.exports.getDoubleSineAgddTimeSeries = getDoubleSineAgddTimeSeries;
 module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;
 module.exports.getClippedAgddRaster = getClippedAgddRaster;

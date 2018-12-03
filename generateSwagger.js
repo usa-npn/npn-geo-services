@@ -875,6 +875,9 @@ async function generate() {
             climateProvider: {
                 type: "string"
             },
+            agddCalcMethod: {
+                type: "string"
+            },
             startDate: {
                 type: "string"
             },
@@ -1223,6 +1226,17 @@ async function generate() {
                     ]
                 },
                 {
+                    name: 'agddCalcMethod',
+                    in: 'query',
+                    required: true,
+                    description: 'the method used to calculate the agdd.',
+                    type: 'string',
+                    enum: [
+                        "simple",
+                        "double-sine"
+                    ]
+                },
+                {
                     name: 'startDate',
                     in: 'query',
                     required: true,
@@ -1334,10 +1348,12 @@ async function generate() {
                     name: 'climateVariable',
                     in: 'query',
                     required: true,
-                    description: 'the climate variable.',
+                    description: 'the climate variable (currently only 2018 prism precip, 2018 ncep tmin or tmax).',
                     type: 'string',
                     enum: [
-                        "precip"
+                        "precip",
+                        "tmin",
+                        "tmax"
                     ]
                 },
                 {
