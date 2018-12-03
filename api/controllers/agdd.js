@@ -217,6 +217,8 @@ function simplePointTimeSeries(req, res) {
     let base = getParam(req.swagger.params['base']);
     let lat = getParam(req.swagger.params['latitude']);
     let long = getParam(req.swagger.params['longitude']);
+    let agddThreshold = getParam(req.swagger.params['agddThreshold']);
+
 
     return agddController.getSimpleAgddTimeSeries(
         climateProvider, 
@@ -243,6 +245,8 @@ function doubleSinePointTimeSeries(req, res) {
     let upperThreshold = getParam(req.swagger.params['upperThreshold']);
     let lat = getParam(req.swagger.params['latitude']);
     let long = getParam(req.swagger.params['longitude']);
+    let agddThreshold = getParam(req.swagger.params['agddThreshold']);
+
 
     return agddController.getDoubleSineAgddTimeSeries(
         climateProvider, 
