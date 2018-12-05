@@ -2,6 +2,7 @@ let db = require('./database.js');
 let log = require('../../logger.js');
 const moment = require('moment');
 let helpers = require('./general');
+let climate = require('./climate');
 var fs = require('fs');
 const https = require('https');
 const { exec } = require('child_process');
@@ -529,7 +530,10 @@ FROM (
     const res = await db.pgPool.query(query);
     log.info('query complete');
 
-    let response = {date: date.format('YYYY-MM-DD'), layerClippedFrom: layerName};
+    let response = {
+        date: date.format('YYYY-MM-DD'),
+        layerClippedFrom: layerName
+    };
     if (res.rows.length > 0) {
         let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         if (preserveExtent) {
@@ -544,8 +548,123 @@ FROM (
     }
 }
 
+function doubleSine(tmin1,tmin2,tmax,lct,uct) {
+    let taveam = (tmax + tmin1) / 2;
+    let tavepm = (tmax + tmin2) / 2;
+    let alphaam = (tmax - tmin1) / 2;
+    let thetaam = Math.asin((lct - taveam) / alphaam);
+    let alphapm = (tmax - tmin2) / 2;
+    let thetapm = Math.asin((lct - tavepm) / alphapm);
+    let theta2am = Math.asin((uct - taveam) / alphaam);
+    let theta2pm = Math.asin((uct - tavepm) / alphapm);
+    let hddam, hddpm, hdd = null;
+
+    // Case 1 and Case 2, both minimum and maximum temperatures above or below upper or lower critical temperature thresholds, respectively.
+    if (tmin1 >= uct) { // If the lower temperature exceeds the upper critical temperature then there is development
+        hddam = 0.5*(uct-lct); // maximum development when tmin1 above uct
+        if (tmin2 >=uct)
+            hddpm = 0.5*(uct-lct); // maximum development when tmin2 above uct
+        if (tmin2<uct)
+            if (tmin2 >= lct) // Case 5 development for tmin2 between thresholds and tmax above uct
+                hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * (theta2pm + (Math.PI / 2)) + (uct-lct) * ((Math.PI / 2) - theta2pm) - (alphapm * Math.cos(theta2pm)));
+        if (tmin2<lct) // case 6 development for tmin2 below lct and tmax above uct
+            hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * (theta2pm - thetapm) + alphapm * (Math.cos(thetapm) - Math.cos(theta2pm)) + (uct - lct) * ((Math.PI / 2) - theta2pm));
+        hdd = hddam +hddpm;
+    }
+
+    else if (tmax <= lct) {// If the upper temperature exceeds the lower critical temperature then there is no development
+        hdd = 0; // no need to evaluate hddpm seperately
+    }
+
+
+    // Case 3, tmin1 and maximum temperature both between upper and lower critical threshold temperatures.
+    else if (tmin1 >= lct) {
+        if (tmin1 <= uct)
+            if (tmax >= lct)
+                if (tmax <= uct)
+                    hddam = 0.5 * (taveam - lct);
+                    if (tmin2 >= lct) 
+                        if (tmin2<= uct) // case 3, tmin2 and tmax between thresholds
+                            hddpm = 0.5 * (tavepm - lct);
+                    if (tmin2 <lct) // case 4, tmin2 below lct, tmax between thresholds
+                        hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * ((Math.PI / 2) - thetapm) + (alphapm * Math.cos(thetapm)));
+                    hdd = hddam + hddpm;
+    }
+
+    // Case 4, minimum temperature is below minimum critical threshold temperature, but maximum temperature is above minimum critical threshold temperature, and below maximum critical threshold temperature.
+    else if (tmin1 <= lct) {
+        if (tmax >= lct)
+            if (tmax <= uct)
+                hddam = (1 / (2 * Math.PI)) * ((taveam - lct) * ((Math.PI / 2) - thetaam) + (alphaam * Math.cos(thetaam)));
+                if (tmin2<lct) // case 4, tmin2 below lct, tmax between thresholds
+                    hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * ((Math.PI / 2) - thetapm) + (alphapm * Math.cos(thetapm)));
+                if (tmin2 >= lct) // case 3, tmin2 between thresholds, tmax between thresholds
+                        hddpm = 0.5 * (tavepm - lct);
+                hdd = hddam + hddpm;
+    }
+
+    // Case 5, minimum temperature is between the minimum and maximum critical temperature thresholds, but the maximum temperature is above the maximum critical temperature threshold.
+    else if (tmin1 >= lct) {
+        if (tmin1 <= uct)
+            if (tmax >= uct)
+                hddam = (1 / (2 * Math.PI)) * (((taveam - lct) * (theta2am + (Math.PI / 2)) + (uct - lct) * ((Math.PI / 2) - theta2am) - (alphaam * Math.cos(theta2am))));
+                if (tmin2 >=lct)
+                    if (tmin2 <=uct) //case 5, tmin2 between thresholds, tmax above uct
+                        hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * (theta2pm + (Math.PI / 2)) + (uct-lct) * ((Math.PI / 2) - theta2pm) - (alphapm * Math.cos(theta2pm)));
+                if (tmin2 < lct) // case 6, tmin2 below lct, tmax above uct
+                    hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * (theta2pm - thetapm) + alphapm * (Math.cos(thetapm) - Math.cos(theta2pm)) + (uct - lct) * ((Math.PI / 2) - theta2pm));
+                if (tmin2 > uct) // case 1, tmin2 and tmax above uct
+                    hddpm = 0.5 * (uct-lct);
+                hdd = hddam + hddpm;
+    }
+            
+
+    // Case 6, minimum temperature is below the minimum critical threshold temperature, and maximum temperature is above the maximum critical threshold temperature.
+    else {//if (tmin1 <= lct)
+        if (tmax >= uct)
+            hddam = (1 / (2 * Math.PI)) * ((taveam - lct) * (theta2am - thetaam) + alphaam * (Math.cos(thetaam) - Math.cos(theta2am)) + (uct - lct) * ((Math.PI / 2) - theta2am));
+            if (tmin2<lct) // case 6, tmin2 below lct, tmax above uct
+                hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * (theta2pm - thetapm) + alphapm * (Math.cos(thetapm) - Math.cos(theta2pm)) + (uct - lct) * ((Math.PI / 2) - theta2pm));
+            if (tmin2<uct)
+                if (tmin2 >= lct) // case 5, tmin2 between thresholds, tmax abov uct
+                    hddpm = (1 / (2 * Math.PI)) * ((tavepm - lct) * (theta2pm + (Math.PI / 2)) + (uct - lct) * ((Math.PI / 2) - theta2pm) - (alphapm * Math.cos(theta2pm)));   
+            if (tmin2 >=uct) // case 1, tmin2 and tmax above uct
+                hddpm = 0.5 * (uct - lct);
+            hdd = hddam + hddpm;
+    }
+
+    return hdd;
+
+}
+
 async function getDoubleSineAgddTimeSeries(climateProvider, startDate, endDate, lowerThreshold, upperThreshold, lat, long, threshold) {
-    return {};
+    // get tmins and tmaxs
+    let tmins = await climate.getClimatePointTimeSeries(climateProvider, 'tmin', startDate, endDate,lat, long);
+    let tmaxs = await climate.getClimatePointTimeSeries(climateProvider, 'tmax', startDate, endDate,lat, long);
+    let gdds = tmaxs.map(function (item, i) { 
+        let tminYesterday = (i > 0) ? tmins[i-1].tmin : 0;
+        let tminToday = tmins[i].tmin;
+        return {
+            'date': item.date,
+            'doubleSineGdd': doubleSine(tminYesterday, tminToday, item.tmax, lowerThreshold, upperThreshold)
+        };
+    });
+
+    response = {
+        "climateProvider": climateProvider,
+        "startDate": startDate.format('YYYY-MM-DD'),
+        "endDate": endDate.format('YYYY-MM-DD'),
+        "lowerThreshold": lowerThreshold,
+        "upperThreshold": upperThreshold,
+        "latitude": lat,
+        "longitude": long
+    };
+    if (threshold) {
+        response["threshold"] = threshold;
+        //response["dateAgddThresholdMet"] = dateAgddThresholdMet;
+    }
+    response["timeSeries"] = gdds;
+    return response;
 }
 
 // selects and returns row from the cache table matching function params
