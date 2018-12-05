@@ -641,9 +641,9 @@ async function getDoubleSineAgddTimeSeries(climateProvider, startDate, endDate, 
     // get tmins and tmaxs
     let tmins = await climate.getClimatePointTimeSeries(climateProvider, 'tmin', startDate, endDate,lat, long);
     let tmaxs = await climate.getClimatePointTimeSeries(climateProvider, 'tmax', startDate, endDate,lat, long);
-    let gdds = tmaxs.map(function (item, i) { 
-        let tminYesterday = (i > 0) ? tmins[i-1].tmin : 0;
-        let tminToday = tmins[i].tmin;
+    let gdds = tmaxs["timeSeries"].map(function (item, i) { 
+        let tminYesterday = (i > 0) ? tmins["timeSeries"][i-1].tmin : 0;
+        let tminToday = tmins["timeSeries"][i].tmin;
         return {
             'date': item.date,
             'doubleSineGdd': doubleSine(tminYesterday, tminToday, item.tmax, lowerThreshold, upperThreshold)
