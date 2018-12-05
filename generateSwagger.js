@@ -1447,10 +1447,11 @@ async function generate() {
                     name: 'climateVariable',
                     in: 'query',
                     required: true,
-                    description: 'the climate variable (currently only 2018 prism precip, 2018 ncep tmin or tmax).',
+                    description: 'the climate variable (currently only 2018 prism precip, 2018 ncep tmin, tmax, or tavg).',
                     type: 'string',
                     enum: [
                         "precip",
+                        "tavg",
                         "tmin",
                         "tmax"
                     ]

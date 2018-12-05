@@ -43,10 +43,14 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
 
         response["timeSeries"] = timeSeries;
         return response;
-    } else if(climateProvider === "NCEP" && (climateVariable == "tmin" || climateVariable == "tmax")) {
+    } else if(climateProvider === "NCEP" && (climateVariable == "tmin" || climateVariable == "tmax" || climateVariable == "tavg")) {
+        let tableName = "ncep_tavg";
+        if ((climateVariable == "tmin" || climateVariable == "tmax")) {
+            tableName = `${climateVariable}_2018`
+        }
         const query = {
             //todo generalize year
-            text: `SELECT rast_date, dataset, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${climateVariable}_2018
+            text: `SELECT rast_date, dataset, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${tableName}
                     WHERE rast_date >= $3
                     AND rast_date <= $4
                     AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($5, $6),4269))
@@ -59,7 +63,7 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
         let timeSeries = res['rows'].map(row => {
             return { 
                 "date": row['rast_date'].toISOString().split("T")[0], 
-                climateVariable: row['st_value'],
+                [climateVariable]: row['st_value'],
                 "dataset": row['dataset']
             }
         });
