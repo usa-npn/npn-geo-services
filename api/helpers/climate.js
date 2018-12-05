@@ -50,7 +50,7 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
         }
         const query = {
             //todo generalize year
-            text: `SELECT rast_date, dataset, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${tableName}
+            text: `SELECT rast_date, ${(climateVariable != 'tavg') ? 'dataset, ' : ''}st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${tableName}
                     WHERE rast_date >= $3
                     AND rast_date <= $4
                     AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($5, $6),4269))
@@ -64,7 +64,7 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
             return { 
                 "date": row['rast_date'].toISOString().split("T")[0], 
                 [climateVariable]: row['st_value'],
-                "dataset": row['dataset']
+                "dataset": (climateVariable != 'tavg') ? row['dataset'] : ''
             }
         });
 
