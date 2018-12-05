@@ -911,6 +911,9 @@ async function generate() {
             climateProvider: {
                 type: "string"
             },
+            temperatureUnit: {
+                type: "string"
+            },
             startDate: {
                 type: "string"
             },
@@ -1330,6 +1333,17 @@ async function generate() {
                         ]
                     },
                     {
+                        name: 'temperatureUnit',
+                        in: 'query',
+                        required: true,
+                        description: 'the unit of temperature.',
+                        type: 'string',
+                        enum: [
+                            "celsius",
+                            "fahrenheit"
+                        ]
+                    },
+                    {
                         name: 'startDate',
                         in: 'query',
                         required: true,
@@ -1349,14 +1363,14 @@ async function generate() {
                         name: 'lowerThreshold',
                         in: 'query',
                         required: true,
-                        description: 'the lower threshold in fahrenheit used to compute the agdd - for example 12',
+                        description: 'the lower threshold in celcius used to compute the agdd - for example 0',
                         type: 'integer'
                     },
                     {
-                        name: 'upperTheshold',
+                        name: 'upperThreshold',
                         in: 'query',
                         required: true,
-                        description: 'the upper threshold in fahrenheit used to compute the agdd - for example 22',
+                        description: 'the upper threshold in celcius used to compute the agdd - for example 30',
                         type: 'integer'
                     },
                     {
