@@ -236,26 +236,26 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName){
 
             res.on('end', () => {
                 log.info('finished writing styled raster.');
+resolve({});
+                // exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                //     if (err) {
+                //         log.error('error converting white to transparent: ' + err);
+                //         reject(err);
+                //     }
 
-                exec(`convert ${rasterpath + styledFileName} -transparent white ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                    if (err) {
-                        log.error('error converting white to transparent: ' + err);
-                        reject(err);
-                    }
+                //     // the *entire* stdout and stderr (buffered)
+                //     console.log(`stdout: ${stdout}`);
+                //     console.log(`stderr: ${stderr}`);
 
-                    // the *entire* stdout and stderr (buffered)
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-
-                    //delete the unstyled file
-                    fs.unlink(rasterpath + filename, async (err) => {
-                        if (err) {
-                            log.error('could not delete unstyled file: ' + err);
-                            throw err;
-                        }
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
-                    });
-                });
+                //     //delete the unstyled file
+                //     fs.unlink(rasterpath + filename, async (err) => {
+                //         if (err) {
+                //             log.error('could not delete unstyled file: ' + err);
+                //             throw err;
+                //         }
+                //         resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
+                //     });
+                // });
             });
         });
 
