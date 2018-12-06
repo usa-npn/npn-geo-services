@@ -6,3 +6,4 @@ static/rasters/**
 !readme
 config/default.json
 npm-debug.log
+.vscode/**

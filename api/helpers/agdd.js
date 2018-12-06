@@ -316,8 +316,9 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         };
         return response;
     }
-    log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${base}`);
+    
     // otherwise generate tiff via custom agdd endpoint
+    log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${base}`);
     let result = await getDynamicAgdd(climateProvider, startDate, date, base);
     let tiffFileUrl = result.mapUrl;
     let tiffFileName = tiffFileUrl.split('/').pop();
@@ -335,7 +336,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         let croppedPngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
-        exec(`gdalwarp -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
+        exec(`gdalwarp -dstnodata -9999 -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
             if (err) {
                 log.error('could not slice pestmap to boundary: ' + err);
                 throw err;

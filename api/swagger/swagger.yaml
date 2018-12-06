@@ -1,6 +1,10 @@
 swagger: '2.0'
 info:
-  description: Welcome to the USA-NPN geospatial services. More description to come!
+  description: >-
+    Welcome to the USA-NPN geospatial services. These services allow one to
+    access geospatial data hosted at the USA-NPN in various ways including
+    timeseries at a lat/long, GeoTIFF maps bounded by a polygon, and aggregated
+    statistics over a ploygon.
   version: 0.0.1
   title: National Phenology Network Web Services
   termsOfService: 'TODO: Add terms of service here'
@@ -12,8 +16,8 @@ host: 'localhost:3006'
 basePath: /v0
 tags: []
 schemes:
-  - http
   - https
+  - http
 securityDefinitions:
   token:
     type: apiKey
@@ -24,6 +28,58 @@ securityDefinitions:
     in: header
     name: consumer_key
 paths:
+  /agdd/agddMap:
+    x-swagger-router-controller: agdd
+    get:
+      summary: gets agdd from startDate through endDate for given base
+      description: Gets agdd from startDate through endDate for given base.
+      tags:
+        - accumlated growing degree days
+      operationId: agddMap
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: climateProvider
+          in: query
+          description: >-
+            the backing climate data provider. NCEP available from 2016 on,
+            PRISM available from 1981 through previous year.
+          type: string
+          enum:
+            - PRISM
+            - NCEP
+        - name: startDate
+          in: query
+          required: true
+          description: >-
+            the date to start accumulating growing degree days for example
+            2017-02-15.
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          required: true
+          description: >-
+            the date to stop accumulating growing degree days (inclusive) for
+            example 2017-08-04.
+          type: string
+          format: date
+        - name: base
+          in: query
+          required: true
+          description: the base in fahrenheit used to compute the agdd
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AgddMapResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /agdd/anomaly/area/clippedImage:
     x-swagger-router-controller: agdd
     get:
@@ -2606,6 +2662,95 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ErrorResponse'
+  /agdd/double-sine/pointTimeSeries:
+    x-swagger-router-controller: agdd
+    get:
+      summary: >-
+        gets agdd timeseries at a lat,long from startDate through endDate for
+        given lower and upper thresholds
+      description: >-
+        Gets agdd timeseries at a lat,long from startDate through endDate for
+        given lower and upper thresholds.
+      tags:
+        - accumlated growing degree days
+      operationId: doubleSinePointTimeSeries
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: climateProvider
+          in: query
+          description: >-
+            the backing climate data provider. NCEP available from 2016 on,
+            PRISM available from 1981 through previous year.
+          type: string
+          enum:
+            - PRISM
+            - NCEP
+        - name: temperatureUnit
+          in: query
+          required: true
+          description: the unit of temperature.
+          type: string
+          enum:
+            - celsius
+            - fahrenheit
+        - name: startDate
+          in: query
+          required: true
+          description: >-
+            the date to start accumulating growing degree days for example
+            2017-02-15.
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          required: true
+          description: >-
+            the date to stop accumulating growing degree days (inclusive) for
+            example 2017-02-41.
+          type: string
+          format: date
+        - name: lowerThreshold
+          in: query
+          required: true
+          description: >-
+            the lower threshold in celcius used to compute the agdd - for
+            example 0
+          type: integer
+        - name: upperThreshold
+          in: query
+          required: true
+          description: >-
+            the upper threshold in celcius used to compute the agdd - for
+            example 30
+          type: integer
+        - name: latitude
+          in: query
+          required: true
+          description: the latitude used to compute the agdd - for example 32.2
+          type: number
+        - name: longitude
+          in: query
+          required: true
+          description: the longitude used to compute the agdd - for example -110
+          type: number
+        - name: agddThreshold
+          in: query
+          description: >-
+            if provided, response will include the date that the agdd threshold
+            was met - for example 1000
+          type: number
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DoubleSinePointTimeSeriesResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /agdd/pestMap:
     x-swagger-router-controller: agdd
     get:
@@ -2619,10 +2764,12 @@ paths:
       parameters:
         - name: species
           in: query
+          required: true
           description: the species to retrieve map for
           type: string
           enum:
             - Apple Maggot
+            - Eastern Tent Caterpillar
             - Emerald Ash Borer
             - Hemlock Woolly Adelgid
             - Lilac Borer
@@ -2636,7 +2783,7 @@ paths:
         - name: preserveExtent
           in: query
           required: false
-          description: preserve extent after clipping.
+          description: preserve extent to Contiguous United States when clipping.
           type: boolean
       responses:
         '200':
@@ -2645,6 +2792,146 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ImageResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /agdd/simple/pointTimeSeries:
+    x-swagger-router-controller: agdd
+    get:
+      summary: >-
+        gets agdd timeseries at a lat,long from startDate through endDate for
+        given base
+      description: >-
+        Gets agdd timeseries at a lat,long from startDate through endDate for
+        given base.
+      tags:
+        - accumlated growing degree days
+      operationId: simplePointTimeSeries
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: climateProvider
+          in: query
+          description: >-
+            the backing climate data provider. NCEP available from 2016 on,
+            PRISM available from 1981 through previous year.
+          type: string
+          enum:
+            - PRISM
+            - NCEP
+        - name: startDate
+          in: query
+          required: true
+          description: >-
+            the date to start accumulating growing degree days for example
+            2017-02-15.
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          required: true
+          description: >-
+            the date to stop accumulating growing degree days (inclusive) for
+            example 2017-02-41.
+          type: string
+          format: date
+        - name: base
+          in: query
+          required: true
+          description: the base in fahrenheit used to compute the agdd - for example 12
+          type: integer
+        - name: latitude
+          in: query
+          required: true
+          description: the latitude used to compute the agdd - for example 32.2
+          type: number
+        - name: longitude
+          in: query
+          required: true
+          description: the longitude used to compute the agdd - for example -110
+          type: number
+        - name: agddThreshold
+          in: query
+          description: >-
+            if provided, response will include the date that the agdd threshold
+            was met - for example 1000
+          type: number
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SimplePointTimeSeriesResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /climate/pointTimeSeries:
+    x-swagger-router-controller: climate
+    get:
+      summary: >-
+        gets timeseries at a lat,long from startDate through endDate for a given
+        climate provider and variable
+      description: >-
+        Gets timeseries at a lat,long from startDate through endDate for a given
+        climate provider and variable.
+      tags:
+        - climate data
+      operationId: pointTimeSeries
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: climateProvider
+          in: query
+          required: true
+          description: the backing climate data provider.
+          type: string
+          enum:
+            - NCEP
+            - PRISM
+        - name: climateVariable
+          in: query
+          required: true
+          description: >-
+            the climate variable (currently only 2018 prism precip, 2018 ncep
+            tmin, tmax, or tavg).
+          type: string
+          enum:
+            - precip
+            - tavg
+            - tmin
+            - tmax
+        - name: startDate
+          in: query
+          required: true
+          description: the date to start the timeseries for example 2017-02-15.
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          required: true
+          description: the date to stop the timeseries (inclusive) for example 2017-02-41.
+          type: string
+          format: date
+        - name: latitude
+          in: query
+          required: true
+          description: the latitude used to compute the timeseries - for example 32.2
+          type: number
+        - name: longitude
+          in: query
+          required: true
+          description: the longitude used to compute the timeseries - for example -110
+          type: number
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ClimateTimeSeriesResponse'
         '500':
           description: internal server error
           schema:
@@ -4624,7 +4911,7 @@ paths:
             - 'si-x:average_bloom_ncep'
             - 'si-x:average_bloom_prism'
             - 'si-x:average_leaf_best'
-            - 'si-x:average_leaf_historic'
+            - 'si-x:average_leaf_ncep_historic'
             - 'si-x:average_leaf_ncep'
             - 'si-x:average_leaf_prism'
             - 'si-x:lilac_bloom_ncep_historic'
@@ -5323,7 +5610,7 @@ paths:
             - 'si-x:average_bloom_ncep'
             - 'si-x:average_bloom_prism'
             - 'si-x:average_leaf_best'
-            - 'si-x:average_leaf_historic'
+            - 'si-x:average_leaf_ncep_historic'
             - 'si-x:average_leaf_ncep'
             - 'si-x:average_leaf_prism'
             - 'si-x:lilac_bloom_ncep_historic'
@@ -6014,7 +6301,7 @@ paths:
             - 'si-x:average_bloom_ncep'
             - 'si-x:average_bloom_prism'
             - 'si-x:average_leaf_best'
-            - 'si-x:average_leaf_historic'
+            - 'si-x:average_leaf_ncep_historic'
             - 'si-x:average_leaf_ncep'
             - 'si-x:average_leaf_prism'
             - 'si-x:lilac_bloom_ncep_historic'
@@ -6676,6 +6963,23 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
 definitions:
+  AgddMapResponse:
+    required:
+      - startDate
+      - endDate
+      - base
+      - mapUrl
+    properties:
+      climateProvider:
+        type: string
+      startDate:
+        type: string
+      endDate:
+        type: string
+      base:
+        type: number
+      mapUrl:
+        type: string
   AgddStatsResponse:
     required:
       - date
@@ -6711,6 +7015,64 @@ definitions:
     properties:
       boundary:
         type: string
+  ClimateTimeSeriesResponse:
+    required:
+      - startDate
+      - endDate
+      - latitude
+      - longitude
+      - timeSeries
+    properties:
+      climateProvider:
+        type: string
+      climateVariable:
+        type: string
+      startDate:
+        type: string
+      endDate:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      timeSeries:
+        type: array
+        items:
+          type: number
+  DoubleSinePointTimeSeriesResponse:
+    required:
+      - startDate
+      - endDate
+      - lowerThreshold
+      - upperThreshold
+      - latitude
+      - longitude
+      - timeSeries
+    properties:
+      climateProvider:
+        type: string
+      temperatureUnit:
+        type: string
+      startDate:
+        type: string
+      endDate:
+        type: string
+      lowerThreshold:
+        type: number
+      upperThreshold:
+        type: number
+      latitude:
+        type: number
+      longitude:
+        type: number
+      threshold:
+        type: number
+      dateAgddThresholdMet:
+        type: string
+      timeSeries:
+        type: array
+        items:
+          type: number
   ErrorResponse:
     required:
       - message
@@ -6731,6 +7093,35 @@ definitions:
       clippedImage:
         type: string
       bbox:
+        type: array
+        items:
+          type: number
+  SimplePointTimeSeriesResponse:
+    required:
+      - startDate
+      - endDate
+      - base
+      - latitude
+      - longitude
+      - timeSeries
+    properties:
+      climateProvider:
+        type: string
+      startDate:
+        type: string
+      endDate:
+        type: string
+      base:
+        type: number
+      latitude:
+        type: number
+      longitude:
+        type: number
+      threshold:
+        type: number
+      dateAgddThresholdMet:
+        type: string
+      timeSeries:
         type: array
         items:
           type: number
