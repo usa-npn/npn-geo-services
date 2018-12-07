@@ -367,7 +367,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 async function getPestMap(species, date, preserveExtent) {
 
     if(species === 'Eastern Tent Caterpillar') {
-        return getCustomAgddPestMap(species, date, preserveExtent);
+        return await getCustomAgddPestMap(species, date, preserveExtent);
     }
 
     let layerName = `gdd:agdd_50f`;
