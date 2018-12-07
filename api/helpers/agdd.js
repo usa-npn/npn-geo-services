@@ -356,6 +356,8 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                 response.bbox = bounds;
 
                 // return png
+                log.info(`custom agdd response: ${JSON.stringify(response)}`);
+
                 return response;
 
             });
