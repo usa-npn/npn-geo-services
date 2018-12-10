@@ -295,6 +295,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     // get the png from disk if already exists
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
     if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
+        log.info('styled png already exists');
         let response = {
             date: date.format('YYYY-MM-DD'),
             layerClippedFrom: 'custom',
@@ -323,8 +324,12 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         let croppedPngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
-        exec(`gdalwarp -srcnodata -9999 -dstnodata -9999 -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, 
-        async (err, stdout, stderr) => {
+        // when not preserving extent, use -te to set bounds to the shapefile bounding box
+        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${bounds.join(' ')} -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
+        if(preserveExtent) {
+            clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
+        }
+        exec(clipCommand, async (err, stdout, stderr) => {
             if (err) {
                 log.error('could not slice pestmap to boundary: ' + err);
                 throw err;
