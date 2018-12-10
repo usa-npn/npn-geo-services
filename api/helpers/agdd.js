@@ -291,19 +291,6 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         -66.9509145889486,
         49.4107288273616
     ];
-    // let stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
-    //     "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
-    //     "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
-    //     "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
-    //     "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
-    //     "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
-
-    // let stateNames = ['Maine', 'Vermont', 'Colorado', 'Nebraska', 'Kansas', 'Oklahoma', 'Texas', 'Minnesota',
-    //     'Iowa', 'Missouri', 'Arkansas', 'Louisiana', 'Wisconsin', 'Illinois',
-    //     'Kentucky', 'Tennessee', 'Mississippi', 'Michigan', 'Indiana', 'Alabama',
-    //     'Ohio', 'Alabama', 'Georgia', 'South Carolina', 'North Carolina', 'Virginia',
-    //     'West Virginia', 'District of Columbia', 'Maryland', 'Delaware', 'New Jersey', 'Pennsylvania',
-    //     'New York', 'Connecticut', 'Rhode Island', 'Massachusetts', 'New Hampshire', 'Florida'];
 
     // get the png from disk if already exists
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
@@ -348,16 +335,18 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                     log.error('could not delete uncropped tif file: ' + err);
                     throw err;
                 }
+                let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
+
                  // style the tiff into png
                 let response = {
                     date: date.format('YYYY-MM-DD'),
-                    layerClippedFrom: 'custom'
+                    layerClippedFrom: 'custom',
+                    clippedImage: styledClippedImagePath,
+                    bbox: bounds
                 };
-                response.clippedImage = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
-                response.bbox = null;//bounds;
 
                 // return png
-                log.info(`custom agdd response: ${JSON.stringify(response)}`);
+                log.info(`ETC response: ${response}`);
 
                 return response;
 
