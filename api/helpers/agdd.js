@@ -336,7 +336,8 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         let croppedPngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
-        exec(`gdalwarp -srcnodata -9999 -dstnodata -9999 -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, async (err, stdout, stderr) => {
+        exec(`gdalwarp -srcnodata -9999 -dstnodata -9999 -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`, 
+        async (err, stdout, stderr) => {
             if (err) {
                 log.error('could not slice pestmap to boundary: ' + err);
                 throw err;
@@ -353,7 +354,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                     layerClippedFrom: 'custom'
                 };
                 response.clippedImage = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
-                response.bbox = bounds;
+                response.bbox = null;//bounds;
 
                 // return png
                 log.info(`custom agdd response: ${JSON.stringify(response)}`);
