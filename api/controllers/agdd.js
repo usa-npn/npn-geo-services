@@ -227,6 +227,7 @@ function doubleSineAgddMap(req, res) {
  */
 function simplePointTimeSeries(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
+    let temperatureUnit = getParam(req.swagger.params['temperatureUnit']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
@@ -237,6 +238,7 @@ function simplePointTimeSeries(req, res) {
 
     return agddController.getSimpleAgddTimeSeries(
         climateProvider, 
+        temperatureUnit,
         moment.utc(startDate), 
         moment.utc(endDate), 
         base, 
