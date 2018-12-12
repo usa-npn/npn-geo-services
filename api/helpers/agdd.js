@@ -281,6 +281,7 @@ async function getClippedAgddRaster() {
 async function getCustomAgddPestMap(species, date, preserveExtent) {
     log.info('in custom agdd pest map');
     let sldName = 'eastern_tent_caterpillar.sld';
+    let aggdMethod = 'simple';
     let base = 50;
     let currentYear = moment().utc().year();
     let climateProvider = "ncep";
@@ -307,7 +308,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     
     // otherwise generate tiff via custom agdd endpoint
     log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${base}`);
-    let result = await getDynamicAgdd(climateProvider, startDate, date, base);
+    let result = await getDynamicAgdd(agddMethod, climateProvider, startDate, date, base, null);
     let tiffFileUrl = result.mapUrl;
     let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
