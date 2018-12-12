@@ -194,13 +194,28 @@ function clippedImageInternal(req, res, anomaly) {
 /**
  * @param {{swagger}} req
  */
-function agddMap(req, res) {
+function simpleAgddMap(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
 
-    return agddController.getDynamicAgdd(climateProvider, moment.utc(startDate), moment.utc(endDate), base)
+    return agddController.getDynamicAgdd('simple', climateProvider, moment.utc(startDate), moment.utc(endDate), base, null)
+        .then((agddMapJson) => res.status(200).send(agddMapJson))
+        .catch((error) => res.status(500).json({"message": error.message}));
+}
+
+/**
+ * @param {{swagger}} req
+ */
+function doubleSineAgddMap(req, res) {
+    let climateProvider = getParam(req.swagger.params['climateProvider']);
+    let startDate = getParam(req.swagger.params['startDate']);
+    let endDate = getParam(req.swagger.params['endDate']);
+    let lowerThreshold = getParam(req.swagger.params['lowerThreshold']);
+    let upperThreshold = getParam(req.swagger.params['upperThreshold']);
+
+    return agddController.getDynamicAgdd('double-sine', climateProvider, moment.utc(startDate), moment.utc(endDate), lowerThreshold, upperThreshold)
         .then((agddMapJson) => res.status(200).send(agddMapJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
@@ -268,7 +283,8 @@ module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
-module.exports.agddMap = agddMap;
+module.exports.simpleAgddMap = simpleAgddMap;
+module.exports.doubleSineAgddMap = doubleSineAgddMap;
 module.exports.simplePointTimeSeries = simplePointTimeSeries;
 module.exports.doubleSinePointTimeSeries = doubleSinePointTimeSeries;
 

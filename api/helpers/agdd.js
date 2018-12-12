@@ -720,24 +720,33 @@ async function getSimpleAgddTimeSeries(climateProvider, startDate, endDate, base
     return response;
 }
 
-async function getDynamicAgdd(climateProvider, startDate, endDate, base) {
+async function getDynamicAgdd(agddMethod, climateProvider, startDate, endDate, lowerThreshold, upperThreshold) {
     return new Promise((resolve, reject) =>
     {
-        //check if file already exists, if so don't do all the work
-        let tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`;
+        let response = {
+            climateProvider: climateProvider,
+            startDate: startDate.format('YYYY-MM-DD'),
+            endDate: endDate.format('YYYY-MM-DD')
+        };
+
+        let tifFile, pythonCommand = None;
+        if (agddMethod == 'simple') {
+            tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`; 
+            response.base = lowerThreshold;
+            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py simple ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`
+        } else {
+            tifFile = `${climateProvider.toLowerCase()}_double_sine_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_lthr${lowerThreshold}_uthr${upperThreshold}.tif`; 
+            response.lowerThreshold = lowerThreshold;
+            response.upperThreshold = upperThreshold;
+            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py double-sine ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold} ${upperThreshold}`
+        }
         let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
+        response.mapUrl = tifUrl;
         
         //for local testing
         //tifUrl = "https://data-dev.usanpn.org:3006/agdd_1994-02-02_through_1994-02-20_base13.tif";
 
-        let response = {
-            climateProvider: climateProvider,
-            startDate: startDate.format('YYYY-MM-DD'),
-            endDate: endDate.format('YYYY-MM-DD'),
-            base: base,
-            mapUrl: tifUrl   
-        };
-
+        //check if file already exists, if so don't do all the work
         helpers.urlExists(tifUrl, (err, exists) => {
             if(!err && exists) {
                 resolve(response);
@@ -749,7 +758,7 @@ async function getDynamicAgdd(climateProvider, startDate, endDate, base) {
                     password: process.env.GEOSERVER_SSH_PASSWORD
                 })
                 .then(function() {
-                    ssh.execCommand(`sudo /usr/bin/python3 compute_dynamic_agdd.py ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`,
+                    ssh.execCommand(pythonCommand,
                         { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
                         .then(function(result) {
                         console.log('STDOUT: ' + result.stdout)

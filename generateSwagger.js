@@ -848,7 +848,7 @@ async function generate() {
         }
     };
 
-    swaggerDefinition['definitions']['AgddMapResponse'] = {
+    swaggerDefinition['definitions']['SimpleAgddMapResponse'] = {
         required: ['startDate', 'endDate', 'base', 'mapUrl'],
         properties: {
             climateProvider: {
@@ -861,6 +861,30 @@ async function generate() {
                 type: "string"
             },
             base: {
+                type: "number"
+            },
+            mapUrl: {
+                type: "string"
+            }
+        }
+    };
+
+    swaggerDefinition['definitions']['DoubleSineAgddMapResponse'] = {
+        required: ['startDate', 'endDate', 'base', 'mapUrl'],
+        properties: {
+            climateProvider: {
+                type: "string"
+            },
+            startDate: {
+                type: "string"
+            },
+            endDate: {
+                type: "string"
+            },
+            lowerThreshold: {
+                type: "number"
+            },
+            upperThreshold: {
                 type: "number"
             },
             mapUrl: {
@@ -1196,52 +1220,106 @@ async function generate() {
         };
 
     
-    swaggerDefinition['paths']['/agdd/agddMap'] = {};
-    swaggerDefinition['paths']['/agdd/agddMap']['x-swagger-router-controller'] = 'agdd';
-    swaggerDefinition['paths']['/agdd/agddMap']['get'] =
-        {
-            summary: `gets agdd from startDate through endDate for given base`,
-            description: `Gets agdd from startDate through endDate for given base.`,
-            tags: ['accumlated growing degree days'],
-            operationId: `agddMap`,
-            consumes: ['application/x-www-form-urlencoded'],
-            parameters: [
-                {
-                    name: 'climateProvider',
-                    in: 'query',
-                    description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
-                    type: 'string',
-                    enum: [
-                        "PRISM",
-                        "NCEP"
-                    ]
-                },
-                {
-                    name: 'startDate',
-                    in: 'query',
-                    required: true,
-                    description: 'the date to start accumulating growing degree days for example 2017-02-15.',
-                    type: 'string',
-                    format: 'date'
-                },
-                {
-                    name: 'endDate',
-                    in: 'query',
-                    required: true,
-                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-08-04.',
-                    type: 'string',
-                    format: 'date'
-                },
-                {
-                    name: 'base',
-                    in: 'query',
-                    required: true,
-                    description: 'the base in fahrenheit used to compute the agdd',
-                    type: 'integer'
-                }
-            ],
-            responses: getResponses('AgddMapResponse')
-        };
+    swaggerDefinition['paths']['/agdd/simple/map'] = {};
+    swaggerDefinition['paths']['/agdd/simple/map']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/simple/map']['get'] =
+    {
+        summary: `gets agdd from startDate through endDate for given base`,
+        description: `Gets agdd from startDate through endDate for given base.`,
+        tags: ['accumlated growing degree days'],
+        operationId: `simpleAgddMap`,
+        consumes: ['application/x-www-form-urlencoded'],
+        parameters: [
+            {
+                name: 'climateProvider',
+                in: 'query',
+                description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
+                type: 'string',
+                enum: [
+                    "PRISM",
+                    "NCEP"
+                ]
+            },
+            {
+                name: 'startDate',
+                in: 'query',
+                required: true,
+                description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                type: 'string',
+                format: 'date'
+            },
+            {
+                name: 'endDate',
+                in: 'query',
+                required: true,
+                description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-08-04.',
+                type: 'string',
+                format: 'date'
+            },
+            {
+                name: 'base',
+                in: 'query',
+                required: true,
+                description: 'the base in fahrenheit used to compute the agdd',
+                type: 'integer'
+            }
+        ],
+        responses: getResponses('SimpleAgddMapResponse')
+    };
+
+
+    swaggerDefinition['paths']['/agdd/double-sine/map'] = {};
+    swaggerDefinition['paths']['/agdd/double-sine/map']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/double-sine/map']['get'] =
+    {
+        summary: `gets double-sine agdd from startDate through endDate for given lower and upper thresholds`,
+        description: `Gets double-sine agdd from startDate through endDate for given lower and upper thresholds.`,
+        tags: ['accumlated growing degree days'],
+        operationId: `doubleSineAgddMap`,
+        consumes: ['application/x-www-form-urlencoded'],
+        parameters: [
+            {
+                name: 'climateProvider',
+                in: 'query',
+                description: 'the backing climate data provider. NCEP available from 2016 on, PRISM (todo?) available from 1981 through previous year.',
+                type: 'string',
+                enum: [
+                    "NCEP"
+                ]
+            },
+            {
+                name: 'startDate',
+                in: 'query',
+                required: true,
+                description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                type: 'string',
+                format: 'date'
+            },
+            {
+                name: 'endDate',
+                in: 'query',
+                required: true,
+                description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-08-04.',
+                type: 'string',
+                format: 'date'
+            },
+            {
+                name: 'lowerThreshold',
+                in: 'query',
+                required: true,
+                description: 'the lowerThreshold in c used to compute the double-sine agdd',
+                type: 'integer'
+            },
+            {
+                name: 'upperThreshold',
+                in: 'query',
+                required: true,
+                description: 'the upperThreshold in c used to compute the double-sine agdd',
+                type: 'integer'
+            }
+        ],
+        responses: getResponses('DoubleSineAgddMapResponse')
+    };
 
 
     swaggerDefinition['paths']['/agdd/simple/pointTimeSeries'] = {};
