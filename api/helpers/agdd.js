@@ -731,9 +731,9 @@ async function getDynamicAgdd(agddMethod, climateProvider, startDate, endDate, l
 
         let tifFile, pythonCommand = null;
         if (agddMethod == 'simple') {
-            tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`; 
+            tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${lowerThreshold}.tif`; 
             response.base = lowerThreshold;
-            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py simple ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${base}`
+            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py simple ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold}`
         } else {
             tifFile = `${climateProvider.toLowerCase()}_double_sine_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_lthr${lowerThreshold}_uthr${upperThreshold}.tif`; 
             response.lowerThreshold = lowerThreshold;
