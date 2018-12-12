@@ -28,58 +28,6 @@ securityDefinitions:
     in: header
     name: consumer_key
 paths:
-  /agdd/agddMap:
-    x-swagger-router-controller: agdd
-    get:
-      summary: gets agdd from startDate through endDate for given base
-      description: Gets agdd from startDate through endDate for given base.
-      tags:
-        - accumlated growing degree days
-      operationId: agddMap
-      consumes:
-        - application/x-www-form-urlencoded
-      parameters:
-        - name: climateProvider
-          in: query
-          description: >-
-            the backing climate data provider. NCEP available from 2016 on,
-            PRISM available from 1981 through previous year.
-          type: string
-          enum:
-            - PRISM
-            - NCEP
-        - name: startDate
-          in: query
-          required: true
-          description: >-
-            the date to start accumulating growing degree days for example
-            2017-02-15.
-          type: string
-          format: date
-        - name: endDate
-          in: query
-          required: true
-          description: >-
-            the date to stop accumulating growing degree days (inclusive) for
-            example 2017-08-04.
-          type: string
-          format: date
-        - name: base
-          in: query
-          required: true
-          description: the base in fahrenheit used to compute the agdd
-          type: integer
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/AgddMapResponse'
-        '500':
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
   /agdd/anomaly/area/clippedImage:
     x-swagger-router-controller: agdd
     get:
@@ -2662,6 +2610,74 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ErrorResponse'
+  /agdd/double-sine/map:
+    x-swagger-router-controller: agdd
+    get:
+      summary: >-
+        gets double-sine agdd raster from startDate through endDate for given
+        lower and upper thresholds
+      description: >-
+        Gets double-sine agdd raster from startDate through endDate for given
+        lower and upper thresholds.
+      tags:
+        - accumlated growing degree days
+      operationId: doubleSineAgddMap
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: climateProvider
+          in: query
+          description: >-
+            the backing climate data provider. NCEP available from 2016 on,
+            PRISM (todo?) available from 1981 through previous year.
+          type: string
+          enum:
+            - NCEP
+        - name: temperatureUnit
+          in: query
+          required: true
+          description: the unit of temperature.
+          type: string
+          enum:
+            - celsius
+            - fahrenheit
+        - name: startDate
+          in: query
+          required: true
+          description: >-
+            the date to start accumulating growing degree days for example
+            2018-02-15.
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          required: true
+          description: >-
+            the date to stop accumulating growing degree days (inclusive) for
+            example 2018-08-04.
+          type: string
+          format: date
+        - name: lowerThreshold
+          in: query
+          required: true
+          description: the lowerThreshold used to compute the double-sine agdd
+          type: integer
+        - name: upperThreshold
+          in: query
+          required: true
+          description: the upperThreshold used to compute the double-sine agdd
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DoubleSineAgddMapResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /agdd/double-sine/pointTimeSeries:
     x-swagger-router-controller: agdd
     get:
@@ -2792,6 +2808,66 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ImageResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /agdd/simple/map:
+    x-swagger-router-controller: agdd
+    get:
+      summary: gets simple agdd raster from startDate through endDate for given base
+      description: Gets simple agdd raster from startDate through endDate for given base.
+      tags:
+        - accumlated growing degree days
+      operationId: simpleAgddMap
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: climateProvider
+          in: query
+          description: >-
+            the backing climate data provider. NCEP available from 2016 on,
+            PRISM available from 1981 through previous year.
+          type: string
+          enum:
+            - PRISM
+            - NCEP
+        - name: temperatureUnit
+          in: query
+          required: true
+          description: the unit of temperature.
+          type: string
+          enum:
+            - celsius
+            - fahrenheit
+        - name: startDate
+          in: query
+          required: true
+          description: >-
+            the date to start accumulating growing degree days for example
+            2018-02-15.
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          required: true
+          description: >-
+            the date to stop accumulating growing degree days (inclusive) for
+            example 2018-08-04.
+          type: string
+          format: date
+        - name: base
+          in: query
+          required: true
+          description: the base used to compute the agdd
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SimpleAgddMapResponse'
         '500':
           description: internal server error
           schema:
@@ -6963,23 +7039,6 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
 definitions:
-  AgddMapResponse:
-    required:
-      - startDate
-      - endDate
-      - base
-      - mapUrl
-    properties:
-      climateProvider:
-        type: string
-      startDate:
-        type: string
-      endDate:
-        type: string
-      base:
-        type: number
-      mapUrl:
-        type: string
   AgddStatsResponse:
     required:
       - date
@@ -7039,6 +7098,30 @@ definitions:
         type: array
         items:
           type: number
+  DoubleSineAgddMapResponse:
+    required:
+      - startDate
+      - endDate
+      - climateProvider
+      - temperatureUnit
+      - lowerThreshold
+      - upperThreshold
+      - mapUrl
+    properties:
+      climateProvider:
+        type: string
+      temperatureUnit:
+        type: string
+      startDate:
+        type: string
+      endDate:
+        type: string
+      lowerThreshold:
+        type: number
+      upperThreshold:
+        type: number
+      mapUrl:
+        type: string
   DoubleSinePointTimeSeriesResponse:
     required:
       - startDate
@@ -7096,6 +7179,27 @@ definitions:
         type: array
         items:
           type: number
+  SimpleAgddMapResponse:
+    required:
+      - startDate
+      - endDate
+      - climateProvider
+      - temperatureUnit
+      - base
+      - mapUrl
+    properties:
+      climateProvider:
+        type: string
+      temperatureUnit:
+        type: string
+      startDate:
+        type: string
+      endDate:
+        type: string
+      base:
+        type: number
+      mapUrl:
+        type: string
   SimplePointTimeSeriesResponse:
     required:
       - startDate

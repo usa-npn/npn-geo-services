@@ -771,14 +771,21 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
                         console.log('STDOUT: ' + result.stdout)
                         console.log('STDERR: ' + result.stderr)
 
+                        let geoserverDynamicAgddPath = `/geo-data/gridded_models/agdd_dynamic/`;
+
                         client.scp({
                             host: 'geoserver-dev.usanpn.org',
                             username: process.env.GEOSERVER_SSH_USER,
                             password: process.env.GEOSERVER_SSH_PASSWORD,
-                            path: `/geo-data/gridded_models/agdd_dynamic/${tifFile}`
+                            path: `${geoserverDynamicAgddPath}${tifFile}`
                         }, `${dynamicAgddPath}${tifFile}`, function(err) {
                             if(!err) {
-                                resolve(response);
+                                //delete the raster from geoserver
+                                ssh.execCommand(`sudo rm ${geoserverDynamicAgddPath}${tifFile}`,
+                                { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
+                                .then(function(result) {
+                                    resolve(response);
+                                });
                             } else {
                                 reject(err);
                             }
