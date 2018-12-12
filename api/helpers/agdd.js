@@ -674,7 +674,7 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
 }
 
 // selects and returns row from the cache table matching function params
-async function getSimpleAgddTimeSeries(climateProvider, startDate, endDate, base, lat, long, threshold) {
+async function getSimpleAgddTimeSeries(climateProvider, temperatureUnit, startDate, endDate, base, lat, long, threshold) {
     const query = {
         text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM ${climateProvider.toLowerCase()}_tavg
                 WHERE rast_date >= $3
@@ -689,9 +689,13 @@ async function getSimpleAgddTimeSeries(climateProvider, startDate, endDate, base
     let dateAgddThresholdMet = null;
 
     let timeSeries = res['rows'].map(row => {
+        let tavg = row['st_value'];
+        if(temperatureUnit === 'celsius') {
+            tavg = (tavg - 32) * (5/9);
+        }
         return { 
             "date": row['rast_date'].toISOString().split("T")[0], 
-            "gdd": row['st_value'] - base > 0 ? row['st_value'] - base : 0 
+            "gdd": tavg - base > 0 ? tavg - base : 0 
         }
     }).reduce(function (accum, item) {
         if (accum.length > 0)
@@ -707,6 +711,7 @@ async function getSimpleAgddTimeSeries(climateProvider, startDate, endDate, base
 
     response = {
         "climateProvider": climateProvider,
+        "temperatureUnit": temperatureUnit,
         "startDate": startDate.format('YYYY-MM-DD'),
         "endDate": endDate.format('YYYY-MM-DD'),
         "base": base,

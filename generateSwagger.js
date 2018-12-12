@@ -905,6 +905,9 @@ async function generate() {
             climateProvider: {
                 type: "string"
             },
+            temperatureUnit: {
+                type: "string"
+            },
             startDate: {
                 type: "string"
             },
@@ -1364,12 +1367,24 @@ async function generate() {
             parameters: [
                 {
                     name: 'climateProvider',
+                    required: true,
                     in: 'query',
                     description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
                     type: 'string',
                     enum: [
-                        "PRISM",
-                        "NCEP"
+                        "NCEP",
+                        "PRISM"
+                    ]
+                },
+                {
+                    name: 'temperatureUnit',
+                    in: 'query',
+                    required: true,
+                    description: 'the unit of temperature.',
+                    type: 'string',
+                    enum: [
+                        "celsius",
+                        "fahrenheit"
                     ]
                 },
                 {
@@ -1392,7 +1407,7 @@ async function generate() {
                     name: 'base',
                     in: 'query',
                     required: true,
-                    description: 'the base in fahrenheit used to compute the agdd - for example 12',
+                    description: 'the base used to compute the agdd - for example 12',
                     type: 'integer'
                 },
                 {
@@ -1432,12 +1447,13 @@ async function generate() {
                 parameters: [
                     {
                         name: 'climateProvider',
+                        required: true,
                         in: 'query',
                         description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
                         type: 'string',
                         enum: [
-                            "PRISM",
-                            "NCEP"
+                            "NCEP",
+                            "PRISM"
                         ]
                     },
                     {
