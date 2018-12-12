@@ -729,7 +729,7 @@ async function getDynamicAgdd(agddMethod, climateProvider, startDate, endDate, l
             endDate: endDate.format('YYYY-MM-DD')
         };
 
-        let tifFile, pythonCommand = None;
+        let tifFile, pythonCommand = null;
         if (agddMethod == 'simple') {
             tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${base}.tif`; 
             response.base = lowerThreshold;
