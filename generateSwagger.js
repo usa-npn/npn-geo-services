@@ -870,7 +870,7 @@ async function generate() {
     };
 
     swaggerDefinition['definitions']['DoubleSineAgddMapResponse'] = {
-        required: ['startDate', 'endDate', 'base', 'mapUrl'],
+        required: ['startDate', 'endDate', 'lowerThreshold', 'upperThreshold', 'mapUrl'],
         properties: {
             climateProvider: {
                 type: "string"
