@@ -1239,6 +1239,7 @@ async function generate() {
             {
                 name: 'climateProvider',
                 in: 'query',
+                required: true,
                 description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
                 type: 'string',
                 enum: [
@@ -1298,6 +1299,7 @@ async function generate() {
             {
                 name: 'climateProvider',
                 in: 'query',
+                required: true,
                 description: 'the backing climate data provider. NCEP available from 2016 on, PRISM (todo?) available from 1981 through previous year.',
                 type: 'string',
                 enum: [
