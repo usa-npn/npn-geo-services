@@ -849,9 +849,12 @@ async function generate() {
     };
 
     swaggerDefinition['definitions']['SimpleAgddMapResponse'] = {
-        required: ['startDate', 'endDate', 'base', 'mapUrl'],
+        required: ['startDate', 'endDate', 'climateProvider', 'temperatureUnit', 'base', 'mapUrl'],
         properties: {
             climateProvider: {
+                type: "string"
+            },
+            temperatureUnit: {
                 type: "string"
             },
             startDate: {
@@ -870,9 +873,12 @@ async function generate() {
     };
 
     swaggerDefinition['definitions']['DoubleSineAgddMapResponse'] = {
-        required: ['startDate', 'endDate', 'lowerThreshold', 'upperThreshold', 'mapUrl'],
+        required: ['startDate', 'endDate', 'climateProvider', 'temperatureUnit', 'lowerThreshold', 'upperThreshold', 'mapUrl'],
         properties: {
             climateProvider: {
+                type: "string"
+            },
+            temperatureUnit: {
                 type: "string"
             },
             startDate: {
@@ -1224,8 +1230,8 @@ async function generate() {
     swaggerDefinition['paths']['/agdd/simple/map']['x-swagger-router-controller'] = 'agdd';
     swaggerDefinition['paths']['/agdd/simple/map']['get'] =
     {
-        summary: `gets agdd from startDate through endDate for given base`,
-        description: `Gets agdd from startDate through endDate for given base.`,
+        summary: `gets simple agdd raster from startDate through endDate for given base`,
+        description: `Gets simple agdd raster from startDate through endDate for given base.`,
         tags: ['accumlated growing degree days'],
         operationId: `simpleAgddMap`,
         consumes: ['application/x-www-form-urlencoded'],
@@ -1241,10 +1247,21 @@ async function generate() {
                 ]
             },
             {
+                name: 'temperatureUnit',
+                in: 'query',
+                required: true,
+                description: 'the unit of temperature.',
+                type: 'string',
+                enum: [
+                    "celsius",
+                    "fahrenheit"
+                ]
+            },
+            {
                 name: 'startDate',
                 in: 'query',
                 required: true,
-                description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                description: 'the date to start accumulating growing degree days for example 2018-02-15.',
                 type: 'string',
                 format: 'date'
             },
@@ -1252,7 +1269,7 @@ async function generate() {
                 name: 'endDate',
                 in: 'query',
                 required: true,
-                description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-08-04.',
+                description: 'the date to stop accumulating growing degree days (inclusive) for example 2018-08-04.',
                 type: 'string',
                 format: 'date'
             },
@@ -1260,7 +1277,7 @@ async function generate() {
                 name: 'base',
                 in: 'query',
                 required: true,
-                description: 'the base in fahrenheit used to compute the agdd',
+                description: 'the base used to compute the agdd',
                 type: 'integer'
             }
         ],
@@ -1272,8 +1289,8 @@ async function generate() {
     swaggerDefinition['paths']['/agdd/double-sine/map']['x-swagger-router-controller'] = 'agdd';
     swaggerDefinition['paths']['/agdd/double-sine/map']['get'] =
     {
-        summary: `gets double-sine agdd from startDate through endDate for given lower and upper thresholds`,
-        description: `Gets double-sine agdd from startDate through endDate for given lower and upper thresholds.`,
+        summary: `gets double-sine agdd raster from startDate through endDate for given lower and upper thresholds`,
+        description: `Gets double-sine agdd raster from startDate through endDate for given lower and upper thresholds.`,
         tags: ['accumlated growing degree days'],
         operationId: `doubleSineAgddMap`,
         consumes: ['application/x-www-form-urlencoded'],
@@ -1288,10 +1305,21 @@ async function generate() {
                 ]
             },
             {
+                name: 'temperatureUnit',
+                in: 'query',
+                required: true,
+                description: 'the unit of temperature.',
+                type: 'string',
+                enum: [
+                    "celsius",
+                    "fahrenheit"
+                ]
+            },
+            {
                 name: 'startDate',
                 in: 'query',
                 required: true,
-                description: 'the date to start accumulating growing degree days for example 2017-02-15.',
+                description: 'the date to start accumulating growing degree days for example 2018-02-15.',
                 type: 'string',
                 format: 'date'
             },
@@ -1299,7 +1327,7 @@ async function generate() {
                 name: 'endDate',
                 in: 'query',
                 required: true,
-                description: 'the date to stop accumulating growing degree days (inclusive) for example 2017-08-04.',
+                description: 'the date to stop accumulating growing degree days (inclusive) for example 2018-08-04.',
                 type: 'string',
                 format: 'date'
             },
@@ -1307,14 +1335,14 @@ async function generate() {
                 name: 'lowerThreshold',
                 in: 'query',
                 required: true,
-                description: 'the lowerThreshold in c used to compute the double-sine agdd',
+                description: 'the lowerThreshold used to compute the double-sine agdd',
                 type: 'integer'
             },
             {
                 name: 'upperThreshold',
                 in: 'query',
                 required: true,
-                description: 'the upperThreshold in c used to compute the double-sine agdd',
+                description: 'the upperThreshold used to compute the double-sine agdd',
                 type: 'integer'
             }
         ],

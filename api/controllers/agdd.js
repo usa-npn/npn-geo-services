@@ -196,11 +196,12 @@ function clippedImageInternal(req, res, anomaly) {
  */
 function simpleAgddMap(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
+    let temperatureUnit = getParam(req.swagger.params['temperatureUnit']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let base = getParam(req.swagger.params['base']);
 
-    return agddController.getDynamicAgdd('simple', climateProvider, moment.utc(startDate), moment.utc(endDate), base, null)
+    return agddController.getDynamicAgdd('simple', climateProvider, temperatureUnit, moment.utc(startDate), moment.utc(endDate), base, null)
         .then((agddMapJson) => res.status(200).send(agddMapJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }
@@ -210,12 +211,13 @@ function simpleAgddMap(req, res) {
  */
 function doubleSineAgddMap(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
+    let temperatureUnit = getParam(req.swagger.params['temperatureUnit']);
     let startDate = getParam(req.swagger.params['startDate']);
     let endDate = getParam(req.swagger.params['endDate']);
     let lowerThreshold = getParam(req.swagger.params['lowerThreshold']);
     let upperThreshold = getParam(req.swagger.params['upperThreshold']);
 
-    return agddController.getDynamicAgdd('double-sine', climateProvider, moment.utc(startDate), moment.utc(endDate), lowerThreshold, upperThreshold)
+    return agddController.getDynamicAgdd('double-sine', climateProvider, temperatureUnit, moment.utc(startDate), moment.utc(endDate), lowerThreshold, upperThreshold)
         .then((agddMapJson) => res.status(200).send(agddMapJson))
         .catch((error) => res.status(500).json({"message": error.message}));
 }

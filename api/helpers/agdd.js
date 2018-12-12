@@ -308,7 +308,7 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
     
     // otherwise generate tiff via custom agdd endpoint
     log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${base}`);
-    let result = await getDynamicAgdd(agddMethod, climateProvider, startDate, date, base, null);
+    let result = await getDynamicAgdd(agddMethod, climateProvider, 'fahrenheit', startDate, date, base, null);
     let tiffFileUrl = result.mapUrl;
     let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
@@ -721,11 +721,12 @@ async function getSimpleAgddTimeSeries(climateProvider, startDate, endDate, base
     return response;
 }
 
-async function getDynamicAgdd(agddMethod, climateProvider, startDate, endDate, lowerThreshold, upperThreshold) {
+async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, startDate, endDate, lowerThreshold, upperThreshold) {
     return new Promise((resolve, reject) =>
     {
         let response = {
             climateProvider: climateProvider,
+            temperatureUnit: temperatureUnit,
             startDate: startDate.format('YYYY-MM-DD'),
             endDate: endDate.format('YYYY-MM-DD')
         };
@@ -734,12 +735,12 @@ async function getDynamicAgdd(agddMethod, climateProvider, startDate, endDate, l
         if (agddMethod == 'simple') {
             tifFile = `${climateProvider.toLowerCase()}_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_base${lowerThreshold}.tif`; 
             response.base = lowerThreshold;
-            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py simple ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold}`
+            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py simple ${climateProvider.toLowerCase()} ${temperatureUnit.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold}`
         } else {
             tifFile = `${climateProvider.toLowerCase()}_double_sine_agdd_${startDate.format('YYYY-MM-DD')}_through_${endDate.format('YYYY-MM-DD')}_lthr${lowerThreshold}_uthr${upperThreshold}.tif`; 
             response.lowerThreshold = lowerThreshold;
             response.upperThreshold = upperThreshold;
-            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py double-sine ${climateProvider.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold} ${upperThreshold}`
+            pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py double-sine ${climateProvider.toLowerCase()} ${temperatureUnit.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold} ${upperThreshold}`
         }
         let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
         response.mapUrl = tifUrl;
