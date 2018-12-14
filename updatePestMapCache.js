@@ -7,12 +7,14 @@ let log = require('./logger.js');
 // hits the geo services pestMap endpoint to generate image
 function doRequest(path) {
     let options = {
-        hostname: (os.hostname() == 'npnweb-dev.npn.arizona.edu' || os.hostname() == 'jeff-work') ? 'data-dev.usanpn.org' : 'data.usanpn.org',
+        hostname: (os.hostname() == 'npnweb-dev.npn.arizona.edu' || os.hostname() == 'jeff-work' || os.hostname() == 'on-campus-10-138-68-38.vpn.arizona.edu') ? 'data-dev.usanpn.org' : 'data.usanpn.org',
         port: 3006,
         path: encodeURI(path),
         method: 'GET',
         rejectUnauthorized: false
     };
+    console.log(os.hostname());
+    console.log(options.hostname);
     return new Promise ((resolve, reject) => {
         // 'https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=Emerald%20Ash%20Borer&date=2017-01-05'
         // console.log(options.hostname);
@@ -45,14 +47,15 @@ async function deleteForecastDays(species) {
 async function update() {
     try {
         log.info("updating cached pest images.");
-        let speciesArr = [
-            'Emerald Ash Borer', 
-            'Apple Maggot', 
-            'Hemlock Woolly Adelgid', 
-            'Lilac Borer', 
-            'Winter Moth',
-            'Eastern Tent Caterpillar'
-        ];
+        // let speciesArr = [
+        //     'Emerald Ash Borer', 
+        //     'Apple Maggot', 
+        //     'Hemlock Woolly Adelgid', 
+        //     'Eastern Tent Caterpillar',
+        //     'Lilac Borer', 
+        //     'Winter Moth'
+        // ];
+        let speciesArr = ['Emerald Ash Borer', 'Eastern Tent Caterpillar', 'Apple Maggot', 'Winter Moth'];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
             let start = moment.utc("2018-01-01");
