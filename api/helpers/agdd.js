@@ -6,6 +6,7 @@ let climate = require('./climate');
 var fs = require('fs');
 const https = require('https');
 const { exec } = require('child_process');
+let pests = require('./pests');
 
 let node_ssh = require('node-ssh');
 let ssh = new node_ssh();
@@ -278,37 +279,28 @@ async function getClippedAgddRaster() {
 
 }
 
-async function getCustomAgddPestMap(species, date, preserveExtent) {
+async function getCustomAgddPestMap(pest, date, preserveExtent) {
     log.info('in custom agdd pest map');
-    let sldName = 'eastern_tent_caterpillar.sld';
-    let aggdMethod = 'simple';
-    let base = 50;
-    let currentYear = moment().utc().year();
     let climateProvider = "ncep";
-    let startDate = moment.utc(`${currentYear}-03-01`);
-    let bounds = [
-        -109.0712618165,
-        24.5049877850162,
-        -66.9509145889486,
-        49.4107288273616
-    ];
+    let currentYear = moment().utc().year();
+    let startDate = moment.utc(`${currentYear}-${pest.startMonthDay}`);
 
     // get the png from disk if already exists
-    let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+    let styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
     if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
         log.info('styled png already exists');
         let response = {
             date: date.format('YYYY-MM-DD'),
             layerClippedFrom: 'custom',
             clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
-            bbox: bounds
+            bbox: pest.bounds
         };
         return response;
     }
     
     // otherwise generate tiff via custom agdd endpoint
-    log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${base}`);
-    let result = await getDynamicAgdd(agddMethod, climateProvider, 'fahrenheit', startDate, date, base, null);
+    log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
+    let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.base, null);
     let tiffFileUrl = result.mapUrl;
     let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
@@ -321,12 +313,12 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
         //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
         // slice the tiff
-        let shapefile = `/var/www/data-site/files/npn-geo-services/shape_files/${species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
-        let croppedPngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+        let shapefile = `/var/www/data-site/files/npn-geo-services/shape_files/${pest.species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
+        let croppedPngFilename = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
         // when not preserving extent, use -te to set bounds to the shapefile bounding box
-        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${bounds.join(' ')} -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
+        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${pest.bounds.join(' ')} -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
         if(preserveExtent) {
             clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
         }
@@ -341,14 +333,14 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
                     log.error('could not delete uncropped tif file: ' + err);
                     throw err;
                 }
-                let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', sldName);
+                let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', pest.sldName, 'black');
 
                  // style the tiff into png
                 let response = {
                     date: date.format('YYYY-MM-DD'),
                     layerClippedFrom: 'custom',
                     clippedImage: styledClippedImagePath,
-                    bbox: bounds
+                    bbox: pest.bounds
                 };
 
                 // return png
@@ -364,101 +356,41 @@ async function getCustomAgddPestMap(species, date, preserveExtent) {
 // saves to disk and returns path to styled tiff for six clipping
 async function getPestMap(species, date, preserveExtent) {
 
-    if(species === 'Eastern Tent Caterpillar') {
-        return await getCustomAgddPestMap(species, date, preserveExtent);
+    // preserveExtent is true only for prettymaps and get _nocache.png appended to the output file
+    // it keeps the large extent rather than shrinking it down to the clipping boundary 
+    // this is so the image will line up of the base image in the php script correctly
+
+    let pest = pests.pests.find(item => item.species === species);
+
+    // any pest that's not using the simple 32 or 50 agdd with Jan 1 start date
+    if(pest.species === 'Eastern Tent Caterpillar' 
+        || pest.species === 'Asian Longhorned Beetle'
+        || pest.species === 'Bagworm'
+        || pest.species === 'Pine Needle Scale'
+        || pest.species === 'Gypsy Moth') {
+        return await getCustomAgddPestMap(pest, date, preserveExtent);
     }
 
-    let layerName = `gdd:agdd_50f`;
-    let bounds = [];
-    //if stateNames is left empty, no clipping will occur
-    let stateNames = [];
-    let sldName = '';
-    let base = 50;
-
-    if(species === 'Emerald Ash Borer') {
-        sldName = 'emerald_ash_borer.sld';
-        bounds = [
-            -109.0712618165,
-            24.5049877850162,
-            -66.9509145889486,
-            49.4107288273616
-        ];
-        // -109.0712618165,
-        //     25.8324511400651,
-        //     -69.9161870337683,
-        //     49.4107288273616
-        stateNames = ["'Maine'", "'Vermont'", "'Colorado'", "'Nebraska'", "'Kansas'", "'Oklahoma'", "'Texas'", "'Minnesota'",
-            "'Iowa'", "'Missouri'", "'Arkansas'", "'Louisiana'", "'Wisconsin'", "'Illinois'",
-            "'Kentucky'", "'Tennessee'", "'Mississippi'", "'Michigan'", "'Indiana'", "'Alabama'",
-            "'Ohio'", "'Alabama'", "'Georgia'", "'South Carolina'", "'North Carolina'", "'Virginia'",
-            "'West Virginia'", "'District of Columbia'", "'Maryland'", "'Delaware'", "'New Jersey'", "'Pennsylvania'",
-            "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'", "'New Hampshire'", "'Florida'"];
-    } else if(species === 'Apple Maggot') {
-        sldName = 'apple_maggot.sld';
-        stateNames = [];
-        bounds = [
-            -125.0208333,
-            24.0625,
-            -66.4791667000001,
-            49.9375
-        ];
-    } else if(species === 'Hemlock Woolly Adelgid') {
-        layerName = `gdd:agdd`;
-        base = 32;
-        sldName = 'hemlock_woolly_adelgid.sld';
-        bounds = [
-            -124.773727262932,
-            30.2151872964169,
-            -66.9509145889486,
-            49.4107288273616
-        ];
-        stateNames = ["'Maine'", "'Vermont'", "'New Hampshire'", "'New York'", "'Connecticut'", "'Massachusetts'",
-            "'Rhode Island'", "'New Jersey'", "'Pennsylvania'", "'Delaware'", "'Maryland'", "'Virginia'",
-            "'West Virginia'", "'Ohio'", "'Kentucky'", "'Michigan'", "'Tennessee'", "'North Carolina'",
-            "'South Carolina'", "'Alabama'", "'Georgia'", "'Wisconsin'", "'Minnesota'", "'Indiana'",
-            "'Washington'", "'Oregon'", "'California'", "'Idaho'", "'Montana'"];
-    } else if(species === 'Winter Moth') {
-        sldName = 'winter_moth.sld';
-        bounds = [
-            -79.7779643313124,
-            40.4766897394137,
-            -66.9509145889486,
-            47.4722109120521
-        ];
-        stateNames = ["'New York'", "'Connecticut'", "'New Hampshire'", "'Vermont'", "'Maine'", "'Massachusetts'"];
-    } else if(species === 'Lilac Borer') {
-        sldName = 'lilac_borer.sld';
-        bounds = [
-            -125.0208333,
-            24.0625,
-            -66.4791667000001,
-            49.9375
-        ];
-    } else {
-        //todo other species
-    }
+    let response = {
+        date: date.format('YYYY-MM-DD'),
+        layerClippedFrom: pest.layerName
+    };
 
     //if file exists don't recompute it
     let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
     if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
-        let response = {
-            date: date.format('YYYY-MM-DD'),
-            layerClippedFrom: layerName,
-            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
-            bbox: bounds
-        };
+        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName;
+        response.bbox = pest.bounds;
         return response;
     }
 
-
     let rastTable = `agdd_${date.year()}`;
-    let buffer = getBufferSizeForTable(rastTable);
-
     let boundaryTable = "state_boundaries";
     let boundaryColumn = "name";
 
     let query = {};
-    if(preserveExtent && stateNames.length < 1) {
+    //if stateNames is left empty, no clipping will occur
+    if(preserveExtent && pest.stateNames.length < 1) {
         query = {text: `
 SELECT
 ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null), 3857)) AS tiff,
@@ -470,23 +402,27 @@ FROM (
     AND r.base = $2
     AND r.scale = $3
 ) AS bar
-    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+    `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
         };
-    } else if(preserveExtent) {
+    } 
+
+    else if(preserveExtent) {
         query = {text: `
 WITH boundary AS (
 SELECT ST_Buffer(ST_Union(p.geom), .01) AS states
 FROM ${boundaryTable} p
-WHERE p.${boundaryColumn} IN (${stateNames})
+WHERE p.${boundaryColumn} IN (${pest.stateNames})
 )
 SELECT ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(r.rast), (SELECT states FROM boundary), -9999, false), 1, null), 3857)) AS tiff
 FROM ${rastTable} r
 WHERE r.rast_date = $1
 AND r.base = $2
 AND r.scale = $3
-`, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+`, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
         };
-    } else if(stateNames.length < 1) {
+    } 
+
+    else if(pest.stateNames.length < 1) {
         query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
@@ -498,9 +434,11 @@ FROM (
     AND r.base = $2
     AND r.scale = $3
 ) AS bar
-    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+    `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
         };
-    } else {
+    } 
+
+    else {
         query = {text: `
 SELECT
 ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
@@ -512,7 +450,7 @@ FROM (
         SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN (${stateNames})
+        WHERE p.${boundaryColumn} IN (${pest.stateNames})
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
@@ -520,7 +458,7 @@ FROM (
     AND r.base = $2
     AND r.scale = $3
 ) AS bar
-    `, values: [date.format('YYYY-MM-DD'), base, 'fahrenheit']
+    `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
         };
     }
 
@@ -529,17 +467,13 @@ FROM (
     const res = await db.pgPool.query(query);
     log.info('query complete');
 
-    let response = {
-        date: date.format('YYYY-MM-DD'),
-        layerClippedFrom: layerName
-    };
     if (res.rows.length > 0) {
         let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         if (preserveExtent) {
             pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
         }
         await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
-        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', sldName);
+        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', pest.sldName, 'white');
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {

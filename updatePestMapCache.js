@@ -45,11 +45,17 @@ async function deleteForecastDays(species) {
 async function update() {
     try {
         log.info("updating cached pest images.");
-        //let speciesArr = ['Emerald Ash Borer', 'Apple Maggot', 'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth'];
-        let speciesArr = ['Emerald Ash Borer'];
+        let speciesArr = [
+            'Emerald Ash Borer', 
+            'Apple Maggot', 
+            'Hemlock Woolly Adelgid', 
+            'Lilac Borer', 
+            'Winter Moth',
+            'Eastern Tent Caterpillar'
+        ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
-            let start = moment.utc("2017-01-01");
+            let start = moment.utc("2018-01-01");
             let end = moment.utc().add(6,'days');
             while(start <= end){
                 let dateString = end.format('YYYY-MM-DD');

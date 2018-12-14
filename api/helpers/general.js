@@ -175,7 +175,8 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 
 
 // calls wps to apply sld style to input raster, returns promise to the path of the stylized png
-function stylizePestMap(filename, rasterpath, fileFormat, sldName){
+// background color will be made transparent
+function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundColor){
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
@@ -236,7 +237,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName){
 
             res.on('end', () => {
                 log.info('finished writing styled raster.');
-                exec(`convert ${rasterpath + styledFileName} -transparent black ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
+                exec(`convert ${rasterpath + styledFileName} -transparent ${backgroundColor} ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
                     if (err) {
                         log.error('error converting white to transparent: ' + err);
                         reject(err);
