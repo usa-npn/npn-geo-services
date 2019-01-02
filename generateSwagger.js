@@ -1306,7 +1306,8 @@ async function generate() {
                 description: 'the backing climate data provider. NCEP available from 2016 on, PRISM (todo?) available from 1981 through previous year.',
                 type: 'string',
                 enum: [
-                    "NCEP"
+                    "NCEP",
+                    "PRISM"
                 ]
             },
             {
