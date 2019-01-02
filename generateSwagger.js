@@ -1213,7 +1213,7 @@ async function generate() {
                     name: 'date',
                     in: 'query',
                     required: true,
-                    description: 'the date to average over for example 2017-08-01.',
+                    description: 'the date to stop accumulating growing degree days (inclusive) for example 2018-08-04.',
                     type: 'string',
                     format: 'date'
                 },
@@ -1303,7 +1303,7 @@ async function generate() {
                 name: 'climateProvider',
                 in: 'query',
                 required: true,
-                description: 'the backing climate data provider. NCEP available from 2016 on, PRISM (todo?) available from 1981 through previous year.',
+                description: 'the backing climate data provider. NCEP available from 2016 on, PRISM available from 1981 through previous year.',
                 type: 'string',
                 enum: [
                     "NCEP",
