@@ -1435,6 +1435,59 @@ async function generate() {
             responses: getResponses('SimplePointTimeSeriesResponse')
         };
 
+
+        swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvg'] = {};
+        swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvg']['x-swagger-router-controller'] = 'agdd';
+        swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvg']['get'] =
+            {
+                summary: `gets agdd 30 year average timeseries at a lat,long from startDate through endDate for given base`,
+                description: `Gets agdd 30 year average timeseries at a lat,long from startDate through endDate for given base.`,
+                tags: ['accumlated growing degree days'],
+                operationId: `simplePointTimeSeries30YearAvg`,
+                consumes: ['application/x-www-form-urlencoded'],
+                parameters: [
+                    {
+                        name: 'temperatureUnit',
+                        in: 'query',
+                        required: true,
+                        description: 'the unit of temperature.',
+                        type: 'string',
+                        enum: [
+                            "celsius",
+                            "fahrenheit"
+                        ]
+                    },
+                    {
+                        name: 'base',
+                        in: 'query',
+                        required: true,
+                        description: 'the base used to compute the agdd - for example 12',
+                        type: 'integer'
+                    },
+                    {
+                        name: 'latitude',
+                        in: 'query',
+                        required: true,
+                        description: 'the latitude used to compute the agdd - for example 32.2',
+                        type: 'number'
+                    },
+                    {
+                        name: 'longitude',
+                        in: 'query',
+                        required: true,
+                        description: 'the longitude used to compute the agdd - for example -110',
+                        type: 'number'
+                    },
+                    {
+                        name: 'agddThreshold',
+                        in: 'query',
+                        description: 'if provided, response will include the date that the agdd threshold was met - for example 1000',
+                        type: 'number'
+                    }
+                ],
+                responses: getResponses('SimplePointTimeSeriesResponse')
+            };
+
     
         swaggerDefinition['paths']['/agdd/double-sine/pointTimeSeries'] = {};
         swaggerDefinition['paths']['/agdd/double-sine/pointTimeSeries']['x-swagger-router-controller'] = 'agdd';

@@ -371,6 +371,14 @@ async function getPestMap(species, date, preserveExtent) {
         return await getCustomAgddPestMap(pest, date, preserveExtent);
     }
 
+    /* todo can be much faster if we refactor this to
+    1. get agdd50 or agdd35 geotiff styled from geoserver
+    2. clip using gdalwarp -srcnodata -9999 -dstnodata -9999  -cutline eastern_tent_caterpillar_range/states.shp gdd-agdd_50f-4.tif test_cropped.png
+    3. create transparent png with convert test_cropped.png -transparent white test_cropped_transparent.png
+
+    seems like cutting in postgis takes a long time
+    */
+
     let response = {
         date: date.format('YYYY-MM-DD'),
         layerClippedFrom: pest.layerName
@@ -660,6 +668,58 @@ async function getSimpleAgddTimeSeries(climateProvider, temperatureUnit, startDa
     return response;
 }
 
+// selects and returns row from the cache table matching function params
+async function getSimpleAgddTimeSeries30YearAvg(temperatureUnit, base, lat, long, threshold) {
+    let climateProvider = 'PRISM';
+    const query = {
+        text: `SELECT rast_date, st_value(rast,ST_SetSRID(ST_Point($1, $2),4269)) FROM prism_tavg
+                WHERE rast_date >= '1981-01-01'
+                AND rast_date <= '2010-01-01'
+                AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($3, $4),4269))
+                ORDER BY rast_date`,
+        values: [long, lat, long, lat]
+    };
+    console.log(query);
+    const res = await db.pgPool.query(query);
+
+    let dateAgddThresholdMet = null;
+
+    let timeSeries = res['rows'].map(row => {
+        let tavg = row['st_value'];
+        if(temperatureUnit === 'celsius') {
+            tavg = (tavg - 32) * (5/9);
+        }
+        return { 
+            "date": row['rast_date'].toISOString().split("T")[0], 
+            "gdd": tavg - base > 0 ? tavg - base : 0 
+        }
+    }).reduce(function (accum, item) {
+        if (accum.length > 0)
+            item.agdd = item.gdd + accum[accum.length-1].agdd;
+        else
+            item.agdd = item.gdd;
+        accum.push(item);
+        if(dateAgddThresholdMet == null && threshold && item.agdd >= threshold) {
+            dateAgddThresholdMet = item.date;
+        }
+        return accum;
+    }, []);
+
+    response = {
+        "climateProvider": climateProvider,
+        "temperatureUnit": temperatureUnit,
+        "base": base,
+        "latitude": lat,
+        "longitude": long
+    };
+    if (threshold) {
+        response["threshold"] = threshold;
+        response["dateAgddThresholdMet"] = dateAgddThresholdMet;
+    }
+    response["timeSeries"] = timeSeries;
+    return response;
+}
+
 async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, startDate, endDate, lowerThreshold, upperThreshold) {
     return new Promise((resolve, reject) =>
     {
@@ -733,6 +793,7 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
 
 module.exports.getDynamicAgdd = getDynamicAgdd;
 module.exports.getSimpleAgddTimeSeries = getSimpleAgddTimeSeries;
+module.exports.getSimpleAgddTimeSeries30YearAvg = getSimpleAgddTimeSeries30YearAvg;
 module.exports.getDoubleSineAgddTimeSeries = getDoubleSineAgddTimeSeries;
 module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;

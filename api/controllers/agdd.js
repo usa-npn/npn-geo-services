@@ -254,6 +254,31 @@ function simplePointTimeSeries(req, res) {
 /**
  * @param {{swagger}} req
  */
+function simplePointTimeSeries30YearAvg(req, res) {
+    let temperatureUnit = getParam(req.swagger.params['temperatureUnit']);
+    let startDate = getParam(req.swagger.params['startDate']);
+    let endDate = getParam(req.swagger.params['endDate']);
+    let base = getParam(req.swagger.params['base']);
+    let lat = getParam(req.swagger.params['latitude']);
+    let long = getParam(req.swagger.params['longitude']);
+    let agddThreshold = getParam(req.swagger.params['agddThreshold']);
+
+
+    return agddController.getSimpleAgddTimeSeries30YearAvg(
+        temperatureUnit,
+        base, 
+        lat, 
+        long, 
+        agddThreshold
+        ).then((agddPointTimeSeriesJson) => res.status(200).send(agddPointTimeSeriesJson))
+        .catch((error) => res.status(500).json({"message": error.message}));
+
+    
+}
+
+/**
+ * @param {{swagger}} req
+ */
 function doubleSinePointTimeSeries(req, res) {
     let climateProvider = getParam(req.swagger.params['climateProvider']);
     let temperatureUnit = getParam(req.swagger.params['temperatureUnit']);
@@ -290,6 +315,7 @@ module.exports.anomalyClippedImage = anomalyClippedImage;
 module.exports.simpleAgddMap = simpleAgddMap;
 module.exports.doubleSineAgddMap = doubleSineAgddMap;
 module.exports.simplePointTimeSeries = simplePointTimeSeries;
+module.exports.simplePointTimeSeries30YearAvg = simplePointTimeSeries30YearAvg;
 module.exports.doubleSinePointTimeSeries = doubleSinePointTimeSeries;
 
 // module.exports.areaStatsTimeSeries = areaStatsTimeSeries;
