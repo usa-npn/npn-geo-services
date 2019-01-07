@@ -301,7 +301,7 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
     let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
     //if start date is after today there will be no heat accumulation so return the zeroes tif
     if(startDate.valueOf() > moment().valueOf()) {
-        let agddPath = `/var/www/data-site/files/npn-geo-services/zero_maps/`;
+        agddPath = `/var/www/data-site/files/npn-geo-services/zero_maps/`;
     }
 
     // otherwise generate tiff via custom agdd endpoint
