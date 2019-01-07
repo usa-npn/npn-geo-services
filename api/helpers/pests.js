@@ -104,7 +104,7 @@ const pests = [
         ],
         stateNames: [],
         rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/asian_longhorned_beetle_range/states.shp',
-        sldName: 'asian-longhorned-beetle.sld'
+        sldName: 'asian_longhorned_beetle.sld'
     }
 ];
 
