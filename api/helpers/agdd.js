@@ -743,6 +743,12 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
         }
         let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
         response.mapUrl = tifUrl;
+
+        // todo if start date is after today there will be no heat accumulation so return the zeroes tif
+        if(startDate.getTime() > new Date().getTime()) {
+            response.mapUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/zeros_conus_${climateProvider.toLowerCase()}.tif`;
+            resolve(response);
+        }
         
         //for local testing
         //tifUrl = "https://data-dev.usanpn.org:3006/agdd_1994-02-02_through_1994-02-20_base13.tif";
@@ -774,12 +780,13 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
                             path: `${geoserverDynamicAgddPath}${tifFile}`
                         }, `${dynamicAgddPath}${tifFile}`, function(err) {
                             if(!err) {
-                                //delete the raster from geoserver
-                                ssh.execCommand(`sudo rm ${geoserverDynamicAgddPath}${tifFile}`,
-                                { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
-                                .then(function(result) {
+                                // deletions are now done daily in the gridded product nightly update script pest map cache generation
+                                // //delete the raster from geoserver
+                                // ssh.execCommand(`sudo rm ${geoserverDynamicAgddPath}${tifFile}`,
+                                // { options: { pty: true }, cwd:'/usr/local/scripts/gridded_models', stdin: `${process.env.GEOSERVER_SSH_PASSWORD}\n` })
+                                // .then(function(result) {
                                     resolve(response);
-                                });
+                                // });
                             } else {
                                 reject(err);
                             }

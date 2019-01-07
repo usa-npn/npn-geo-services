@@ -72,6 +72,9 @@ generateSwagger.generate().then(() => {
     const dynamicAgddPath = '/var/www/data-site/files/npn-geo-services/agdd_maps';
     app.use(express.static(dynamicAgddPath));
 
+    const zeroMapsPath = '/var/www/data-site/files/npn-geo-services/zero_maps';
+    app.use(express.static(zeroMapsPath));
+
     SwaggerExpress.create(config, (err, swaggerExpress) => {
         if (err) { throw err; }
 
