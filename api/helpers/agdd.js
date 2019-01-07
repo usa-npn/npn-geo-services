@@ -305,7 +305,7 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
 
     // otherwise generate tiff via custom agdd endpoint
     log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
-    let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.base, null);
+    let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.lowerThreshold, pest.upperThreshold);
     let tiffFileUrl = result.mapUrl;
     let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;

@@ -75,7 +75,7 @@ const pests = [
     },
     {
         species: 'Eastern Tent Caterpillar',
-        base: 50,
+        lowerThreshold: 50,
         layerName: 'custom',
         startMonthDay: '03-01',
         agddMethod: 'simple',
@@ -88,6 +88,23 @@ const pests = [
         stateNames: [],
         rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/eastern_tent_caterpillar_range/states.shp',
         sldName: 'eastern_tent_caterpillar.sld'
+    },
+    {
+        species: 'Asian Longhorned Beetle',
+        lowerThreshold: 50,
+        upperThreshold: 100,
+        layerName: 'custom',
+        startMonthDay: '01-01',
+        agddMethod: 'double-sine',
+        bounds: [
+            -109.0712618165,
+            24.5049877850162,
+            -66.9509145889486,
+            49.4107288273616
+        ],
+        stateNames: [],
+        rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/asian_longhorned_beetle_range/states.shp',
+        sldName: 'asian-longhorned-beetle.sld'
     }
 ];
 

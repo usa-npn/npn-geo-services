@@ -1207,7 +1207,15 @@ async function generate() {
                     required: true,
                     description: 'the species to retrieve map for',
                     type: 'string',
-                    enum: ['Apple Maggot', 'Eastern Tent Caterpillar', 'Emerald Ash Borer',  'Hemlock Woolly Adelgid', 'Lilac Borer', 'Winter Moth']
+                    enum: [
+                        'Asian Longhorned Beetle', 
+                        'Apple Maggot', 
+                        'Eastern Tent Caterpillar', 
+                        'Emerald Ash Borer',  
+                        'Hemlock Woolly Adelgid', 
+                        'Lilac Borer', 
+                        'Winter Moth'
+                    ]
                 },
                 {
                     name: 'date',
