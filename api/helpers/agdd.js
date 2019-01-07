@@ -298,6 +298,12 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
         return response;
     }
     
+    let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
+    //if start date is after today there will be no heat accumulation so return the zeroes tif
+    if(startDate.valueOf() > moment().valueOf()) {
+        let agddPath = `/var/www/data-site/files/npn-geo-services/zero_maps/`;
+    }
+
     // otherwise generate tiff via custom agdd endpoint
     log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
     let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.base, null);
@@ -305,7 +311,7 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
     let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
     // copy tif to pestMap directory
-    fs.copyFile(`/var/www/data-site/files/npn-geo-services/agdd_maps/${tiffFileName}`, pestMapTiffPath, (err) => {
+    fs.copyFile(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
         if (err) throw err;
 
         //can talk about getting the shape file dynamically from geoserver, but extra processing
