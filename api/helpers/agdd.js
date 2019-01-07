@@ -282,8 +282,7 @@ async function getClippedAgddRaster() {
 async function getCustomAgddPestMap(pest, date, preserveExtent) {
     log.info('in custom agdd pest map');
     let climateProvider = "ncep";
-    let currentYear = moment().utc().year();
-    let startDate = moment.utc(`${currentYear}-${pest.startMonthDay}`);
+    let startDate = moment.utc(`${date.year()}-${pest.startMonthDay}`);
 
     // get the png from disk if already exists
     let styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
