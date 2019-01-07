@@ -92,7 +92,7 @@ const pests = [
     {
         species: 'Asian Longhorned Beetle',
         lowerThreshold: 50,
-        upperThreshold: 100,
+        upperThreshold: 86,
         layerName: 'custom',
         startMonthDay: '01-01',
         agddMethod: 'double-sine',
