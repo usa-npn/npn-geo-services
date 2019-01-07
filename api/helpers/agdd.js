@@ -744,8 +744,8 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
         let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
         response.mapUrl = tifUrl;
 
-        // todo if start date is after today there will be no heat accumulation so return the zeroes tif
-        if(startDate.getTime() > new Date().getTime()) {
+        //if start date is after today there will be no heat accumulation so return the zeroes tif
+        if(startDate.valueOf() > moment().valueOf()) {
             response.mapUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/zeros_conus_${climateProvider.toLowerCase()}.tif`;
             resolve(response);
         }
