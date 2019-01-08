@@ -1,3 +1,5 @@
+// the following will get the bounding box for a shapefile
+// ogrinfo --config SHAPE_RESTORE_SHX TRUE -al -so states.shp
 const pests = [
     {
         species: 'Emerald Ash Borer',
@@ -97,12 +99,12 @@ const pests = [
         startMonthDay: '01-01',
         agddMethod: 'double-sine',
         bounds: [
-            -109.0712618165,
-            24.5049877850162,
-            -66.9509145889486,
-            49.4107288273616
+            -84.820159,
+            38.403202,
+            -69.928393,
+            45.015850
         ],
-        stateNames: [],
+        stateNames: ["'Ohio'", "'Pennsylvania'", "'New York'", "'Connecticut'", "'Rhode Island'", "'Massachusetts'"],
         rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/asian_longhorned_beetle_range/states.shp',
         sldName: 'asian_longhorned_beetle.sld'
     }
