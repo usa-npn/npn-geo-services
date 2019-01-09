@@ -1211,7 +1211,8 @@ async function generate() {
                         'Asian Longhorned Beetle', 
                         'Apple Maggot', 
                         'Eastern Tent Caterpillar', 
-                        'Emerald Ash Borer',  
+                        'Emerald Ash Borer',
+                        'Gypsy Moth',  
                         'Hemlock Woolly Adelgid', 
                         'Lilac Borer', 
                         'Winter Moth'
