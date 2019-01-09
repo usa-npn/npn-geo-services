@@ -1351,14 +1351,14 @@ async function generate() {
                 in: 'query',
                 required: true,
                 description: 'the lowerThreshold used to compute the double-sine agdd',
-                type: 'integer'
+                type: 'number'
             },
             {
                 name: 'upperThreshold',
                 in: 'query',
                 required: true,
                 description: 'the upperThreshold used to compute the double-sine agdd',
-                type: 'integer'
+                type: 'number'
             }
         ],
         responses: getResponses('DoubleSineAgddMapResponse')
@@ -1551,14 +1551,14 @@ async function generate() {
                         in: 'query',
                         required: true,
                         description: 'the lower threshold in celcius used to compute the agdd - for example 0',
-                        type: 'integer'
+                        type: 'number'
                     },
                     {
                         name: 'upperThreshold',
                         in: 'query',
                         required: true,
                         description: 'the upper threshold in celcius used to compute the agdd - for example 30',
-                        type: 'integer'
+                        type: 'number'
                     },
                     {
                         name: 'latitude',
