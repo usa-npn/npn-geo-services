@@ -59,9 +59,9 @@ async function update() {
             'Emerald Ash Borer', 
             'Eastern Tent Caterpillar', 
             'Apple Maggot', 
-            'Winter Moth', 
-            'Asian Longhorned Beetle',
-            'Gyspy Moth'
+            'Winter Moth'//, 
+            // 'Asian Longhorned Beetle',
+            // 'Gyspy Moth'
         ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
