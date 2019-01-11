@@ -298,16 +298,18 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
     }
     
     let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
+    let tiffFileName;
     //if start date is after today there will be no heat accumulation so return the zeroes tif
     if(startDate.valueOf() > moment().valueOf()) {
         agddPath = `/var/www/data-site/files/npn-geo-services/zero_maps/`;
+        tiffFileName = 'zeros_conus_ncep.tif';
+    } else {
+        // otherwise generate tiff via custom agdd endpoint
+        log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
+        let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.lowerThreshold, pest.upperThreshold);
+        let tiffFileUrl = result.mapUrl;
+        tiffFileName = tiffFileUrl.split('/').pop();
     }
-
-    // otherwise generate tiff via custom agdd endpoint
-    log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
-    let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.lowerThreshold, pest.upperThreshold);
-    let tiffFileUrl = result.mapUrl;
-    let tiffFileName = tiffFileUrl.split('/').pop();
     let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
     // copy tif to pestMap directory
     fs.copyFile(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
