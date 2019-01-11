@@ -120,7 +120,7 @@ const pests = [
         sldName: 'asian_longhorned_beetle.sld'
     },
     {
-        species: 'Gyspy Moth',
+        species: 'Gypsy Moth',
         lowerThreshold: 37.4,
         upperThreshold: 104,
         layerName: 'custom',
