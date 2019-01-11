@@ -61,7 +61,7 @@ async function update() {
             // 'Apple Maggot', 
             // 'Winter Moth',
             // 'Asian Longhorned Beetle',
-            'Gyspy Moth'
+            'Gypsy Moth'
         ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
