@@ -310,7 +310,8 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
         let tiffFileUrl = result.mapUrl;
         tiffFileName = tiffFileUrl.split('/').pop();
     }
-    let pestMapTiffPath = `${pestImagePath}${tiffFileName}`;
+    // new Date().getTime() is to keep filename unique to prevent two requests from clobbering each other
+    let pestMapTiffPath = `${pestImagePath}${new Date().getTime()}${tiffFileName}`;
     // copy tif to pestMap directory
     fs.copyFile(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
         if (err) throw err;
