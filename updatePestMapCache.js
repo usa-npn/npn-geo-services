@@ -56,16 +56,16 @@ async function update() {
         //     'Winter Moth'
         // ];
         let speciesArr = [
-            'Emerald Ash Borer', 
+            // 'Emerald Ash Borer', 
             'Eastern Tent Caterpillar', 
-            'Apple Maggot', 
-            'Winter Moth'//, 
-            // 'Asian Longhorned Beetle',
-            // 'Gyspy Moth'
+            // 'Apple Maggot', 
+            // 'Winter Moth',
+            'Asian Longhorned Beetle',
+            'Gyspy Moth'
         ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
-            let start = moment.utc("2018-01-01");
+            let start = moment.utc("2019-01-01");
             let end = moment.utc().add(6,'days');
             while(start <= end){
                 let dateString = end.format('YYYY-MM-DD');
