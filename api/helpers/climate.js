@@ -46,7 +46,7 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
     } else if(climateProvider === "NCEP" && (climateVariable == "tmin" || climateVariable == "tmax" || climateVariable == "tavg")) {
         let tableName = "ncep_tavg";
         if ((climateVariable == "tmin" || climateVariable == "tmax")) {
-            tableName = `${climateVariable}_2018`
+            tableName = `${climateVariable}_${startDate.format('YYYY')}`
         }
         const query = {
             //todo generalize year
