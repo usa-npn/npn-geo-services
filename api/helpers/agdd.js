@@ -601,7 +601,7 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
             'date': item.date,
             'doy': item.doy,
             'gdd': doubleSineGdd,
-            'agdd': accum.length > 0 ? accum[accum.length-1].doubleSineAgdd + doubleSineGdd : doubleSineGdd
+            'agdd': accum.length > 0 ? accum[accum.length-1].agdd + doubleSineGdd : doubleSineGdd
         });
         return accum;
     }, []);
@@ -647,7 +647,7 @@ async function getSimpleAgddTimeSeries(climateProvider, temperatureUnit, startDa
         }
         return { 
             "date": dateString, 
-            "doy": moment(dateString,"DDD"),
+            "doy": moment(dateString).dayOfYear(),
             "gdd": tavg - base > 0 ? tavg - base : 0 
         }
     }).reduce(function (accum, item) {

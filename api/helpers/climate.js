@@ -64,7 +64,7 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
             let dateString = row['rast_date'].toISOString().split("T")[0];
             return { 
                 "date": dateString,
-                "doy":  moment(dateString, "DDD"),
+                "doy":  moment(dateString).dayOfYear(),
                 [climateVariable]: row['st_value'],
                 "dataset": (climateVariable != 'tavg') ? row['dataset'] : ''
             }
