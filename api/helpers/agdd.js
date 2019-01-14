@@ -599,8 +599,9 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
         let doubleSineGdd = doubleSine(tminYesterday, tminToday, tmaxToday, lowerThreshold, upperThreshold)
         accum.push({
             'date': item.date,
-            'doubleSineGdd': doubleSineGdd,
-            'doubleSineAgdd': accum.length > 0 ? accum[accum.length-1].doubleSineAgdd + doubleSineGdd : doubleSineGdd
+            'doy': item.doy,
+            'gdd': doubleSineGdd,
+            'agdd': accum.length > 0 ? accum[accum.length-1].doubleSineAgdd + doubleSineGdd : doubleSineGdd
         });
         return accum;
     }, []);
@@ -640,11 +641,13 @@ async function getSimpleAgddTimeSeries(climateProvider, temperatureUnit, startDa
 
     let timeSeries = res['rows'].map(row => {
         let tavg = row['st_value'];
+        let dateString = row['rast_date'].toISOString().split("T")[0];
         if(temperatureUnit === 'celsius') {
             tavg = (tavg - 32) * (5/9);
         }
         return { 
-            "date": row['rast_date'].toISOString().split("T")[0], 
+            "date": dateString, 
+            "doy": moment(dateString,"DDD"),
             "gdd": tavg - base > 0 ? tavg - base : 0 
         }
     }).reduce(function (accum, item) {

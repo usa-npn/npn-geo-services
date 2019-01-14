@@ -61,8 +61,10 @@ async function getClimatePointTimeSeries(climateProvider, climateVariable, start
         const res = await db.pgPool.query(query);
 
         let timeSeries = res['rows'].map(row => {
+            let dateString = row['rast_date'].toISOString().split("T")[0];
             return { 
-                "date": row['rast_date'].toISOString().split("T")[0], 
+                "date": dateString,
+                "doy":  moment(dateString, "DDD"),
                 [climateVariable]: row['st_value'],
                 "dataset": (climateVariable != 'tavg') ? row['dataset'] : ''
             }
