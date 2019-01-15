@@ -312,8 +312,9 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
     }
     // new Date().getTime() is to keep filename unique to prevent two requests from clobbering each other
     let pestMapTiffPath = `${pestImagePath}${new Date().getTime()}${tiffFileName}`;
-    // copy tif to pestMap directory
-    fs.copyFile(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
+    // move tif to pestMap directory
+    fs.rename(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
+    //fs.copyFile(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
         if (err) throw err;
 
         //can talk about getting the shape file dynamically from geoserver, but extra processing
