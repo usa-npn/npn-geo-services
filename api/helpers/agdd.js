@@ -330,11 +330,11 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
                 throw err;
             }
             // remove the uncropped tiff
-            fs.unlink(pestMapTiffPath, async (err) => {
-                if (err) {
-                    log.error('could not delete uncropped tif file: ' + err);
-                    throw err;
-                }
+            // fs.unlink(pestMapTiffPath, async (err) => {
+            //     if (err) {
+            //         log.error('could not delete uncropped tif file: ' + err);
+            //         throw err;
+            //     }
                 let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', pest.sldName, 'black', preserveExtent);
 
                  // style the tiff into png
@@ -350,7 +350,7 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
 
                 return response;
 
-            });
+            // });
         });
     }); 
 }
