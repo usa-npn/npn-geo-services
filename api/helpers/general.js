@@ -176,7 +176,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 
 // calls wps to apply sld style to input raster, returns promise to the path of the stylized png
 // background color will be made transparent
-function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundColor){
+function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundColor, preserveExent){
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
@@ -223,6 +223,9 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
         log.info(JSON.stringify(options));
 
         let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
+        if(preserveExent) {
+            styledFileName = filename.replace(`.${fileFormat}`, `_styled_conus_extent.${fileFormat}`);
+        }
         let styledFilePath = rasterpath + styledFileName;
         var writeStream = fs.createWriteStream(styledFilePath);
 

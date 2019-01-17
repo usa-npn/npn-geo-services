@@ -171,7 +171,6 @@ async function getAgddAreaStatsWithCaching(boundary, boundaryTable, boundaryColu
 }
 
 
-// saves to disk and returns path to styled tiff for six clipping
 async function getClippedAgddImage(boundary, boundaryTable, boundaryColumn, date, base, climate, fileFormat, useBufferedBoundry, useConvexHullBoundary, anomaly) {
     let rastTable = await getAppropriateAgddTable(date, climate, boundary, boundaryTable, boundaryColumn, base, anomaly);
     let layerName = anomaly ? `gdd:agdd_anomaly` : `gdd:agdd`;
@@ -283,19 +282,6 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
     log.info('in custom agdd pest map');
     let climateProvider = "ncep";
     let startDate = moment.utc(`${date.year()}-${pest.startMonthDay}`);
-
-    // get the png from disk if already exists
-    let styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
-    if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
-        log.info('styled png already exists');
-        let response = {
-            date: date.format('YYYY-MM-DD'),
-            layerClippedFrom: 'custom',
-            clippedImage: `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName,
-            bbox: pest.bounds
-        };
-        return response;
-    }
     
     let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
     let tiffFileName;
@@ -342,7 +328,7 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
                     log.error('could not delete uncropped tif file: ' + err);
                     throw err;
                 }
-                let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', pest.sldName, 'black');
+                let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', pest.sldName, 'black', preserveExtent);
 
                  // style the tiff into png
                 let response = {
@@ -371,6 +357,23 @@ async function getPestMap(species, date, preserveExtent) {
 
     let pest = pests.pests.find(item => item.species === species);
 
+    let response = {
+        date: date.format('YYYY-MM-DD'),
+        layerClippedFrom: pest.layerName
+    };
+
+    // get the png from disk if already exists
+    let styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+    if(preserveExtent) {
+        styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled_conus_extent.png`;
+    }
+    if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
+        log.info('styled png already exists');
+        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName;
+        response.bbox = pest.bounds;
+        return response;
+    }
+
     // any pest that's not using the simple 32 or 50 agdd with Jan 1 start date
     if(pest.species === 'Eastern Tent Caterpillar' 
         || pest.species === 'Asian Longhorned Beetle'
@@ -387,19 +390,6 @@ async function getPestMap(species, date, preserveExtent) {
 
     seems like cutting in postgis takes a long time
     */
-
-    let response = {
-        date: date.format('YYYY-MM-DD'),
-        layerClippedFrom: pest.layerName
-    };
-
-    //if file exists don't recompute it
-    let styledFileName = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
-    if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
-        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName;
-        response.bbox = pest.bounds;
-        return response;
-    }
 
     let rastTable = `agdd_${date.year()}`;
     let boundaryTable = "state_boundaries";
@@ -490,7 +480,7 @@ FROM (
             pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
         }
         await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
-        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', pest.sldName, 'white');
+        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', pest.sldName, 'white', preserveExtent);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
         return response;
     } else {
