@@ -367,7 +367,7 @@ async function getPestMap(species, date, preserveExtent) {
     if(preserveExtent) {
         styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled_conus_extent.png`;
     }
-    if (!preserveExtent && fs.existsSync(pestImagePath + styledFileName)) {
+    if (fs.existsSync(pestImagePath + styledFileName)) {
         log.info('styled png already exists');
         response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName;
         response.bbox = pest.bounds;
