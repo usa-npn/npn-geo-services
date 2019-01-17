@@ -323,7 +323,8 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
             ]
             clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${conus_bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
         }
-        exec(clipCommand, async (err, stdout, stderr) => {
+        fs.rename(pestMapTiffPath, croppedPestMap, async (err) => {
+        // exec(clipCommand, async (err, stdout, stderr) => {
             if (err) {
                 log.error('could not slice pestmap to boundary: ' + err);
                 throw err;
