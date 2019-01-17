@@ -418,7 +418,7 @@ FROM (
 WITH boundary AS (
 SELECT ST_Buffer(ST_Union(p.geom), .01) AS states
 FROM ${boundaryTable} p
-WHERE p.${boundaryColumn} IN (${pest.stateNames})
+WHERE p.${boundaryColumn} IN (${pest.stateNames.map(d => `'${d}'`).join(', ')})
 )
 SELECT ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(r.rast), (SELECT states FROM boundary), -9999, false), 1, null), 3857)) AS tiff
 FROM ${rastTable} r
@@ -457,7 +457,7 @@ FROM (
         SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN (${pest.stateNames})
+        WHERE p.${boundaryColumn} IN (${pest.stateNames.stateNames.map(d => `'${d}'`).join(', ')})
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
