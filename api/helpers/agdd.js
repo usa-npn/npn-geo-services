@@ -313,15 +313,15 @@ async function getCustomAgddPestMap(pest, date, preserveExtent) {
         let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
 
         // when not preserving extent, use -te to set bounds to the shapefile bounding box
-        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -t_srs EPSG:3857 -te ${pest.bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
+        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${pest.bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
         if(preserveExtent) {
-            let conus_bounds = [
-                -125.0208333,
-                24.0625,
-                -66.4791667000001,
-                49.9375
-            ]
-            clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -t_srs EPSG:3857 -te ${conus_bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
+            // let conus_bounds = [
+            //     -125.0208333,
+            //     24.0625,
+            //     -66.4791667000001,
+            //     49.9375
+            // ]
+            clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -t_srs EPSG:3857 -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
         }
         //fs.rename(pestMapTiffPath, croppedPestMap, async (err) => {
         exec(clipCommand, async (err, stdout, stderr) => {
