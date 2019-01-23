@@ -56,12 +56,14 @@ async function update() {
         //     'Winter Moth'
         // ];
         let speciesArr = [
-            // 'Emerald Ash Borer', 
-            // 'Eastern Tent Caterpillar',
-            // 'Apple Maggot', 
-            // 'Winter Moth',
-            // 'Asian Longhorned Beetle',
+            'Emerald Ash Borer', 
+            'Hemlock Woolly Adelgid',
+            'Apple Maggot', 
+            'Winter Moth',
+            'Lilac Borer', 
+            'Asian Longhorned Beetle',
             'Gypsy Moth'
+            // 'Eastern Tent Caterpillar',
         ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
@@ -72,12 +74,21 @@ async function update() {
                 try {
                     console.log(`generating pest map: ${species} ${dateString}`);
                     await doRequest(`/v0/agdd/pestMap?species=${species}&date=${dateString}`);
+                    console.log(`generating pest map for pretty map: ${species} ${dateString}`);
+                    await doRequest(`/v0/agdd/pestMap?species=${species}&date=${dateString}&preserveExtent=true`);
                 } catch(error) {
                     console.log(error);
                 }
                 end.subtract(1, 'days');
             }
         }
+        log.info("running the php pretty map script.");
+        exec('php -f /usr/local/scripts/pretty-maps/make_maps.php', async (err, stdout, stderr) => {
+            if (err) {
+                log.error('error running pretty map script: ' + err);
+                throw err;
+            }
+        });
         log.info("finished updating cached pest images.");
     } catch (error) {
         log.error("could not update pest cached images: " + error);
