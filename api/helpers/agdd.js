@@ -410,13 +410,13 @@ async function getPestMap(species, date, preserveExtent) {
     }
     
     // clip the tif to shapefile
+    let croppedPngFilename = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
     try {
         //can talk about getting the shape file dynamically from geoserver, but extra processing
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
         //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
         let shapefile = `/var/www/data-site/files/npn-geo-services/shape_files/${pest.species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
-        let croppedPngFilename = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
         // when not preserving extent, use -te to set bounds to the shapefile bounding box
         let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${pest.bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestImagePath}${tiffFileName} ${pestImagePath}${croppedPngFilename}`;
         if(preserveExtent) {
