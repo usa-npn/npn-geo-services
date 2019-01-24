@@ -238,7 +238,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
                 // log.info(d.toString());
             });
 
-            res.on('end', () => {
+            res.on('end', async () => {
                 log.info('finished writing styled raster.');
                 // try {
                 //     await execPromise(`convert ${rasterpath + styledFileName} -transparent ${backgroundColor} ${rasterpath + styledFileName.replace('.tiff', '.png')}`);
