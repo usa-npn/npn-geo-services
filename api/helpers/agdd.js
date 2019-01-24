@@ -282,7 +282,7 @@ async function downloadFile(url, dest) {
     return new Promise((resolve, reject) =>
     {
         let file = fs.createWriteStream(dest);
-        let request = http.get(url, function(response) {
+        let request = https.get(url, function(response) {
             response.pipe(file);
             file.on('finish', function() {
                 resolve();
