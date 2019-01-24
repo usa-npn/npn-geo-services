@@ -20,8 +20,15 @@ function doRequest(path) {
         // 'https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=Emerald%20Ash%20Borer&date=2017-01-05'
         // console.log(options.hostname);
         https.get(options, (response) => {
-            // console.log('resolved');
-            resolve(response);
+            var body = '';
+            response.on('data', function(d) {
+                body += d;
+            });
+            response.on('end', function() {
+                var parsed = JSON.parse(body);
+                console.log('response recieved: ' + parsed);
+                resolve(parsed);
+            });
         }).on('error', (e) => {
             console.log('rejected' + e);
             reject(e);
