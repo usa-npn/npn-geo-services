@@ -3,6 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const os = require('os');
 let log = require('./logger.js');
+const { exec } = require('child_process');
 
 // hits the geo services pestMap endpoint to generate image
 function doRequest(path) {
