@@ -428,7 +428,7 @@ async function getPestMap(species, date, preserveExtent) {
     }
 
     // remove the uncropped tiff
-    await unlinkPromise(pestMapTiffPath);
+    await unlinkPromise(pestImagePath + tiffFileName);
     
     // style the tiff into png
     try {
