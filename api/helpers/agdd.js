@@ -473,6 +473,7 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
     // get tmins and tmaxs
     let tmins = await climate.getClimatePointTimeSeries(climateProvider, 'tmin', startDate, endDate,lat, long);
     let tmaxs = await climate.getClimatePointTimeSeries(climateProvider, 'tmax', startDate, endDate,lat, long);
+    let dateAgddThresholdMet = null;
     let gdds = tmaxs["timeSeries"].reduce(function (accum, item, i) { 
         let tminYesterday = (i > 0) ? tmins["timeSeries"][i-1].tmin : 0;
         let tminToday = tmins["timeSeries"][i].tmin;
@@ -483,6 +484,10 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
             tmaxToday = tmaxToday * (9/5) + 32;
         }
         let doubleSineGdd = doubleSine(tminYesterday, tminToday, tmaxToday, lowerThreshold, upperThreshold)
+        let doubleSineAgdd = accum.length > 0 ? accum[accum.length-1].agdd + doubleSineGdd : doubleSineGdd;
+        if (threshold !=null && dateAgddThresholdMet == null && doubleSineAgdd > threshold) {
+            dateAgddThresholdMet = item.date;
+        }
         accum.push({
             'date': item.date,
             'doy': item.doy,
@@ -504,7 +509,7 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
     };
     if (threshold) {
         response["threshold"] = threshold;
-        //response["dateAgddThresholdMet"] = dateAgddThresholdMet;
+        response["dateAgddThresholdMet"] = dateAgddThresholdMet;
     }
     response["timeSeries"] = gdds;
     return response;
