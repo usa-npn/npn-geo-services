@@ -286,7 +286,7 @@ function getParam(param) {
 
 //promisified functions
 
-async function downloadFilePromis(url, dest) {
+async function downloadFilePromise(url, dest) {
     return new Promise((resolve, reject) =>
     {
         let file = fs.createWriteStream(dest);
