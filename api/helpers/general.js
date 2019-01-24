@@ -241,7 +241,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
             res.on('end', async () => {
                 log.info('finished writing styled raster.');
                 try {
-                    await execPromise(`convert ${rasterpath + styledFileName} mogrify -format png -median 2 -fuzz 5% -transparent ${backgroundColor} ${rasterpath + styledFileName}`);
+                    await execPromise(`convert ${rasterpath + styledFileName} -fuzz 2% -transparent ${backgroundColor} ${rasterpath + styledFileName}`);
                 } catch(err) {
                     log.error(`error converting ${backgroundColor} to transparent: ` + err);
                     reject(err);
