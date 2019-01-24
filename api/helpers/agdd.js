@@ -458,7 +458,7 @@ FROM (
         SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
         FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN (${pest.stateNames.stateNames.map(d => `'${d}'`).join(', ')})
+        WHERE p.${boundaryColumn} IN (${pest.stateNames.map(d => `'${d}'`).join(', ')})
     ) AS foo
     INNER JOIN ${rastTable} r
     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
