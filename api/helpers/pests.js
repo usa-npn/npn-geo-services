@@ -36,6 +36,7 @@ const pests = [
             49.9375
         ],
         stateNames: [],
+        rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/emerald_ash_borer/states.shp',
         sldName: 'apple_maggot.sld'
     },
     {
@@ -66,6 +67,7 @@ const pests = [
             47.4722109120521
         ],
         stateNames: ['New York','Connecticut','New Hampshire','Vermont','Maine','Massachusetts'],
+        rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/winter_moth/states.shp',
         sldName: 'winter_moth.sld'
     },
     {

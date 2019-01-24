@@ -348,9 +348,8 @@ async function unlinkPromise(fileToRemove) {
 async function getPestMap(species, date, preserveExtent) {
     log.info('in getPestMap');
     let climateProvider = "ncep";
-    let startDate = moment.utc(`${date.year()}-${pest.startMonthDay}`);
-
     let pest = pests.pests.find(item => item.species === species);
+    let startDate = moment.utc(`${date.year()}-${pest.startMonthDay}`);
 
     let response = {
         date: date.format('YYYY-MM-DD'),
