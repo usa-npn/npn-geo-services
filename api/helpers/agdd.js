@@ -278,83 +278,77 @@ async function getClippedAgddRaster() {
 
 }
 
-async function getCustomAgddPestMap(pest, date, preserveExtent) {
-    log.info('in custom agdd pest map');
+async function downloadFile(url, dest) {
+    return new Promise((resolve, reject) =>
+    {
+        let file = fs.createWriteStream(dest);
+        let request = http.get(url, function(response) {
+            response.pipe(file);
+            file.on('finish', function() {
+                resolve();
+            });
+        }).on('error', function(err) { // Handle errors
+            fs.unlink(dest); // Delete the file async. (But we don't check the result)
+            reject(err.message);
+        });
+    });
+};
+
+async function copyFilePromise(src, dest) {
+    return new Promise((resolve, reject) =>
+    {
+        fs.copyFile(src, dest, (err) => {
+            if(err) {
+                reject(err);
+            }
+            resolve();
+        });
+    });
+};
+
+async function renameFilePromise(src, dest) {
+    return new Promise((resolve, reject) =>
+    {
+        fs.rename(src, dest, (err) => {
+            if(err) {
+                reject(err);
+            }
+            resolve();
+        });
+    });
+};
+
+async function execPromise(command) {
+    return new Promise((resolve, reject) =>
+    {
+        exec(command, async (err, stdout, stderr) => {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        })
+    });
+};
+
+async function unlinkPromise(fileToRemove) {
+    return new Promise((resolve, reject) =>
+    {
+        fs.unlink(fileToRemove, async (err) => {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        })
+    });
+};
+
+// preserveExtent is true only for prettymaps and get _nocache.png appended to the output file
+// it keeps the large extent rather than shrinking it down to the clipping boundary 
+// this is so the image will line up of the base image in the php script correctly
+async function getPestMap(species, date, preserveExtent) {
+    log.info('in getPestMap');
     let climateProvider = "ncep";
     let startDate = moment.utc(`${date.year()}-${pest.startMonthDay}`);
-    
-    let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
-    let tiffFileName;
-    //if start date is after today there will be no heat accumulation so return the zeroes tif
-    if(startDate.valueOf() > moment().valueOf()) {
-        agddPath = `/var/www/data-site/files/npn-geo-services/zero_maps/`;
-        tiffFileName = 'zeros_conus_ncep.tif';
-    } else {
-        // otherwise generate tiff via custom agdd endpoint
-        log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
-        let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.lowerThreshold, pest.upperThreshold);
-        let tiffFileUrl = result.mapUrl;
-        tiffFileName = tiffFileUrl.split('/').pop();
-    }
-    // new Date().getTime() is to keep filename unique to prevent two requests from clobbering each other
-    let pestMapTiffPath = `${pestImagePath}${new Date().getTime()}${tiffFileName}`;
-    // move tif to pestMap directory
-    fs.rename(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
-    //fs.copyFile(`${agddPath}${tiffFileName}`, pestMapTiffPath, (err) => {
-        if (err) throw err;
-
-        //can talk about getting the shape file dynamically from geoserver, but extra processing
-        //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
-        //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
-        //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
-        // slice the tiff
-        let shapefile = `/var/www/data-site/files/npn-geo-services/shape_files/${pest.species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
-        let croppedPngFilename = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
-        let croppedPestMap = `${pestImagePath}${croppedPngFilename}`;
-
-        // when not preserving extent, use -te to set bounds to the shapefile bounding box
-        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${pest.bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
-        if(preserveExtent) {
-            clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -t_srs EPSG:3857 -overwrite -cutline ${shapefile} ${pestMapTiffPath} ${croppedPestMap}`;
-        }
-        //fs.rename(pestMapTiffPath, croppedPestMap, async (err) => {
-        exec(clipCommand, async (err, stdout, stderr) => {
-            if (err) {
-                log.error('could not slice pestmap to boundary: ' + err);
-                throw err;
-            }
-            // remove the uncropped tiff
-            fs.unlink(pestMapTiffPath, async (err) => {
-                if (err) {
-                    log.error('could not delete uncropped tif file: ' + err);
-                    throw err;
-                }
-                let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', pest.sldName, 'black', preserveExtent);
-
-                 // style the tiff into png
-                let response = {
-                    date: date.format('YYYY-MM-DD'),
-                    layerClippedFrom: 'custom',
-                    clippedImage: styledClippedImagePath,
-                    bbox: pest.bounds
-                };
-
-                // return png
-                log.info(`ETC response: ${response}`);
-
-                return response;
-
-            });
-        });
-    }); 
-}
-
-// saves to disk and returns path to styled tiff for six clipping
-async function getPestMap(species, date, preserveExtent) {
-
-    // preserveExtent is true only for prettymaps and get _nocache.png appended to the output file
-    // it keeps the large extent rather than shrinking it down to the clipping boundary 
-    // this is so the image will line up of the base image in the php script correctly
 
     let pest = pests.pests.find(item => item.species === species);
 
@@ -375,119 +369,222 @@ async function getPestMap(species, date, preserveExtent) {
         return response;
     }
 
-    // any pest that's not using the simple 32 or 50 agdd with Jan 1 start date
-    if(pest.species === 'Eastern Tent Caterpillar' 
-        || pest.species === 'Asian Longhorned Beetle'
-        || pest.species === 'Bagworm'
-        || pest.species === 'Pine Needle Scale'
-        || pest.species === 'Gypsy Moth') {
-        return await getCustomAgddPestMap(pest, date, preserveExtent);
-    }
 
-    /* todo can be much faster if we refactor this to
-    1. get agdd50 or agdd35 geotiff styled from geoserver
-    2. clip using gdalwarp -srcnodata -9999 -dstnodata -9999  -cutline eastern_tent_caterpillar_range/states.shp gdd-agdd_50f-4.tif test_cropped.png
-    3. create transparent png with convert test_cropped.png -transparent white test_cropped_transparent.png
-
-    seems like cutting in postgis takes a long time
-    */
-
-    let rastTable = `agdd_${date.year()}`;
-    let boundaryTable = "state_boundaries";
-    let boundaryColumn = "name";
-
-    let query = {};
-    //if stateNames is left empty, no clipping will occur
-    if(preserveExtent && pest.stateNames.length < 1) {
-        query = {text: `
-SELECT
-ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null), 3857)) AS tiff,
-ST_Extent(ST_Envelope(ST_Transform(bar.conus_raster, 3857))) AS extent
-FROM (
-    SELECT ST_Union(r.rast) AS conus_raster
-    FROM ${rastTable} r
-    WHERE r.rast_date = $1
-    AND r.base = $2
-    AND r.scale = $3
-) AS bar
-    `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
-        };
-    } 
-
-    else if(preserveExtent) {
-        query = {text: `
-WITH boundary AS (
-SELECT ST_Buffer(ST_Union(p.geom), .01) AS states
-FROM ${boundaryTable} p
-WHERE p.${boundaryColumn} IN (${pest.stateNames.map(d => `'${d}'`).join(', ')})
-)
-SELECT ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(r.rast), (SELECT states FROM boundary), -9999, false), 1, null), 3857)) AS tiff
-FROM ${rastTable} r
-WHERE r.rast_date = $1
-AND r.base = $2
-AND r.scale = $3
-`, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
-        };
-    } 
-
-    else if(pest.stateNames.length < 1) {
-        query = {text: `
-SELECT
-ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
-ST_Extent(ST_Envelope(bar.conus_raster)) AS extent
-FROM (
-    SELECT ST_Union(r.rast) AS conus_raster
-    FROM ${rastTable} r
-    WHERE r.rast_date = $1
-    AND r.base = $2
-    AND r.scale = $3
-) AS bar
-    `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
-        };
-    } 
-
-    else {
-        query = {text: `
-SELECT
-ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
-ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
-FROM (
-    SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
-    FROM
-    (
-        SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
-        ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
-        FROM ${boundaryTable} p
-        WHERE p.${boundaryColumn} IN (${pest.stateNames.map(d => `'${d}'`).join(', ')})
-    ) AS foo
-    INNER JOIN ${rastTable} r
-    ON ST_Intersects(r.rast, foo.convex_hull_boundary)
-    AND r.rast_date = $1
-    AND r.base = $2
-    AND r.scale = $3
-) AS bar
-    `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
-        };
-    }
-
-    console.log(query);
-    log.info(query);
-    const res = await db.pgPool.query(query);
-    log.info('query complete');
-
-    if (res.rows.length > 0) {
-        let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
-        // if (preserveExtent) {
-        //     pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
-        // }
-        await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
-        response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', pest.sldName, 'white', preserveExtent);
-        response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
-        return response;
+    // get the tif agdd file into the pestImagePath directory
+    // new Date().getTime() is to keep filename unique to prevent two requests from clobbering each other
+    let tiffFileName = `${new Date().getTime()}_${pest.species.replace(/ /g, '_').toLowerCase()}_${date.format('YYYY-MM-DD')}.tif`;
+    if(pest.layerName != 'custom') {
+        // get the tiff from geoserver if it's simple base 32 or 50
+        try {
+            await downloadFile(
+                `https://geoserver-dev.usanpn.org/geoserver/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=${pest.layerName}&SUBSET=time("${date.format('YYYY-MM-DD')}T00:00:00.000Z")&format=geotiff`,
+                `${pestImagePath}${tiffFileName}`
+                );
+        } catch(err) {
+            log.error('could not get the base agdd map from geoserver: ' + err);
+            return {msg: 'could not get the base agdd map from geoserver: ' + err};
+        } 
+    } else if(startDate.valueOf() > moment().valueOf()) {
+        //if start date is after today there will be no heat accumulation so use the zeroes tif
+        try {
+            await copyFilePromise(
+                '/var/www/data-site/files/npn-geo-services/zero_maps/zeros_conus_ncep.tif',
+                 `${pestImagePath}${tiffFileName}`
+                 );
+        } catch(err) {
+            log.error('could not get the zeros base agdd map: ' + err);
+            return {msg: 'could not get the zeros base agdd map: ' + err};
+        } 
     } else {
+        // otherwise generate tiff via custom agdd endpoint
+        try {
+            log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
+            let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.lowerThreshold, pest.upperThreshold);
+            let tiffFileUrl = result.mapUrl;
+            let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
+            tiffFileName = tiffFileUrl.split('/').pop();
+            await renameFilePromise(`${agddPath}${tiffFileName}`, `${pestImagePath}${tiffFileName}`);
+        } catch(err) {
+            log.error('could not get the dynamically generated agdd map: ' + err);
+            return {msg: 'could not get the dynamically generated agdd map: ' + err};
+        } 
+    }
+    
+    // clip the tif to shapefile
+    try {
+        //can talk about getting the shape file dynamically from geoserver, but extra processing
+        //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
+        //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
+        //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
+        let shapefile = `/var/www/data-site/files/npn-geo-services/shape_files/${pest.species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
+        let croppedPngFilename = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+        // when not preserving extent, use -te to set bounds to the shapefile bounding box
+        let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${pest.bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestImagePath}${tiffFileName} ${pestImagePath}${croppedPngFilename}`;
+        if(preserveExtent) {
+            clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -t_srs EPSG:3857 -overwrite -cutline ${shapefile} ${pestImagePath}${tiffFileName} ${pestImagePath}${croppedPngFilename}`;
+        }
+        await execPromise(clipCommand);
+    } catch(err) {
+        log.error('could not slice pestmap to boundary: ' + err);
+    }
+
+    // remove the uncropped tiff
+    await unlinkPromise(pestMapTiffPath);
+    
+    // style the tiff into png
+    try {
+        let styledClippedImagePath = await helpers.stylizePestMap(croppedPngFilename, pestImagePath, 'png', pest.sldName, 'black', preserveExtent);
+        
+        response.clippedImage = styledClippedImagePath;
+        response.bbox = pest.bounds;
+    
+        log.info(`getPestMap response: ${response}`);
         return response;
+    } catch(err) {
+        log.error('could not style pestmap: ' + err);
+        return {msg: 'could not style pestmap' + err};
     }
 }
+
+// // saves to disk and returns path to styled tiff for six clipping
+// async function getPestMap(species, date, preserveExtent) {
+
+//     // preserveExtent is true only for prettymaps and get _nocache.png appended to the output file
+//     // it keeps the large extent rather than shrinking it down to the clipping boundary 
+//     // this is so the image will line up of the base image in the php script correctly
+
+//     let pest = pests.pests.find(item => item.species === species);
+
+//     let response = {
+//         date: date.format('YYYY-MM-DD'),
+//         layerClippedFrom: pest.layerName
+//     };
+
+//     // get the png from disk if already exists
+//     let styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled.png`;
+//     if(preserveExtent) {
+//         styledFileName = `${pest.species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_styled_conus_extent.png`;
+//     }
+//     if (fs.existsSync(pestImagePath + styledFileName)) {
+//         log.info('styled png already exists');
+//         response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName;
+//         response.bbox = pest.bounds;
+//         return response;
+//     }
+
+//     // any pest that's not using the simple 32 or 50 agdd with Jan 1 start date
+//     if(pest.species === 'Eastern Tent Caterpillar' 
+//         || pest.species === 'Asian Longhorned Beetle'
+//         || pest.species === 'Bagworm'
+//         || pest.species === 'Pine Needle Scale'
+//         || pest.species === 'Gypsy Moth') {
+//         return await getCustomAgddPestMap(pest, date, preserveExtent);
+//     }
+
+//     /* todo can be much faster if we refactor this to
+//     1. get agdd50 or agdd35 geotiff styled from geoserver
+//     2. clip using gdalwarp -srcnodata -9999 -dstnodata -9999  -cutline eastern_tent_caterpillar_range/states.shp gdd-agdd_50f-4.tif test_cropped.png
+//     3. create transparent png with convert test_cropped.png -transparent white test_cropped_transparent.png
+
+//     seems like cutting in postgis takes a long time
+//     */
+
+//     let rastTable = `agdd_${date.year()}`;
+//     let boundaryTable = "state_boundaries";
+//     let boundaryColumn = "name";
+
+//     let query = {};
+//     //if stateNames is left empty, no clipping will occur
+//     if(preserveExtent && pest.stateNames.length < 1) {
+//         query = {text: `
+// SELECT
+// ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null), 3857)) AS tiff,
+// ST_Extent(ST_Envelope(ST_Transform(bar.conus_raster, 3857))) AS extent
+// FROM (
+//     SELECT ST_Union(r.rast) AS conus_raster
+//     FROM ${rastTable} r
+//     WHERE r.rast_date = $1
+//     AND r.base = $2
+//     AND r.scale = $3
+// ) AS bar
+//     `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
+//         };
+//     } 
+
+//     else if(preserveExtent) {
+//         query = {text: `
+// WITH boundary AS (
+// SELECT ST_Buffer(ST_Union(p.geom), .01) AS states
+// FROM ${boundaryTable} p
+// WHERE p.${boundaryColumn} IN (${pest.stateNames.map(d => `'${d}'`).join(', ')})
+// )
+// SELECT ST_AsTIFF(ST_Transform(ST_SetBandNoDataValue(ST_Clip(ST_Union(r.rast), (SELECT states FROM boundary), -9999, false), 1, null), 3857)) AS tiff
+// FROM ${rastTable} r
+// WHERE r.rast_date = $1
+// AND r.base = $2
+// AND r.scale = $3
+// `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
+//         };
+//     } 
+
+//     else if(pest.stateNames.length < 1) {
+//         query = {text: `
+// SELECT
+// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.conus_raster), 1, null)) AS tiff,
+// ST_Extent(ST_Envelope(bar.conus_raster)) AS extent
+// FROM (
+//     SELECT ST_Union(r.rast) AS conus_raster
+//     FROM ${rastTable} r
+//     WHERE r.rast_date = $1
+//     AND r.base = $2
+//     AND r.scale = $3
+// ) AS bar
+//     `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
+//         };
+//     } 
+
+//     else {
+//         query = {text: `
+// SELECT
+// ST_AsTIFF(ST_SetBandNoDataValue(ST_Union(bar.clipped_raster), 1, null)) AS tiff,
+// ST_Extent(ST_Envelope(bar.clipped_raster)) AS extent
+// FROM (
+//     SELECT ST_Union(ST_Clip(r.rast, foo.boundary, -9999, true)) AS clipped_raster
+//     FROM
+//     (
+//         SELECT ST_Buffer(ST_Union(p.geom), .01) AS boundary,
+//         ST_ConvexHull(ST_Union(p.geom)) AS convex_hull_boundary
+//         FROM ${boundaryTable} p
+//         WHERE p.${boundaryColumn} IN (${pest.stateNames.map(d => `'${d}'`).join(', ')})
+//     ) AS foo
+//     INNER JOIN ${rastTable} r
+//     ON ST_Intersects(r.rast, foo.convex_hull_boundary)
+//     AND r.rast_date = $1
+//     AND r.base = $2
+//     AND r.scale = $3
+// ) AS bar
+//     `, values: [date.format('YYYY-MM-DD'), pest.base, 'fahrenheit']
+//         };
+//     }
+
+//     console.log(query);
+//     log.info(query);
+//     const res = await db.pgPool.query(query);
+//     log.info('query complete');
+
+//     if (res.rows.length > 0) {
+//         let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
+//         // if (preserveExtent) {
+//         //     pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
+//         // }
+//         await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
+//         response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', pest.sldName, 'white', preserveExtent);
+//         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
+//         return response;
+//     } else {
+//         return response;
+//     }
+// }
 
 function doubleSine(tmin1,tmin2,tmax,lct,uct) {
     let taveam = (tmax + tmin1) / 2;
