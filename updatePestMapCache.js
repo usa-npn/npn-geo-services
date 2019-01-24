@@ -14,8 +14,9 @@ function doRequest(path) {
         method: 'GET',
         rejectUnauthorized: false
     };
-    console.log(os.hostname());
-    console.log(options.hostname);
+    console.log('os.hostname: ' + os.hostname());
+    console.log('options.hostname: ' + options.hostname);
+    console.log(options.path);
     return new Promise ((resolve, reject) => {
         // 'https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=Emerald%20Ash%20Borer&date=2017-01-05'
         // console.log(options.hostname);
@@ -26,7 +27,7 @@ function doRequest(path) {
             });
             response.on('end', function() {
                 var parsed = JSON.parse(body);
-                console.log('response recieved: ' + parsed);
+                console.log('response recieved: ' + JSON.stringify(parsed));
                 resolve(parsed);
             });
         }).on('error', (e) => {
