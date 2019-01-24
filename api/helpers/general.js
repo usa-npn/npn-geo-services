@@ -240,25 +240,19 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
 
             res.on('end', () => {
                 log.info('finished writing styled raster.');
-                exec(`convert ${rasterpath + styledFileName} -transparent ${backgroundColor} ${rasterpath + styledFileName.replace('.tiff', '.png')}`, (err, stdout, stderr) => {
-                    if (err) {
-                        log.error('error converting white to transparent: ' + err);
-                        reject(err);
-                    }
-
-                    // the *entire* stdout and stderr (buffered)
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-
-                    //delete the unstyled file
-                    fs.unlink(rasterpath + filename, async (err) => {
-                        if (err) {
-                            log.error('could not delete unstyled file: ' + err);
-                            throw err;
-                        }
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
-                    });
-                });
+                // try {
+                //     await execPromise(`convert ${rasterpath + styledFileName} -transparent ${backgroundColor} ${rasterpath + styledFileName.replace('.tiff', '.png')}`);
+                // } catch(err) {
+                //     log.error(`error converting ${backgroundColor} to transparent: ` + err);
+                //     reject(err);
+                // }
+                try {
+                    await unlinkPromise(rasterpath + filename);
+                } catch(err) {
+                    log.error('could not delete unstyled file: ' + err);
+                    reject(err);
+                }
+                resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
             });
         });
 
@@ -290,6 +284,72 @@ function getParam(param) {
     }
 }
 
+//promisified functions
+
+async function downloadFilePromis(url, dest) {
+    return new Promise((resolve, reject) =>
+    {
+        let file = fs.createWriteStream(dest);
+        let request = https.get(url, function(response) {
+            response.pipe(file);
+            file.on('finish', function() {
+                resolve();
+            });
+        }).on('error', function(err) { // Handle errors
+            fs.unlink(dest); // Delete the file async. (But we don't check the result)
+            reject(err.message);
+        });
+    });
+};
+
+async function copyFilePromise(src, dest) {
+    return new Promise((resolve, reject) =>
+    {
+        fs.copyFile(src, dest, (err) => {
+            if(err) {
+                reject(err);
+            }
+            resolve();
+        });
+    });
+};
+
+async function renameFilePromise(src, dest) {
+    return new Promise((resolve, reject) =>
+    {
+        fs.rename(src, dest, (err) => {
+            if(err) {
+                reject(err);
+            }
+            resolve();
+        });
+    });
+};
+
+async function execPromise(command) {
+    return new Promise((resolve, reject) =>
+    {
+        exec(command, async (err, stdout, stderr) => {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        })
+    });
+};
+
+async function unlinkPromise(fileToRemove) {
+    return new Promise((resolve, reject) =>
+    {
+        fs.unlink(fileToRemove, async (err) => {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        })
+    });
+};
+
 module.exports.stylizeFile = stylizeFile;
 module.exports.stylizePestMap = stylizePestMap;
 module.exports.WriteFile = WriteFile;
@@ -298,3 +358,8 @@ module.exports.extractFloatsFromString = extractFloatsFromString;
 module.exports.mustUseConvexHull = mustUseConvexHull;
 module.exports.urlExists = urlExists;
 module.exports.getParam = getParam;
+module.exports.downloadFilePromise = downloadFilePromise;
+module.exports.copyFilePromise = copyFilePromise;
+module.exports.renameFilePromise = renameFilePromise;
+module.exports.execPromise = execPromise;
+module.exports.unlinkPromise = unlinkPromise;
