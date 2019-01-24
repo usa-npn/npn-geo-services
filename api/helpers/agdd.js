@@ -477,9 +477,9 @@ FROM (
 
     if (res.rows.length > 0) {
         let pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}.png`;
-        if (preserveExtent) {
-            pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
-        }
+        // if (preserveExtent) {
+        //     pngFilename = `${species.replace(/ /g, '_')}_${date.format('YYYY-MM-DD')}_nocache.png`;
+        // }
         await helpers.WriteFile(pestImagePath + pngFilename, res.rows[0].tiff);
         response.clippedImage = await helpers.stylizePestMap(pngFilename, pestImagePath, 'png', pest.sldName, 'white', preserveExtent);
         response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
