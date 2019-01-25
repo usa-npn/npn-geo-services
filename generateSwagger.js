@@ -1210,11 +1210,15 @@ async function generate() {
                     enum: [
                         'Asian Longhorned Beetle', 
                         'Apple Maggot', 
+                        'Bagworm',
+                        'Bronze Birch Borer',
                         'Eastern Tent Caterpillar', 
                         'Emerald Ash Borer',
                         'Gypsy Moth',  
                         'Hemlock Woolly Adelgid', 
+                        'Magnolia Scale',
                         'Lilac Borer', 
+                        'Pine Needle Scale',
                         'Winter Moth'
                     ]
                 },

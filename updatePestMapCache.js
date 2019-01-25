@@ -71,7 +71,11 @@ async function update() {
             'Winter Moth',
             'Lilac Borer', 
             'Asian Longhorned Beetle',
-            'Gypsy Moth'
+            'Gypsy Moth',
+            'Bronze Birch Borer',
+            'Pine Needle Scale',
+            'Bagworm',
+            'Magnolia Scale'
             // 'Eastern Tent Caterpillar',
         ];
         for(var species of speciesArr) {
