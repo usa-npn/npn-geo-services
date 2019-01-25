@@ -485,7 +485,7 @@ async function getDoubleSineAgddTimeSeries(climateProvider, temperatureUnit, sta
         }
         let doubleSineGdd = doubleSine(tminYesterday, tminToday, tmaxToday, lowerThreshold, upperThreshold)
         let doubleSineAgdd = accum.length > 0 ? accum[accum.length-1].agdd + doubleSineGdd : doubleSineGdd;
-        if (threshold !=null && dateAgddThresholdMet == null && doubleSineAgdd > threshold) {
+        if (threshold !=null && dateAgddThresholdMet == null && doubleSineAgdd >= threshold) {
             dateAgddThresholdMet = item.date;
         }
         accum.push({
