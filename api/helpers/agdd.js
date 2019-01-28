@@ -313,6 +313,7 @@ async function getPestMap(species, date, preserveExtent) {
     if(pest.layerName != 'custom') {
         // get the tiff from geoserver if it's simple base 32 or 50
         try {
+            log.info(`https://geoserver-dev.usanpn.org/geoserver/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=${pest.layerName}&SUBSET=time("${date.format('YYYY-MM-DD')}T00:00:00.000Z")&format=geotiff` + 'saving to ' + `${pestImagePath}${tiffFileName}`)
             await helpers.downloadFilePromise(
                 `https://geoserver-dev.usanpn.org/geoserver/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=${pest.layerName}&SUBSET=time("${date.format('YYYY-MM-DD')}T00:00:00.000Z")&format=geotiff`,
                 `${pestImagePath}${tiffFileName}`
