@@ -233,19 +233,19 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
             res.pipe(writeStream);
 
             res.on('data', (d) => {
-                // console.log('recieving data from geoserver');
-                // log.info('recieving data from geoserver');
-                // log.info(d.toString());
+                console.log('recieving data from geoserver');
+                log.info('recieving data from geoserver');
+                log.info(d.toString());
             });
 
             res.on('end', async () => {
                 log.info('finished writing styled raster.');
-                // try {
-                //     await execPromise(`convert ${rasterpath + styledFileName} -transparent ${backgroundColor} ${rasterpath + styledFileName}`);
-                // } catch(err) {
-                //     log.error(`error converting ${backgroundColor} to transparent: ` + err);
-                //     reject(err);
-                // }
+                try {
+                    await execPromise(`convert ${rasterpath + styledFileName} -transparent ${backgroundColor} ${rasterpath + styledFileName}`);
+                } catch(err) {
+                    log.error(`error converting ${backgroundColor} to transparent: ` + err);
+                    reject(err);
+                }
                 try {
                     await unlinkPromise(rasterpath + filename);
                 } catch(err) {
