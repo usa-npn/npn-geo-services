@@ -1208,8 +1208,8 @@ async function generate() {
                     description: 'the species to retrieve map for',
                     type: 'string',
                     enum: [
-                        'Asian Longhorned Beetle', 
                         'Apple Maggot', 
+                        'Asian Longhorned Beetle',
                         'Bagworm',
                         'Bronze Birch Borer',
                         'Eastern Tent Caterpillar', 
