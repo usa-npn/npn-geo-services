@@ -361,13 +361,15 @@ async function getPestMap(species, date, preserveExtent) {
         if(preserveExtent) {
             clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -t_srs EPSG:3857 -overwrite -cutline ${shapefile} ${pestImagePath}${tiffFileName} ${pestImagePath}${croppedPngFilename}`;
         }
+        log.info(clipCommand);
         await helpers.execPromise(clipCommand);
     } catch(err) {
         log.error('could not slice pestmap to boundary: ' + err);
     }
 
-    // remove the uncropped tiff
-    await helpers.unlinkPromise(pestImagePath + tiffFileName);
+    // // remove the uncropped tiff
+    // log.info(`removing: ` + pestImagePath + tiffFileName);
+    // await helpers.unlinkPromise(pestImagePath + tiffFileName);
     
     // style the tiff into png
     try {
