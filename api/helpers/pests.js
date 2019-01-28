@@ -96,7 +96,7 @@ const pests = [
         ],
         stateNames: ['Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida'],
         rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/emerald_ash_borer_range/states.shp',
-        sldName: 'emerald_ash_borer_range.sld'
+        sldName: 'emerald_ash_borer.sld'
     },
     {
         species: 'Gypsy Moth',
