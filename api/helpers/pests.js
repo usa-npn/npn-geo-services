@@ -42,7 +42,7 @@ const pests = [
         species: 'Bagworm',
         lowerThreshold: 50,
         layerName: 'custom',
-        startMonthDay: '01-01',
+        startMonthDay: '03-01',
         agddMethod: 'simple',
         bounds: [ //done
             -109.050173,
@@ -163,7 +163,7 @@ const pests = [
         species: 'Pine Needle Scale',
         lowerThreshold: 50,
         layerName: 'custom',
-        startMonthDay: '01-01',
+        startMonthDay: '03-01',
         agddMethod: 'simple',
         bounds: [ //done
             -124.763068,
