@@ -1216,18 +1216,18 @@ async function generate() {
         };
 
      
-        swaggerDefinition['paths']['/agdd/pesDescriptions'] = {};
-        swaggerDefinition['paths']['/agdd/pestDescriptions']['x-swagger-router-controller'] = 'agdd';
-        swaggerDefinition['paths']['/agdd/pestDescriptions']['get'] =
-            {
-                summary: `gets various metadata for each pest`,
-                description: `Gets various metadata for each pest.`,
-                tags: ['accumlated growing degree days'],
-                operationId: `pestDescriptions`,
-                consumes: ['application/x-www-form-urlencoded'],
-                parameters: [],
-                responses: getResponses('PestDescriptionsResponse')
-            };    
+    swaggerDefinition['paths']['/agdd/pestDescriptions'] = {};
+    swaggerDefinition['paths']['/agdd/pestDescriptions']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/agdd/pestDescriptions']['get'] =
+        {
+            summary: `gets various metadata for each pest`,
+            description: `Gets various metadata for each pest.`,
+            tags: ['accumlated growing degree days'],
+            operationId: `pestDescriptions`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [],
+            responses: getResponses('PestDescriptionsResponse')
+        };    
 
 
     swaggerDefinition['paths']['/agdd/pestMap'] = {};
