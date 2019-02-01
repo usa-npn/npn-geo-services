@@ -837,6 +837,12 @@ async function generate() {
                         species: {
                             type: "string"
                         },
+                        summary: {
+                            type: "string"
+                        },
+                        agddMethod: {
+                            type: "string"
+                        },
                         base: {
                             type: "number"
                         },
@@ -845,6 +851,27 @@ async function generate() {
                         },
                         upperThreshold: {
                             type: "number"
+                        },
+                        startMonthDay: {
+                            type: "string"
+                        },
+                        bounds: {
+                            type: "array",
+                            items: {
+                                type: "number"
+                            }
+                        },
+                        stateNames: {
+                            type: "array",
+                            items: {
+                                type: "string"
+                            }
+                        },
+                        layerName: {
+                            type: "string"
+                        },
+                        sldName: {
+                            type: "string"
                         }
                     }
                 }
