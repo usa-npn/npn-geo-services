@@ -827,6 +827,31 @@ async function generate() {
         }
     };
 
+    swaggerDefinition['definitions']['PestDescriptionsResponse'] = {
+        properties: {
+            pests: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        species: {
+                            type: "string"
+                        },
+                        base: {
+                            type: "number"
+                        },
+                        lowerThreshold: {
+                            type: "number"
+                        },
+                        upperThreshold: {
+                            type: "number"
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     swaggerDefinition['definitions']['ImageResponse'] = {
         required: ['date', 'layerClippedFrom', 'clippedImage', 'bbox'],
         properties: {
@@ -1189,6 +1214,20 @@ async function generate() {
             ],
             responses: getResponses('ImageResponse')
         };
+
+     
+        swaggerDefinition['paths']['/agdd/pesDescriptions'] = {};
+        swaggerDefinition['paths']['/agdd/pestDescriptions']['x-swagger-router-controller'] = 'agdd';
+        swaggerDefinition['paths']['/agdd/pestDescriptions']['get'] =
+            {
+                summary: `gets various metadata for each pest`,
+                description: `Gets various metadata for each pest.`,
+                tags: ['accumlated growing degree days'],
+                operationId: `pestDescriptions`,
+                consumes: ['application/x-www-form-urlencoded'],
+                parameters: [],
+                responses: getResponses('PestDescriptionsResponse')
+            };    
 
 
     swaggerDefinition['paths']['/agdd/pestMap'] = {};

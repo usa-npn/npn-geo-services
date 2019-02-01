@@ -56,14 +56,6 @@ async function deleteForecastDays(species) {
 async function update() {
     try {
         log.info("updating cached pest images.");
-        // let speciesArr = [
-        //     'Emerald Ash Borer', 
-        //     'Apple Maggot', 
-        //     'Hemlock Woolly Adelgid', 
-        //     'Eastern Tent Caterpillar',
-        //     'Lilac Borer', 
-        //     'Winter Moth'
-        // ];
         let speciesArr = [
             'Emerald Ash Borer', 
             'Hemlock Woolly Adelgid',
@@ -75,8 +67,8 @@ async function update() {
             'Bronze Birch Borer',
             'Pine Needle Scale',
             'Bagworm',
-            'Magnolia Scale'
-            // 'Eastern Tent Caterpillar',
+            'Magnolia Scale',
+            'Eastern Tent Caterpillar',
         ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);

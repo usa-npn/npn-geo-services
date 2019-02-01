@@ -2,6 +2,7 @@ let log = require('../../logger.js');
 const moment = require('moment');
 let agddController = require('../helpers/agdd.js');
 let general = require('../helpers/general.js');
+let pests = require('../helpers/pests.js');
 
 function getBaseFromLayerName(layerName) {
     if (layerName.includes('50')) {
@@ -107,6 +108,13 @@ function areaStatsInternal(req, res, anomaly) {
 //     }
 // }
 
+
+/**
+ * @param {{swagger}} req
+ */
+function pestDescriptions(req, res) {
+    return res.status(200).send(pests.pests);
+}
 
 /**
  * @param {{swagger}} req
@@ -310,6 +318,7 @@ function doubleSinePointTimeSeries(req, res) {
 module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
+module.exports.pestDescriptions = pestDescriptions;
 module.exports.pestMap = pestMap;
 module.exports.anomalyClippedImage = anomalyClippedImage;
 module.exports.simpleAgddMap = simpleAgddMap;

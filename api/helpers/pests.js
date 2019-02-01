@@ -11,7 +11,7 @@ const pests = [
         species: 'Apple Maggot',
         base: 50,
         layerName: 'gdd:agdd_50f',
-        bounds: [ //done
+        bounds: [
             -124.763068,
             24.523096,
             -66.949895,
@@ -28,7 +28,7 @@ const pests = [
         layerName: 'custom',
         startMonthDay: '01-01',
         agddMethod: 'double-sine',
-        bounds: [ //done
+        bounds: [
             -84.820159,
             38.403202,
             -69.928393,
@@ -44,7 +44,7 @@ const pests = [
         layerName: 'custom',
         startMonthDay: '03-01',
         agddMethod: 'simple',
-        bounds: [ //done
+        bounds: [
             -109.050173,
             30.173943,
             -69.928393,
@@ -58,7 +58,7 @@ const pests = [
         species: 'Bronze Birch Borer',
         base: 50,
         layerName: 'gdd:agdd_50f',
-        bounds: [ //done
+        bounds: [
             -125.0208333,
             24.0625,
             -66.4791667000001,
@@ -74,7 +74,7 @@ const pests = [
         layerName: 'custom',
         startMonthDay: '03-01',
         agddMethod: 'simple',
-        bounds: [ //done
+        bounds: [
             -109.060253,
             30.173943,
             -66.949895,
@@ -88,7 +88,7 @@ const pests = [
         species: 'Emerald Ash Borer',
         base: 50,
         layerName: 'gdd:agdd_50f',
-        bounds: [ //done
+        bounds: [
             -109.060253,
             24.523096,
             -66.949895,
@@ -105,7 +105,7 @@ const pests = [
         layerName: 'custom',
         startMonthDay: '01-01',
         agddMethod: 'double-sine',
-        bounds: [ //done
+        bounds: [
             -97.239209,
             33.842316,
             -66.949895,
@@ -121,7 +121,7 @@ const pests = [
         species: 'Hemlock Woolly Adelgid',
         base: 32,
         layerName: 'gdd:agdd',
-        bounds: [ //done
+        bounds: [
             -124.763068,
             30.223334,
             -66.949895,
@@ -135,7 +135,7 @@ const pests = [
         species: 'Magnolia Scale',
         base: 50,
         layerName: 'gdd:agdd_50f',
-        bounds: [ //done
+        bounds: [
             -106.645646,
             24.523096,
             -66.949895,
@@ -149,7 +149,7 @@ const pests = [
         species: 'Lilac Borer',
         base: 50,
         layerName: 'gdd:agdd_50f',
-        bounds: [ //done
+        bounds: [
             -124.763068,
             24.523096,
             -66.949895,
@@ -165,7 +165,7 @@ const pests = [
         layerName: 'custom',
         startMonthDay: '03-01',
         agddMethod: 'simple',
-        bounds: [ //done
+        bounds: [
             -124.763068,
             28.928609,
             -66.949895,
@@ -179,7 +179,7 @@ const pests = [
         species: 'Winter Moth',
         base: 50,
         layerName: 'gdd:agdd_50f',
-        bounds: [ //done
+        bounds: [
             -79.762152,
             40.496103,
             -66.949895,
