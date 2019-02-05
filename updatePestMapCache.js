@@ -49,6 +49,12 @@ async function deleteForecastDays(species) {
             console.log(`deleting file for regineration: ${pestImagePath + fileName}`);
             fs.unlinkSync(pestImagePath + fileName);
         }
+        // also delete the pretty map cached image
+        let fileName = `${species.replace(/\s/g, '_')}_${dateString}_styled_conus_extent.png`;
+        if (fs.existsSync(pestImagePath + fileName)) {
+            console.log(`deleting file for regineration: ${pestImagePath + fileName}`);
+            fs.unlinkSync(pestImagePath + fileName);
+        }
         start.add(1, 'days');
     }
 }

@@ -219,8 +219,8 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
             }
         };
 
-        log.info(postData);
-        log.info(JSON.stringify(options));
+        //log.info(postData);
+        //log.info(JSON.stringify(options));
 
         let styledFileName = filename.replace(`.${fileFormat}`, `_styled.${fileFormat}`);
         if(preserveExent) {
