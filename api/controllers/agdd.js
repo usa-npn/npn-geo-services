@@ -126,7 +126,7 @@ function pestMap(req, res) {
 
     return agddController.getPestMap(species, moment.utc(date), preserveExtent)
         .then((areaStatsResponse) => res.status(200).send(areaStatsResponse))
-        .catch((error) => res.status(500).send({"message": error.message}));
+        .catch((error) => res.status(500).send({"message": error}));
 }
 
 /**
