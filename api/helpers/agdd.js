@@ -320,7 +320,7 @@ async function getPestMap(species, date, preserveExtent) {
                 );
         } catch(err) {
             log.error('could not get the base agdd map from geoserver: ' + err);
-            return {msg: 'could not get the base agdd map from geoserver: ' + err};
+            throw('could not get the base agdd map from geoserver: ' + err);
         } 
     } else if(startDate.valueOf() > moment().valueOf()) {
         //if start date is after today there will be no heat accumulation so use the zeroes tif
@@ -331,7 +331,7 @@ async function getPestMap(species, date, preserveExtent) {
                  );
         } catch(err) {
             log.error('could not get the zeros base agdd map: ' + err);
-            return {msg: 'could not get the zeros base agdd map: ' + err};
+            throw('could not get the zeros base agdd map: ' + err);
         } 
     } else {
         // otherwise generate tiff via custom agdd endpoint
@@ -344,7 +344,7 @@ async function getPestMap(species, date, preserveExtent) {
             await helpers.renameFilePromise(`${agddPath}${tiffFileName}`, `${pestImagePath}${tiffFileName}`);
         } catch(err) {
             log.error('could not get the dynamically generated agdd map: ' + err);
-            return {msg: 'could not get the dynamically generated agdd map: ' + err};
+            throw('could not get the dynamically generated agdd map: ' + err);
         } 
     }
     
