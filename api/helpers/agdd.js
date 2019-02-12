@@ -365,6 +365,7 @@ async function getPestMap(species, date, preserveExtent) {
         await helpers.execPromise(clipCommand);
     } catch(err) {
         log.error('could not slice pestmap to boundary: ' + err);
+        throw('could not slice pestmap to boundary: ' + err);
     }
 
     // // remove the uncropped tiff
@@ -382,7 +383,7 @@ async function getPestMap(species, date, preserveExtent) {
         return response;
     } catch(err) {
         log.error('could not style pestmap: ' + err);
-        return {msg: 'could not style pestmap' + err};
+        throw('could not style pestmap' + err);
     }
 }
 
