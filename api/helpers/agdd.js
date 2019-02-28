@@ -322,8 +322,8 @@ async function getPestMap(species, date, preserveExtent) {
             log.error('could not get the base agdd map from geoserver: ' + err);
             throw('could not get the base agdd map from geoserver: ' + err);
         } 
-    } else if(startDate.valueOf() > moment().valueOf()) {
-        //if start date is after today there will be no heat accumulation so use the zeroes tif
+    } else if(startDate.valueOf() > date.valueOf()) {
+        //if start date is after the date requested there will be no heat accumulation so use the zeroes tif
         try {
             await helpers.copyFilePromise(
                 '/var/www/data-site/files/npn-geo-services/zero_maps/zeros_conus_ncep.tif',
