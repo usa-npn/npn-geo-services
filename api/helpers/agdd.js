@@ -9,7 +9,6 @@ const { exec } = require('child_process');
 let pests = require('./pests');
 
 let node_ssh = require('node-ssh');
-let ssh = new node_ssh();
 let client = require('scp2');
 
 const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
@@ -665,6 +664,7 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
                 resolve(response);
             } else {
                 // file didn't exist so do work: call python script on geoserver to compute agdd
+                let ssh = new node_ssh();
                 ssh.connect({
                     host: process.env.GEOSERVER_HOST,
                     username: process.env.GEOSERVER_SSH_USER,
@@ -676,7 +676,7 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
                         .then(function(result) {
                         console.log('STDOUT: ' + result.stdout)
                         console.log('STDERR: ' + result.stderr)
-
+                        ssh.dispose();
                         let geoserverDynamicAgddPath = `/geo-data/gridded_models/agdd_dynamic/`;
 
                         client.scp({
@@ -697,7 +697,12 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
                                 reject(err);
                             }
                         });
+                    }).catch(function(error){
+                        ssh.dispose();
+                        reject(error);
                     });
+                }).catch(function(error){
+                    reject(error);
                 });
             }
         });
