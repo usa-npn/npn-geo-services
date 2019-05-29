@@ -202,7 +202,7 @@ const pests = [
         sldName: 'winter_moth.sld'
     },
     {
-        species: 'Buffelgrass',
+        species: 'Buffel Grass',
         summary: 'todo.',
         base: 50,
         layerName: 'precipitation:buffelgrass_prism',
