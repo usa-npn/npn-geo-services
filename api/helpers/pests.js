@@ -200,6 +200,21 @@ const pests = [
         stateNames: ['Connecticut','Maine','Massachusetts','New Hampshire','New York','Vermont'],
         rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/winter_moth_range/states.shp',
         sldName: 'winter_moth.sld'
+    },
+    {
+        species: 'Buffelgrass',
+        summary: 'todo.',
+        base: 50,
+        layerName: 'precipitation:buffelgrass_prism',
+        bounds: [
+            -114.81651,
+            31.332177,
+            -109.045223,
+            37.00426
+        ],
+        stateNames: ['Arizona'],
+        rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/conus_range/states.shp',
+        sldName: 'buffel_grass_inches.sld'
     }
 ];
 
