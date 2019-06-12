@@ -294,7 +294,7 @@ async function getPestMap(species, date, preserveExtent) {
     };
 
     // buffelgrass just forward link from geoserver
-    if(pest.species == 'Buffel Grass') {
+    if(pest.species == 'Buffelgrass') {
         response.clippedImage = `https://${process.env.GEOSERVER_HOST}/geoserver/wms?bbox=-12781315.428,3675016.642,-12139802.046,4439700.593&format=image%2Fpng&height=596&layers=precipitation:buffelgrass_prism&request=GetMap&service=WMS&srs=EPSG:3857&styles=&time=${date.format('YYYY-MM-DD')}T00:00:00.000Z&transparent=true&version=1.1.1&width=500`;
         response.bbox = pest.bounds;
         return response;

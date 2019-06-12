@@ -773,15 +773,15 @@ function getResponses(definitionName) {
 
 
 let host = `${process.env.SERVICES_HOST}:${process.env.PORT}`;
-const version = "0.0.1";
-const basePath = "/v0";
+const version = "1.0.0";
+const basePath = "/v1";
 
 let swaggerDefinition = {
     swagger: "2.0",
     info: {
         description: "Welcome to the USA-NPN geospatial services. These services allow one to access geospatial data hosted at the USA-NPN in various ways including timeseries at a lat/long, GeoTIFF maps bounded by a polygon, and aggregated statistics over a ploygon.",
         version: version,
-        title: "National Phenology Network Web Services",
+        title: "National Phenology Network Geospatial Services",
         termsOfService: "TODO: Add terms of service here",
         contact: {
             name: "The National Phenology Network",
@@ -1243,13 +1243,13 @@ async function generate() {
         };
 
      
-    swaggerDefinition['paths']['/agdd/pestDescriptions'] = {};
-    swaggerDefinition['paths']['/agdd/pestDescriptions']['x-swagger-router-controller'] = 'agdd';
-    swaggerDefinition['paths']['/agdd/pestDescriptions']['get'] =
+    swaggerDefinition['paths']['/phenoforecasts/pestDescriptions'] = {};
+    swaggerDefinition['paths']['/phenoforecasts/pestDescriptions']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/phenoforecasts/pestDescriptions']['get'] =
         {
             summary: `gets various metadata for each pest`,
             description: `Gets various metadata for each pest.`,
-            tags: ['accumlated growing degree days'],
+            tags: ['phenoforecasts'],
             operationId: `pestDescriptions`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [],
@@ -1257,13 +1257,13 @@ async function generate() {
         };    
 
 
-    swaggerDefinition['paths']['/agdd/pestMap'] = {};
-    swaggerDefinition['paths']['/agdd/pestMap']['x-swagger-router-controller'] = 'agdd';
-    swaggerDefinition['paths']['/agdd/pestMap']['get'] =
+    swaggerDefinition['paths']['/phenoforecasts/pestMap'] = {};
+    swaggerDefinition['paths']['/phenoforecasts/pestMap']['x-swagger-router-controller'] = 'agdd';
+    swaggerDefinition['paths']['/phenoforecasts/pestMap']['get'] =
         {
-            summary: `gets pest agdd threshold map`,
-            description: `Gets pest agdd threshold map for a specified species and date.`,
-            tags: ['accumlated growing degree days'],
+            summary: `gets pest threshold map`,
+            description: `Gets pest threshold map for a specified species and date.`,
+            tags: ['phenoforecasts'],
             operationId: `pestMap`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
@@ -1278,7 +1278,7 @@ async function generate() {
                         'Asian Longhorned Beetle',
                         'Bagworm',
                         'Bronze Birch Borer',
-                        'Buffel Grass',
+                        'Buffelgrass',
                         'Eastern Tent Caterpillar', 
                         'Emerald Ash Borer',
                         'Gypsy Moth',  

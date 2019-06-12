@@ -31,6 +31,36 @@ generateSwagger.generate().then(() => {
     }
 
     var app = express();
+    var app_v1 = express();
+    var app_v0 = express();
+
+    var config_v1 = {
+        appRoot: __dirname,
+        swaggerFile: "./api/swagger/swagger.yaml"
+    };
+    
+    var config_v0 = {
+        appRoot: __dirname,
+        swaggerFile: "./api/swagger/swagger_v0.yaml"
+    };
+    
+    SwaggerExpress.create(config_v1, function(err, swaggerExpress) {
+        if (err) { throw err; }
+        
+        // install middleware
+        swaggerExpress.register(app_v1);
+    });
+    
+    SwaggerExpress.create(config_v0, function(err, swaggerExpress) {
+        if (err) { throw err; }
+        
+        // install middleware
+        swaggerExpress.register(app_v0);
+    });
+    
+    app.use('/', app_v0);
+    app.use('/', app_v1);
+
 
     // create a write stream (in append mode) and set up a log to record requests
     let accessLogStream = fs.createWriteStream(path.join("./logs", "access.log"), {flags: "a"});
@@ -39,19 +69,19 @@ generateSwagger.generate().then(() => {
     module.exports = app; // for testing
     const util = require('util');
 
-    var config = {
-        appRoot: __dirname, // required config
-        swaggerSecurityHandlers: {
-            api_key: function (req, authOrSecDef, scopesOrApiKey, cb) {
-                // your security code
-                if ('1234' === scopesOrApiKey) {
-                    cb(null);
-                } else {
-                    cb(new Error('access denied!'));
-                }
-            }
-        }
-    };
+    // var config = {
+    //     appRoot: __dirname, // required config
+    //     swaggerSecurityHandlers: {
+    //         api_key: function (req, authOrSecDef, scopesOrApiKey, cb) {
+    //             // your security code
+    //             if ('1234' === scopesOrApiKey) {
+    //                 cb(null);
+    //             } else {
+    //                 cb(new Error('access denied!'));
+    //             }
+    //         }
+    //     }
+    // };
 
     process.on("uncaughtException", (err) => {
         log.error(err, "Something Broke!.");
@@ -75,11 +105,11 @@ generateSwagger.generate().then(() => {
     const zeroMapsPath = '/var/www/data-site/files/npn-geo-services/zero_maps';
     app.use(express.static(zeroMapsPath));
 
-    SwaggerExpress.create(config, (err, swaggerExpress) => {
-        if (err) { throw err; }
+    // SwaggerExpress.create(config, (err, swaggerExpress) => {
+    //     if (err) { throw err; }
 
         // install middleware
-        swaggerExpress.register(app);
+        //swaggerExpress.register(app);
 
         let server = getServer();
 
@@ -100,7 +130,7 @@ generateSwagger.generate().then(() => {
             console.log('HeapUsed in MB: ' + process.memoryUsage().heapUsed / 1048576);
             //console.log(util.inspect(process.memoryUsage()));
         },1000);
-    });
+    // });
 
 }).catch(err => {
     log.error(err, 'could not generate swagger.yaml, haulting server');
