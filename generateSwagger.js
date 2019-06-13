@@ -813,6 +813,26 @@ function sortObject(o) {
     return Object.keys(o).sort().reduce((r, k) => (r[k] = o[k], r), {});
 }
 
+// assumes git checked in host is localhost:3006
+async function overwriteHostInSwaggerFiles(swaggerFile) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(swaggerFile, 'utf8', function (err,data) {
+            if (err) {
+                return console.log(err);
+            }
+            let host = `${process.env.SERVICES_HOST}:${process.env.PORT}`;
+            var result = data.replace(/localhost:3006/g, host);
+
+            fs.writeFile(swaggerFile, result, 'utf8', function (err) {
+                if (err) 
+                    reject(err);
+                else
+                    resolve();
+            });
+        });
+    });
+}
+
 async function generate() {
     // let stateBoundaries = await getStateBoundaryNames();
 
@@ -2026,7 +2046,11 @@ async function generate() {
         fs.writeFile('./api/swagger/swagger.yaml', yaml.dump(swaggerDefinition, {'noRefs': true}) , 'utf-8', (err) => {
             if(err)
                 reject(err);
-            resolve();
+            else {
+                overwriteHostInSwaggerFiles("./api/swagger/swagger_v0.yaml")
+                    .then( () => resolve());
+
+            }
         });
     });
 
