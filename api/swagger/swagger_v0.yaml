@@ -5,15 +5,15 @@ info:
     access geospatial data hosted at the USA-NPN in various ways including
     timeseries at a lat/long, GeoTIFF maps bounded by a polygon, and aggregated
     statistics over a ploygon.
-  version: 1.0.0
-  title: National Phenology Network Geospatial Services
+  version: 0.0.1
+  title: National Phenology Network Web Services
   termsOfService: 'TODO: Add terms of service here'
   contact:
     name: The National Phenology Network
     email: support@usanpn.org
     url: www.usanpn.org
 host: 'localhost:3006'
-basePath: /v1
+basePath: /v0
 tags: []
 schemes:
   - https
@@ -2770,6 +2770,82 @@ paths:
           description: internal server error
           schema:
             $ref: '#/definitions/ErrorResponse'
+  /agdd/pestDescriptions:
+    x-swagger-router-controller: agdd
+    get:
+      summary: gets various metadata for each pest
+      description: Gets various metadata for each pest.
+      tags:
+        - accumlated growing degree days
+      operationId: pestDescriptions
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PestDescriptionsResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /agdd/pestMap:
+    x-swagger-router-controller: agdd
+    get:
+      summary: gets pest agdd threshold map
+      description: Gets pest agdd threshold map for a specified species and date.
+      tags:
+        - accumlated growing degree days
+      operationId: pestMap
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: species
+          in: query
+          required: true
+          description: the species to retrieve map for
+          type: string
+          enum:
+            - Apple Maggot
+            - Asian Longhorned Beetle
+            - Bagworm
+            - Bronze Birch Borer
+            - Buffel Grass
+            - Eastern Tent Caterpillar
+            - Emerald Ash Borer
+            - Gypsy Moth
+            - Hemlock Woolly Adelgid
+            - Magnolia Scale
+            - Lilac Borer
+            - Pine Needle Scale
+            - Winter Moth
+        - name: date
+          in: query
+          required: true
+          description: >-
+            the date to stop accumulating growing degree days (inclusive) for
+            example 2018-08-04.
+          type: string
+          format: date
+        - name: preserveExtent
+          in: query
+          required: false
+          description: preserve extent to Contiguous United States when clipping.
+          type: boolean
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ImageResponse'
+        '500':
+          description: internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /agdd/simple/map:
     x-swagger-router-controller: agdd
     get:
@@ -3031,82 +3107,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ClimateTimeSeriesResponse'
-        '500':
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-  /phenoforecasts/pestDescriptions:
-    x-swagger-router-controller: agdd
-    get:
-      summary: gets various metadata for each pest
-      description: Gets various metadata for each pest.
-      tags:
-        - phenoforecasts
-      operationId: pestDescriptions
-      consumes:
-        - application/x-www-form-urlencoded
-      parameters: []
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/PestDescriptionsResponse'
-        '500':
-          description: internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-  /phenoforecasts/pestMap:
-    x-swagger-router-controller: agdd
-    get:
-      summary: gets pest threshold map
-      description: Gets pest threshold map for a specified species and date.
-      tags:
-        - phenoforecasts
-      operationId: pestMap
-      consumes:
-        - application/x-www-form-urlencoded
-      parameters:
-        - name: species
-          in: query
-          required: true
-          description: the species to retrieve map for
-          type: string
-          enum:
-            - Apple Maggot
-            - Asian Longhorned Beetle
-            - Bagworm
-            - Bronze Birch Borer
-            - Buffelgrass
-            - Eastern Tent Caterpillar
-            - Emerald Ash Borer
-            - Gypsy Moth
-            - Hemlock Woolly Adelgid
-            - Magnolia Scale
-            - Lilac Borer
-            - Pine Needle Scale
-            - Winter Moth
-        - name: date
-          in: query
-          required: true
-          description: >-
-            the date to stop accumulating growing degree days (inclusive) for
-            example 2018-08-04.
-          type: string
-          format: date
-        - name: preserveExtent
-          in: query
-          required: false
-          description: preserve extent to Contiguous United States when clipping.
-          type: boolean
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ImageResponse'
         '500':
           description: internal server error
           schema:

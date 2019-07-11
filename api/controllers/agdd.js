@@ -113,7 +113,12 @@ function areaStatsInternal(req, res, anomaly) {
  * @param {{swagger}} req
  */
 function pestDescriptions(req, res) {
-    return res.status(200).send(pests.pests);
+    // omit rangeShpFilePath keys before sending result
+    let filteredConfig = pests.pests.map(data => {
+        const { rangeShpFilePath, ...newData } = data;
+        return newData;
+    })
+    return res.status(200).send(filteredConfig);
 }
 
 /**
