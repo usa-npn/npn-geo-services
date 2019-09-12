@@ -63,8 +63,11 @@ const pests = [
     {
         species: 'Bronze Birch Borer',
         summary: 'Bronze birch borer frequently kills birch trees by boring into the wood.',
-        base: 50,
-        layerName: 'gdd:agdd_50f',
+        lowerThreshold: 50,
+        upperThreshold: 150,
+        layerName: 'custom',
+        startMonthDay: '01-01',
+        agddMethod: 'double-sine',
         bounds: [
             -125.0208333,
             24.0625,
@@ -97,8 +100,11 @@ const pests = [
     {
         species: 'Emerald Ash Borer',
         summary: 'Emerald ash borer is a beetle that causes significant harm to ash trees throughout the eastern United States.',
-        base: 50,
-        layerName: 'gdd:agdd_50f',
+        lowerThreshold: 50,
+        upperThreshold: 150,
+        layerName: 'custom',
+        startMonthDay: '01-01',
+        agddMethod: 'double-sine',
         bounds: [
             -109.060253,
             24.523096,
@@ -150,8 +156,11 @@ const pests = [
     {
         species: 'Magnolia Scale',
         summary: 'Magnolia scale is a pest native to the Eastern United States that affects magnolia trees and tulip trees. They cause stress to their host trees by removing sap which can lead to yellowing leaves, twig dieback, and even death.',
-        base: 50,
-        layerName: 'gdd:agdd_50f',
+        lowerThreshold: 50,
+        upperThreshold: 150,
+        layerName: 'custom',
+        startMonthDay: '01-01',
+        agddMethod: 'double-sine',
         bounds: [
             -106.645646,
             24.523096,
@@ -166,8 +175,11 @@ const pests = [
     {
         species: 'Lilac Borer',
         summary: 'Lilac borer is a clear-wing moth that can damage lilac, ash, and privet trees and shrubs by burrowing into the heartwood.',
-        base: 50,
-        layerName: 'gdd:agdd_50f',
+        lowerThreshold: 50,
+        upperThreshold: 150,
+        layerName: 'custom',
+        startMonthDay: '01-01',
+        agddMethod: 'double-sine',
         bounds: [
             -124.763068,
             24.523096,
