@@ -69,28 +69,28 @@ function outputFiles(outputName, d3n) {
 };
 
 
-const styles = `
-.bar rect {
-  fill: steelblue;
-}
-.bar text {
-  fill: #fff;
-  font: 10px sans-serif;
-}`
-
-var options = {
-    svgStyles: styles,
-    d3Module: d3
-  }
-  
-var d3n = new D3Node(options)
-
 async function drawLegend(sldName, title, data) {
+
+    const styles = `
+    .bar rect {
+    fill: steelblue;
+    }
+    .bar text {
+    fill: #fff;
+    font: 10px sans-serif;
+    }`
+
+    var options = {
+        svgStyles: styles,
+        d3Module: d3
+    }
+    
+    let d3n = new D3Node(options);
     
     let svgWidth = 1080;
     let svgHeight = 170;
-    var margin = {top: 0, right: 4, bottom: 0, left: 4}
-    var svg = d3n.createSVG(svgWidth, svgHeight)
+    let margin = {top: 0, right: 4, bottom: 0, left: 4}
+    let svg = d3n.createSVG(svgWidth, svgHeight)
         .append('g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
     
