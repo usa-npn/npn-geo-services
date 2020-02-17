@@ -249,7 +249,7 @@ async function drawSldLegend(req, res) {
         let outputPath = await getLegend(sldName);
 
         res.status(200).send({
-            'legendPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}` + outputPath
+            'legendPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + outputPath
         });
     } catch(error) {
         res.status(500).json({"message": error.message});
