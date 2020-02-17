@@ -1,6 +1,13 @@
 let db = require('./api/helpers/database.js');
 let fs = require('fs');
 yaml = require('js-yaml');
+let validation = require('./api/helpers/validation.js');
+
+//needed for vscode debugger breakpoints to work
+let agddController = require('./api/controllers/agdd')
+let boundariesController = require('./api/controllers/boundaries');
+let climateController = require('./api/controllers/climate');
+let legendsController = require('./api/controllers/legends');
 
 let agddLayers = [
     "gdd:agdd",
@@ -793,18 +800,18 @@ let swaggerDefinition = {
     basePath: basePath,
     tags: [],
     schemes: ["https", "http"],
-    securityDefinitions: {
-        token: {
-            type: "apiKey",
-            in: "header",
-            name: "token"
-        },
-        consumer_key: {
-            type: "apiKey",
-            in: "header",
-            name: "consumer_key"
-        }
-    },
+    // securityDefinitions: {
+    //     token: {
+    //         type: "apiKey",
+    //         in: "header",
+    //         name: "token"
+    //     },
+    //     consumer_key: {
+    //         type: "apiKey",
+    //         in: "header",
+    //         name: "consumer_key"
+    //     }
+    // },
     paths: {},
     definitions: {}
 };
@@ -1099,6 +1106,15 @@ async function generate() {
                 items: {
                     type: "string"
                 }
+            }
+        }
+    };
+
+    swaggerDefinition['definitions']['LegendResponse'] = {
+        required: ['legendPath'],
+        properties: {
+            legendPath: {
+                type: "string"
             }
         }
     };
@@ -1893,7 +1909,7 @@ async function generate() {
                     name: 'date',
                     in: 'query',
                     required: true,
-                    description: 'the date to average over for example 2017-08-01. For historic yearly data specify January 1st. ie. 2013-01-01',
+                    description: `YYYY-MM-DD with allowed ranges as follows - PRISM: ${validation.prismStart.format('YYYY-MM-DD')} through ${validation.prismEnd.format('YYYY-MM-DD')}, NCEP historic: ${validation.ncepHistStart.format('YYYY-MM-DD')} through ${validation.ncepHistEnd.format('YYYY-MM-DD')}, NCEP: ${validation.ncepStart.format('YYYY-MM-DD')} through ${validation.ncepEnd.format('YYYY-MM-DD')}, BEST: ${validation.bestStart.format('YYYY-MM-DD')} through ${validation.bestEnd.format('YYYY-MM-DD')}.`,
                     type: 'string',
                     format: 'date'
                 },
@@ -2034,6 +2050,28 @@ async function generate() {
                 }
             ],
             responses: getResponses('BoundaryNamesResponse')
+        };
+
+    // legends
+    swaggerDefinition['paths']['/legends'] = {};
+    swaggerDefinition['paths']['/legends']['x-swagger-router-controller'] = 'legends';
+    swaggerDefinition['paths']['/legends']['get'] =
+        {
+            summary: `get pretty legend for sld`,
+            description: `Gets a pretty legend for an sld`,
+            tags: ['legends'],
+            operationId: `drawSldLegend`,
+            consumes: ['application/x-www-form-urlencoded'],
+            parameters: [
+                {
+                    name: 'sldName',
+                    in: 'query',
+                    description: 'the name of the sld',
+                    type: 'string',
+                    enum: ['agdd', 'leafout_anomaly_black']
+                }
+            ],
+            responses: getResponses('LegendResponse')
         };
 
     //write the swagger yaml defs to disk

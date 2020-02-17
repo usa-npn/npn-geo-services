@@ -86,6 +86,9 @@ generateSwagger.generate().then(() => {
     const zeroMapsPath = '/var/www/data-site/files/npn-geo-services/zero_maps';
     app.use(express.static(zeroMapsPath));
 
+    const legendsPath = '/var/www/data-site/files/npn-geo-services/legends';
+    app.use(express.static(legendsPath));
+
     let server = getServer();
 
     server.listen(process.env.PORT || 3006, () => {
