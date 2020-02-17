@@ -63,7 +63,7 @@ function outputFiles(outputName, d3n) {
             })
             .then(err => {
                 // console.log('>> Exported: "./'+outputName+'.png"');
-                resolve(outputPath+outputName+'.png');
+                resolve(outputName+'.png');
             });
     });
 };

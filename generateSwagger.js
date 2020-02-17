@@ -2068,7 +2068,17 @@ async function generate() {
                     in: 'query',
                     description: 'the name of the sld',
                     type: 'string',
-                    enum: ['agdd', 'leafout_anomaly_black']
+                    enum: [
+                        'agdd',
+                        'agdd_web',
+                        'agdd_anomaly', 
+                        'agdd_anomaly_50f',
+                        'leafout_anomaly_black',
+                        'bloom_best_web',
+                        'leafout_best_web',
+                        'bloom_bimonthly_web',
+                        'leafout_bimonthly_web'
+                    ]
                 }
             ],
             responses: getResponses('LegendResponse')
