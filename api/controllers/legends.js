@@ -7,15 +7,12 @@ const svg2png = require('svg2png');
 function getSld(sldName) {
     return new Promise((resolve, reject) => {
         //https://geoserver.usanpn.org/geoserver/rest/workspaces/gdd/styles/agdd.sld    
-        let store = 'gdd';
-        if(sldName.includes('leaf') || sldName.includes('bloom')) {
-            store = 'si-x';
-        }
+        let [workspace, sld] = sldName.split(":");
         const https = require('https')
         const options = {
         hostname: 'geoserver.usanpn.org',
         port: 443,
-        path: `/geoserver/rest/workspaces/${store}/styles/${sldName}.sld`,
+        path: `/geoserver/rest/workspaces/${workspace}/styles/${sld}.sld`,
         method: 'GET'
         }
 

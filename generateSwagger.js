@@ -2069,15 +2069,15 @@ async function generate() {
                     description: 'the name of the sld',
                     type: 'string',
                     enum: [
-                        'agdd',
-                        'agdd_web',
-                        'agdd_diff', 
-                        'leaf_anomaly',
-                        'leaf_anomaly_black',
-                        'bloom_best_web',
-                        'leafout_best_web',
-                        'bloom_bimonthly_web',
-                        'leafout_bimonthly_web'
+                        'gdd:agdd',
+                        'gdd:agdd_web',
+                        'gdd:agdd_diff', 
+                        'si-x:leaf_anomaly',
+                        'si-x:leaf_anomaly_black',
+                        'si-x:bloom_best_web',
+                        'si-x:leafout_best_web',
+                        'si-x:bloom_bimonthly_web',
+                        'si-x:leafout_bimonthly_web'
                     ]
                 }
             ],
