@@ -2071,9 +2071,9 @@ async function generate() {
                     enum: [
                         'agdd',
                         'agdd_web',
-                        'agdd_anomaly', 
-                        'agdd_anomaly_50f',
-                        'leafout_anomaly_black',
+                        'agdd_diff', 
+                        'leaf_anomaly',
+                        'leaf_anomaly_black',
                         'bloom_best_web',
                         'leafout_best_web',
                         'bloom_bimonthly_web',
