@@ -46,10 +46,12 @@ function outputFiles(outputName, d3n) {
             canvas.pngStream().pipe(fs.createWriteStream(outputPath+outputName+'.png'));
             return;
           }
+
+          d3n.svg()
         
-          fs.writeFile(outputPath+outputName+'.html', d3n.html(), function () {
-            // console.log('>> Done. Open "./'+outputName+'.html" in a web browser');
-          });
+          //fs.writeFile(outputPath+outputName+'.html', d3n.html(), function () {});
+
+          fs.writeFile(outputPath+outputName+'.svg', d3n.svgString(), function () {});
         
           var svgBuffer = new Buffer(d3n.svgString(), 'utf-8');
           svg2png(svgBuffer)
@@ -60,7 +62,7 @@ function outputFiles(outputName, d3n) {
             })
             .then(err => {
                 // console.log('>> Exported: "./'+outputName+'.png"');
-                resolve(outputName+'.png');
+                resolve(outputName);
             });
     });
 };
@@ -246,7 +248,8 @@ async function drawSldLegend(req, res) {
         let outputPath = await getLegend(sldName);
 
         res.status(200).send({
-            'legendPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + outputPath
+            'pngPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + outputPath +'.png',
+            'svgPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + outputPath +'.svg'
         });
     } catch(error) {
         res.status(500).json({"message": error.message});

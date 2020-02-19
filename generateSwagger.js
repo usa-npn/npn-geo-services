@@ -1113,7 +1113,10 @@ async function generate() {
     swaggerDefinition['definitions']['LegendResponse'] = {
         required: ['legendPath'],
         properties: {
-            legendPath: {
+            pngPath: {
+                type: "string"
+            },
+            svgPath: {
                 type: "string"
             }
         }
