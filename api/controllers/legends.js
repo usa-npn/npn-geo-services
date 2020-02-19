@@ -47,14 +47,11 @@ function outputFiles(outputName, d3n) {
             return;
           }
 
-          d3n.svg()
-        
           //fs.writeFile(outputPath+outputName+'.html', d3n.html(), function () {});
 
-          fs.writeFile(outputPath+outputName+'.svg', d3n.svgString(), function () {});
-        
           var svgBuffer = new Buffer(d3n.svgString(), 'utf-8');
-          svg2png(svgBuffer)
+          fs.writeFile(outputPath+outputName+'.svg', svgBuffer, function () {
+            svg2png(svgBuffer)
             .then(buffer => fs.writeFile(outputPath+outputName+'.png', buffer, ()=>{}))
             .catch(e => {
                 console.error('ERR:', e);
@@ -64,6 +61,7 @@ function outputFiles(outputName, d3n) {
                 // console.log('>> Exported: "./'+outputName+'.png"');
                 resolve(outputName);
             });
+          });  
     });
 };
 
