@@ -14,7 +14,7 @@
     "js-yaml": "^3.7.0",
     "js2xmlparser": "^2.0.2",
     "moment": "^2.18.1",
-    "morgan": "^1.8.2",
+    "morgan": "^1.9.1",
     "mysql": "^2.11.1",
     "mysql2": "^1.1.2",
     "node-ssh": "^5.1.2",
