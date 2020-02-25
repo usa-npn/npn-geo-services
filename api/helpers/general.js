@@ -188,7 +188,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
 	<wps:DataInputs>
 		<wps:Input>
 			<ows:Identifier>coverage</ows:Identifier>
-			<wps:Reference mimeType="image/${fileFormat}" xlink:href="${unstyledFileRef}" method="GET"/>
+			<wps:Reference mimeType="image/tiff" xlink:href="${unstyledFileRef}" method="GET"/>
 		</wps:Input>
 		<wps:Input>
 			<ows:Identifier>style</ows:Identifier>

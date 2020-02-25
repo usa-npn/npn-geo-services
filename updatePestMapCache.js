@@ -5,6 +5,11 @@ const os = require('os');
 let log = require('./logger.js');
 const { exec } = require('child_process');
 
+// this script calls the pestmap endpoint for each pest for each day of cur year generating a clipped image
+// in this process maps are deleted 5 days back and 6 days forward so that new temp data is picked up
+// then, it runs /usr/local/scripts/pretty-maps/make_maps.php which overlays these clipped images
+// onto pretty maps
+
 // hits the geo services pestMap endpoint to generate image
 function doRequest(path) {
     let options = {
