@@ -17,8 +17,13 @@ generateSwagger.generate().then(() => {
         if (process.env.PROTOCOL === "https" ) {
             let certificate = fs.readFileSync(process.env.SSL_CERT);
             let privateKey = fs.readFileSync(process.env.SSL_KEY);
+            let chain = fs.readFileSync(process.env.SSL_CA);
             log.info("creating https server");
-            let server = https.createServer({key: privateKey, cert: certificate}, app);
+            let server = https.createServer({
+                key: privateKey, 
+                cert: certificate,
+                ca: chain
+            }, app);
             server.setTimeout(0);
             return server;
         }
