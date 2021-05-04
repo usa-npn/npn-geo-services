@@ -165,11 +165,11 @@ const pests = [
             -106.645646,
             24.523096,
             -66.949895,
-            48.238800
+            49.384358
         ],
-        stateNames: ['Alabama', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Illinois', 'Indiana', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Mississippi', 'New Hampshire', 'New Jersey', 'New York', 'North Carolina', 'Ohio', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'Tennessee', 'Texas', 'Vermont', 'Virginia', 'West Virginia', 'Wisconsin'],
+        stateNames: ['Alabama', 'Arkansas', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Nebraska', 'New Hampshire', 'New Jersey', 'New York', 'North Carolina', 'Ohio', 'Oklahoma', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'Tennessee', 'Texas', 'Vermont', 'Virginia', 'West Virginia', 'Wisconsin'],
         rangeShpFilePath: '/var/www/data-site/files/npn-geo-services/shape_files/magnolia_scale_range/states.shp',
-        rangeShapeFile: "https://geoserver.usanpn.org:443/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME%20IN%20(%27Alabama%27,%20%27Connecticut%27,%20%27Florida%27,%20%27Georgia%27,%20%27Illinois%27,%20%27Indiana%27,%20%27Kentucky%27,%20%27Louisiana%27,%20%27Maine%27,%20%27Maryland%27,%20%27Massachusetts%27,%20%27Michigan%27,%20%27Mississippi%27,%20%27New%20York%27,%20%27North%20Carolina%27,%20%27Ohio%27,%20%27Pennsylvania%27,%20%27South%20Carolina%27,%20%27Tennessee%27,%20%27Texas%27,%20%27Virginia%27,%20%27West%20Virginia%27,%20%27Wisconsin%27,%20%27Vermont%27,%20%27New%20Hampshire%27,%20%27Rhode%20Island%27,%20%27New%20Jersey%27,%20%27Delaware%27)&outputFormat=SHAPE-ZIP",
+        rangeShapeFile: "https://geoserver.usanpn.org:443/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME%20IN%20(%27Alabama%27,%20%27Connecticut%27,%20%27Florida%27,%20%27Georgia%27,%20%27Illinois%27,%20%27Indiana%27,%20%27Kentucky%27,%20%27Louisiana%27,%20%27Maine%27,%20%27Maryland%27,%20%27Massachusetts%27,%20%27Michigan%27,%20%27Mississippi%27,%20%27New%20York%27,%20%27North%20Carolina%27,%20%27Ohio%27,%20%27Pennsylvania%27,%20%27South%20Carolina%27,%20%27Tennessee%27,%20%27Texas%27,%20%27Virginia%27,%20%27West%20Virginia%27,%20%27Wisconsin%27,%20%27Vermont%27,%20%27New%20Hampshire%27,%20%27Rhode%20Island%27,%20%27New%20Jersey%27,%20%27Delaware%27,%20%27Arkansas%27,%20%27Missouri%27,%20%27Iowa%27,%20%27Minnesota%27,%20%27Nebraska%27,%20%27Kansas%27,%20%27Oklahoma%27)&outputFormat=SHAPE-ZIP",
         sldName: 'magnolia_scale.sld'
     },
     {
