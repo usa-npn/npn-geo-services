@@ -145,7 +145,7 @@ function clippedImage(req, res) {
 /**
  * @param {{swagger}} req
  */
-function aggdAnomalyClippedImage(req, res) {
+function agddAnomalyClippedImage(req, res) {
     let anomaly = true;
     return clippedImageInternal(req, res, anomaly);
 }
