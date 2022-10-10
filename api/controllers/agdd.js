@@ -145,7 +145,7 @@ function clippedImage(req, res) {
 /**
  * @param {{swagger}} req
  */
-function anomalyClippedImage(req, res) {
+function aggdAnomalyClippedImage(req, res) {
     let anomaly = true;
     return clippedImageInternal(req, res, anomaly);
 }
@@ -325,7 +325,7 @@ module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.clippedImage = clippedImage;
 module.exports.pestDescriptions = pestDescriptions;
 module.exports.pestMap = pestMap;
-module.exports.anomalyClippedImage = anomalyClippedImage;
+module.exports.agddAnomalyClippedImage = agddAnomalyClippedImage;
 module.exports.simpleAgddMap = simpleAgddMap;
 module.exports.doubleSineAgddMap = doubleSineAgddMap;
 module.exports.simplePointTimeSeries = simplePointTimeSeries;

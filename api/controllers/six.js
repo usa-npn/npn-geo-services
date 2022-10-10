@@ -45,6 +45,39 @@ function getParam(param) {
     }
 }
 
+function validateDateWithLayerName(layerName, date) {
+    let y = date.year();
+    let m = date.month();
+    let d = date.date();
+    let beginningOfYear = moment().utc().startOf('year');
+    let forecastEnd = moment().utc().add(6, "days");
+    let prismStart = moment('1981-01-01', 'YYYY-MM-DD').utc();
+    let prismEnd = moment().utc().subtract(1, "days");
+    let bestStart = moment('1880-01-01', 'YYYY-MM-DD').utc();
+    let bestEnd = moment('2013-01-01', 'YYYY-MM-DD').utc();
+    if(layerName.includes("ncep_historic")) {
+        let lastAvailableYear = moment().utc().year() - 1;
+        if(m != 0 || d != 1 || y > lastAvailableYear || y < 2016) {
+            throw(`Historic NCEP si-x are available yearly from 2016-01-01 through ${lastAvailableYear}-01-01. Check that your date falls in that range having format YYYY-01-01.`);
+        }
+    }
+    else if(layerName.includes("ncep")) {
+        if(date < beginningOfYear || date > forecastEnd) {
+            throw(`NCEP si-x is a daily layer available for the current year through ${forecastEnd.format("YYYY-MM-DD")}. Check that your date has format YYYY-MM-DD.`);
+        }
+    }
+    else if(layerName.includes("prism")) {
+        if(date < prismStart || date > prismEnd) {
+            throw(`Prism si-x layers are available from 1981-01-01 through ${prismEnd.format("YYYY-MM-DD")}. Check that your date falls in that range having format YYYY-MM-DD.`);
+        }
+    }
+    else if(layerName.includes("best")) {
+        if(date < bestStart || date > bestEnd) {
+            throw(`BEST si-x layers are available yearly from 1880-01-01 through 2013-01-01. Check that your date falls in that range having format YYYY-01-01.`);
+        }
+    }
+}
+
 
 /**
  * @param {{swagger}} req
@@ -65,6 +98,12 @@ function clippedImageInternal(req, res, anomaly) {
 
     if (layerName) {
         phenophase = getPhenophaseFromLayerName(layerName);
+        try {
+            validateDateWithLayerName(layerName, moment.utc(date));
+        } catch(error) {
+            res.status(500).json({"message": error});
+        }
+        
         if(!anomaly) {
             plant = getPlantFromLayerName(layerName);
             climate = getClimateProviderFromLayerName(layerName);
@@ -120,7 +159,7 @@ function clippedImage(req, res) {
 /**
  * @param {{swagger}} req
  */
-function anomalyClippedImage(req, res) {
+function sixAnomalyClippedImage(req, res) {
     let anomaly = true;
     return clippedImageInternal(req, res, anomaly);
 }
@@ -260,7 +299,7 @@ async function areaStatsTimeSeries(req, res) {
 }
 
 module.exports.clippedImage = clippedImage;
-module.exports.anomalyClippedImage = anomalyClippedImage;
+module.exports.sixAnomalyClippedImage = sixAnomalyClippedImage;
 module.exports.areaStats = areaStats;
 module.exports.anomalyAreaStats = anomalyAreaStats;
 module.exports.areaStatsTimeSeries = areaStatsTimeSeries;
