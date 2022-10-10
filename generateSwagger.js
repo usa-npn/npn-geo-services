@@ -1702,7 +1702,7 @@ async function generate() {
             summary: `gets agdd anomaly geotiff over the selected boundary`,
             description: `Gets agdd anomaly geotiff for a specified boundary, base, and date.`,
             tags: ['accumlated growing degree days'],
-            operationId: `anomalyClippedImage`,
+            operationId: `agddAnomalyClippedImage`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1929,7 +1929,7 @@ async function generate() {
             summary: `gets spring index anomaly geotiff over the selected boundary`,
             description: `Gets spring index anomaly geotiff for a specified boundary, plant, phenophase, and date.`,
             tags: ['spring index'],
-            operationId: `anomalyClippedImage`,
+            operationId: `sixAnomalyClippedImage`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
