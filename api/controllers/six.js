@@ -151,7 +151,7 @@ function clippedImageInternal(req, res, anomaly) {
 /**
  * @param {{swagger}} req
  */
-function clippedImage(req, res) {
+function sixClippedImage(req, res) {
     let anomaly = false;
     return clippedImageInternal(req, res, anomaly);
 }
@@ -167,7 +167,7 @@ function sixAnomalyClippedImage(req, res) {
 /**
  * @param {{swagger}} req
  */
-function areaStats(req, res) {
+function sixAreaStats(req, res) {
     let anomaly = false;
     return areaStatsInternal(req, res, anomaly);
 }
@@ -175,7 +175,7 @@ function areaStats(req, res) {
 /**
  * @param {{swagger}} req
  */
-function anomalyAreaStats(req, res) {
+function sixAnomalyAreaStats(req, res) {
     let anomaly = true;
     return areaStatsInternal(req, res, anomaly);
 }
@@ -298,8 +298,8 @@ async function areaStatsTimeSeries(req, res) {
     }
 }
 
-module.exports.clippedImage = clippedImage;
+module.exports.sixClippedImage = sixClippedImage;
 module.exports.sixAnomalyClippedImage = sixAnomalyClippedImage;
-module.exports.areaStats = areaStats;
-module.exports.anomalyAreaStats = anomalyAreaStats;
+module.exports.sixAreaStats = sixAreaStats;
+module.exports.sixAnomalyAreaStats = sixAnomalyAreaStats;
 module.exports.areaStatsTimeSeries = areaStatsTimeSeries;

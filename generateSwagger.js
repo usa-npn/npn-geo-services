@@ -793,7 +793,7 @@ let swaggerDefinition = {
         contact: {
             name: "The National Phenology Network",
             email: "support@usanpn.org",
-            url: "www.usanpn.org"
+            url: "https://www.usanpn.org"
         }
     },
     host: host,
@@ -1184,7 +1184,7 @@ async function generate() {
             summary: `finds agdd statistics over the selected boundary`,
             description: `Finds agdd statistics for a specified base and date. Also returns paths to download the boundary shapefile and the clipped raster used to generate the statistics.`,
             tags: ['accumlated growing degree days'],
-            operationId: `areaStats`,
+            operationId: `agddAreaStats`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1218,7 +1218,7 @@ async function generate() {
             summary: `finds agdd anomaly statistics over the selected boundary`,
             description: `Finds agdd anomaly statistics for a specified base and date. Also returns paths to download the boundary shapefile and the clipped raster used to generate the statistics.`,
             tags: ['accumlated growing degree days'],
-            operationId: `anomalyAreaStats`,
+            operationId: `agddAnomalyAreaStats`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1252,7 +1252,7 @@ async function generate() {
             summary: `gets agdd geotiff over the selected boundary`,
             description: `Gets agdd geotiff for a specified boundary, base, and date.`,
             tags: ['accumlated growing degree days'],
-            operationId: `clippedImage`,
+            operationId: `agddClippedImage`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1810,7 +1810,7 @@ async function generate() {
             summary: `finds spring index statistics over the selected boundary`,
             description: `Finds spring index statistics for a specified boundary, plant, phenophase, and date. Also returns paths to download the boundary shapefile and the clipped raster used to generate the statistics.`,
             tags: ['spring index'],
-            operationId: `areaStats`,
+            operationId: `sixAreaStats`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1851,7 +1851,7 @@ async function generate() {
             summary: `finds spring index anomaly statistics over the selected boundary`,
             description: `Finds spring index statistics for a specified boundary, plant, phenophase, and date. Also returns paths to download the boundary shapefile and the clipped raster used to generate the statistics.`,
             tags: ['spring index'],
-            operationId: `anomalyAreaStats`,
+            operationId: `sixAnomalyAreaStats`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {
@@ -1885,7 +1885,7 @@ async function generate() {
             summary: `gets spring index geotiff over the selected boundary`,
             description: `Gets spring index geotiff for a specified boundary, plant, phenophase, and date.`,
             tags: ['spring index'],
-            operationId: `clippedImage`,
+            operationId: `sixClippedImage`,
             consumes: ['application/x-www-form-urlencoded'],
             parameters: [
                 {

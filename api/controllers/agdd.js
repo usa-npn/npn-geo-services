@@ -24,7 +24,7 @@ function getParam(param) {
 /**
  * @param {{swagger}} req
  */
-function areaStats(req, res) {
+function agddAreaStats(req, res) {
     let anomaly = false;
     return areaStatsInternal(req, res, anomaly);
 }
@@ -32,7 +32,7 @@ function areaStats(req, res) {
 /**
  * @param {{swagger}} req
  */
-function anomalyAreaStats(req, res) {
+function agddAnomalyAreaStats(req, res) {
     let anomaly = true;
     return areaStatsInternal(req, res, anomaly);
 }
@@ -137,7 +137,7 @@ function pestMap(req, res) {
 /**
  * @param {{swagger}} req
  */
-function clippedImage(req, res) {
+function agddClippedImage(req, res) {
     let anomaly = false;
     return clippedImageInternal(req, res, anomaly);
 }
@@ -320,9 +320,9 @@ function doubleSinePointTimeSeries(req, res) {
     
 }
 
-module.exports.areaStats = areaStats;
-module.exports.anomalyAreaStats = anomalyAreaStats;
-module.exports.clippedImage = clippedImage;
+module.exports.agddAreaStats = agddAreaStats;
+module.exports.agddAnomalyAreaStats = agddAnomalyAreaStats;
+module.exports.agddClippedImage = agddClippedImage;
 module.exports.pestDescriptions = pestDescriptions;
 module.exports.pestMap = pestMap;
 module.exports.agddAnomalyClippedImage = agddAnomalyClippedImage;
