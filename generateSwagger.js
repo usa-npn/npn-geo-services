@@ -779,14 +779,14 @@ function getResponses(definitionName) {
 }
 
 
-let host = `${process.env.SERVICES_HOST}:${process.env.PORT}`;
+let host = `${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}`;
 const version = "1.0.0";
 const basePath = "/v1";
 
 let swaggerDefinition = {
     swagger: "2.0",
     info: {
-        description: "Welcome to the USA-NPN geospatial services. These services allow one to access geospatial data hosted at the USA-NPN in various ways including timeseries at a lat/long, GeoTIFF maps bounded by a polygon, and aggregated statistics over a ploygon.",
+        description: "Welcome to the USA-NPN geospatial services. These services allow one to access geospatial data hosted at the USA-NPN in various ways including timeseries at a lat/long, GeoTIFF maps bounded by a polygon, and aggregated statistics over a polygon.",
         version: version,
         title: "National Phenology Network Geospatial Services",
         termsOfService: "TODO: Add terms of service here",
@@ -820,15 +820,15 @@ function sortObject(o) {
     return Object.keys(o).sort().reduce((r, k) => (r[k] = o[k], r), {});
 }
 
-// assumes git checked in host is localhost:3006
+// assumes git checked in host is localhost:3003
 async function overwriteHostInSwaggerFiles(swaggerFile) {
     return new Promise((resolve, reject) => {
         fs.readFile(swaggerFile, 'utf8', function (err,data) {
             if (err) {
                 return console.log(err);
             }
-            let host = `${process.env.SERVICES_HOST}:${process.env.PORT}`;
-            var result = data.replace(/localhost:3006/g, host);
+            let host = `${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}`;
+            var result = data.replace(/localhost:3003/g, host);
 
             fs.writeFile(swaggerFile, result, 'utf8', function (err) {
                 if (err) 
