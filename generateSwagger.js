@@ -779,7 +779,7 @@ function getResponses(definitionName) {
 }
 
 
-let host = `${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}`;
+let host = `${process.env.SERVICES_HOST}/geo-services`;
 const version = "1.0.0";
 const basePath = "/v1";
 
@@ -827,7 +827,7 @@ async function overwriteHostInSwaggerFiles(swaggerFile) {
             if (err) {
                 return console.log(err);
             }
-            let host = `${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}`;
+            let host = `${process.env.SERVICES_HOST}/geo-services`;
             var result = data.replace(/localhost:3003/g, host);
 
             fs.writeFile(swaggerFile, result, 'utf8', function (err) {
