@@ -82,16 +82,16 @@ generateSwagger.generate().then(() => {
 
     app.use(express.static('api/swagger'));
 
-    const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images';
+    const imagePath = '/var/www/persist/files/npn-geo-services/clipped_images';
     app.use(express.static(imagePath));
 
-    const dynamicAgddPath = '/var/www/data-site/files/npn-geo-services/agdd_maps';
+    const dynamicAgddPath = '/var/www/persist/files/npn-geo-services/agdd_maps';
     app.use(express.static(dynamicAgddPath));
 
-    const zeroMapsPath = '/var/www/data-site/files/npn-geo-services/zero_maps';
+    const zeroMapsPath = '/var/www/persist/files/npn-geo-services/zero_maps';
     app.use(express.static(zeroMapsPath));
 
-    const legendsPath = '/var/www/data-site/files/npn-geo-services/legends';
+    const legendsPath = '/var/www/persist/files/npn-geo-services/legends';
     app.use(express.static(legendsPath));
 
     let server = getServer();
