@@ -246,11 +246,11 @@ FROM (
                 console.log(`stderr: ${stderr}`);
             });
 
-            response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/` + filename.replace('.tiff', '.png');
+            response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/` + filename.replace('.tiff', '.png');
             response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
             return response;
         } else {
-            response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/` + filename;
+            response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/` + filename;
             response.bbox = helpers.extractFloatsFromString(res.rows[0].extent);
             response.bbox = bbox;
             return response;

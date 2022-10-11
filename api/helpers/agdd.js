@@ -307,7 +307,7 @@ async function getPestMap(species, date, preserveExtent) {
     }
     if (fs.existsSync(pestImagePath + styledFileName)) {
         log.info('styled png already exists');
-        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/pest_maps/` + styledFileName;
+        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/pest_maps/` + styledFileName;
         response.bbox = pest.bounds;
         return response;
     }
