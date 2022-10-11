@@ -307,7 +307,7 @@ async function getPestMap(species, date, preserveExtent) {
     }
     if (fs.existsSync(pestImagePath + styledFileName)) {
         log.info('styled png already exists');
-        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName;
+        response.clippedImage = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/pest_maps/` + styledFileName;
         response.bbox = pest.bounds;
         return response;
     }
@@ -653,12 +653,12 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
             response.upperThreshold = upperThreshold;
             pythonCommand = `sudo /usr/bin/python3 compute_dynamic_agdd.py double-sine ${climateProvider.toLowerCase()} ${temperatureUnit.toLowerCase()} ${startDate.format('YYYY-MM-DD')} ${endDate.format('YYYY-MM-DD')} ${lowerThreshold} ${upperThreshold}`
         }
-        let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${tifFile}`;
+        let tifUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/${tifFile}`;
         response.mapUrl = tifUrl;
 
         //if start date is after today there will be no heat accumulation so return the zeroes tif
         if(startDate.valueOf() > moment().valueOf()) {
-            response.mapUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/zeros_conus_${climateProvider.toLowerCase()}.tif`;
+            response.mapUrl = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/zeros_conus_${climateProvider.toLowerCase()}.tif`;
             resolve(response);
         }
         

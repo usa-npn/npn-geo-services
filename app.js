@@ -96,8 +96,8 @@ generateSwagger.generate().then(() => {
 
     let server = getServer();
 
-    server.listen(process.env.PORT || 3006, () => {
-        log.info("Server listening on port " + (process.env.PORT || 3006));
+    server.listen(process.env.GEO_SERVICES_PORT || 3003, () => {
+        log.info("Server listening on port " + (process.env.GEO_SERVICES_PORT || 3003));
     });
 
     // setInterval(function() {

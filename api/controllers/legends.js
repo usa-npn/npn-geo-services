@@ -246,8 +246,8 @@ async function drawSldLegend(req, res) {
         let outputPath = await getLegend(sldName);
 
         res.status(200).send({
-            'pngPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + outputPath +'.png',
-            'svgPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + outputPath +'.svg'
+            'pngPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/` + outputPath +'.png',
+            'svgPath' : `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/` + outputPath +'.svg'
         });
     } catch(error) {
         res.status(500).json({"message": error.message});

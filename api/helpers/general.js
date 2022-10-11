@@ -75,11 +75,11 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
-        let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}`;
+        let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/${filename}`;
         // if (process.env.PROTOCOL === 'https') {
         //     unstyledFileRef = `http://www.usanpn.org/files/gridded/cliped_images/${filename}`;
         // } else {
-        //     unstyledFileRef = `http://${process.env.SERVICES_HOST}:${process.env.PORT}/${filename}`;
+        //     unstyledFileRef = `http://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/${filename}`;
         // }
 
         var postData = `
@@ -105,7 +105,7 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
 
         var username = `${process.env.GEOSERVER_USER}`;
         var password = `${process.env.GEOSERVER_PASSWORD}`;
-        var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+        var auth = 'Basic ' + new Buffer.from(username + ':' + password).toString('base64');
 
         var options = {
             hostname: `${process.env.GEOSERVER_HOST}`,
@@ -149,14 +149,14 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                         console.log(`stdout: ${stdout}`);
                         console.log(`stderr: ${stderr}`);
 
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName.replace('.tiff', '.png'));
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/` + styledFileName.replace('.tiff', '.png'));
                     });
 
                 } else {
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/` + styledFileName);
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/` + styledFileName);
                 }
 
-                //resolve(`data-dev.usanpn.org:${process.env.PORT}/` + styledFileName);
+                //resolve(`data-dev.usanpn.org:${process.env.GEO_SERVICES_PORT}/` + styledFileName);
             });
         });
 
@@ -180,7 +180,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
     return new Promise((resolve, reject) =>
     {
         log.info(`styling ${rasterpath}${filename}`);
-        let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/${filename}`;
+        let unstyledFileRef = `${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/pest_maps/${filename}`;
 
         var postData = `
 <wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
@@ -252,7 +252,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
                     log.error('could not delete unstyled file: ' + err);
                     reject(err);
                 }
-                resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
+                resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
             });
         });
 

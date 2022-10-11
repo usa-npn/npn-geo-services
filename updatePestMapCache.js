@@ -14,7 +14,7 @@ const { exec } = require('child_process');
 function doRequest(path) {
     let options = {
         hostname: (os.hostname() == 'npnweb-dev.npn.arizona.edu' || os.hostname() == 'jeff-work' || os.hostname() == 'on-campus-10-138-68-38.vpn.arizona.edu') ? 'data-dev.usanpn.org' : 'data.usanpn.org',
-        port: 3006,
+        port: 3003,
         path: encodeURI(path),
         method: 'GET',
         rejectUnauthorized: false
