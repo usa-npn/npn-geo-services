@@ -39,7 +39,7 @@ function getSld(sldName) {
 
 function outputFiles(outputName, d3n) {
     return new Promise((resolve, reject) => {
-        let outputPath = '/var/www/data-site/files/npn-geo-services/legends/'
+        let outputPath = '/var/www/persist/npn-geo-services/legends/'
         if (d3n.options.canvas) {
             const canvas = d3n.options.canvas;
             console.log('canvas output...', canvas);

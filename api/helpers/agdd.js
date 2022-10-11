@@ -11,9 +11,9 @@ let pests = require('./pests');
 let node_ssh = require('node-ssh');
 let client = require('scp2');
 
-const imagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/';
+const imagePath = '/var/www/persist/npn-geo-services/clipped_images/';
 const pestImagePath = imagePath + 'pest_maps/';
-const dynamicAgddPath = '/var/www/data-site/files/npn-geo-services/agdd_maps/';
+const dynamicAgddPath = '/var/www/persist/npn-geo-services/agdd_maps/';
 
 // to pick up all pixels inside boundary we need to buffer around the shapefile before doing a clip,
 // the size of this buffer depends on the dataset resolution. This function returns the correct buffer size.
@@ -332,7 +332,7 @@ async function getPestMap(species, date, preserveExtent) {
         //if start date is after the date requested there will be no heat accumulation so use the zeroes tif
         try {
             await helpers.copyFilePromise(
-                '/var/www/data-site/files/npn-geo-services/zero_maps/zeros_conus_ncep.tif',
+                '/var/www/persist/npn-geo-services/zero_maps/zeros_conus_ncep.tif',
                  `${pestImagePath}${tiffFileName}`
                  );
         } catch(err) {
@@ -345,7 +345,7 @@ async function getPestMap(species, date, preserveExtent) {
             log.info(`getting dynamicAgdd for ${climateProvider} ${startDate.format('YYYY-MM-DD')} ${date.format('YYYY-MM-DD')} ${pest.base}`);
             let result = await getDynamicAgdd(pest.agddMethod, climateProvider, 'fahrenheit', startDate, date, pest.lowerThreshold, pest.upperThreshold);
             let tiffFileUrl = result.mapUrl;
-            let agddPath = `/var/www/data-site/files/npn-geo-services/agdd_maps/`;
+            let agddPath = `/var/www/persist/npn-geo-services/agdd_maps/`;
             tiffFileName = tiffFileUrl.split('/').pop();
             await helpers.renameFilePromise(`${agddPath}${tiffFileName}`, `${pestImagePath}${tiffFileName}`);
         } catch(err) {
@@ -361,7 +361,7 @@ async function getPestMap(species, date, preserveExtent) {
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Arizona', 'Texas')&outputFormat=SHAPE-ZIP
         //let shpQuery = `https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN (${stateNames.join()})&outputFormat=SHAPE-ZIP`;
         //https://geoserver-dev.usanpn.org/geoserver/gdd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gdd:states&CQL_FILTER=NAME IN ('Maine','Vermont','Colorado','Nebraska','Kansas','Oklahoma','Texas','Minnesota','Iowa','Missouri','Arkansas','Louisiana','Wisconsin','Illinois','Kentucky','Tennessee','Mississippi','Michigan','Indiana','Alabama','Ohio','Alabama','Georgia','South Carolina','North Carolina','Virginia','West Virginia','District of Columbia','Maryland','Delaware','New Jersey','Pennsylvania','New York','Connecticut','Rhode Island','Massachusetts','New Hampshire','Florida')&outputFormat=SHAPE-ZIP
-        let shapefile = pest.rangeShpFilePath;//`/var/www/data-site/files/npn-geo-services/shape_files/${pest.species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
+        let shapefile = pest.rangeShpFilePath;//`/var/www/persist/npn-geo-services/shape_files/${pest.species.replace(/ /g, '_').toLowerCase()}_range/states.shp`;
         // when not preserving extent, use -te to set bounds to the shapefile bounding box
         let clipCommand = `gdalwarp -srcnodata -9999 -dstnodata -9999 -te ${pest.bounds.join(' ')} -overwrite -cutline ${shapefile} ${pestImagePath}${tiffFileName} ${pestImagePath}${croppedPngFilename}`;
         if(preserveExtent) {
