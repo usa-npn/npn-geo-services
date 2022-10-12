@@ -149,11 +149,11 @@ function stylizeFile(filename, rasterpath, fileFormat, layerName){
                         console.log(`stdout: ${stdout}`);
                         console.log(`stderr: ${stderr}`);
 
-                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/` + styledFileName.replace('.tiff', '.png'));
+                        resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/` + styledFileName.replace('.tiff', '.png'));
                     });
 
                 } else {
-                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/` + styledFileName);
+                    resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/` + styledFileName);
                 }
 
                 //resolve(`data-dev.usanpn.org:${process.env.GEO_SERVICES_PORT}/` + styledFileName);
@@ -252,7 +252,7 @@ function stylizePestMap(filename, rasterpath, fileFormat, sldName, backgroundCol
                     log.error('could not delete unstyled file: ' + err);
                     reject(err);
                 }
-                resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}:${process.env.GEO_SERVICES_PORT}/pest_maps/` + styledFileName.replace('.tiff', '.png'));
+                resolve(`${process.env.PROTOCOL}://${process.env.SERVICES_HOST}/geo-services/pest_maps/` + styledFileName.replace('.tiff', '.png'));
             });
         });
 
