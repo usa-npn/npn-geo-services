@@ -37,29 +37,29 @@ generateSwagger.generate().then(() => {
 
     var app = express();
     var app_v1 = express();
-    var app_v0 = express();
+    // var app_v0 = express();
 
     var config_v1 = {
         appRoot: __dirname,
         swaggerFile: "./api/swagger/swagger.yaml"
     };
     
-    var config_v0 = {
-        appRoot: __dirname,
-        swaggerFile: "./api/swagger/swagger_v0.yaml"
-    };
+    // var config_v0 = {
+    //     appRoot: __dirname,
+    //     swaggerFile: "./api/swagger/swagger_v0.yaml"
+    // };
     
     SwaggerExpress.create(config_v1, function(err, swaggerExpress) {
         if (err) { throw err; }
         swaggerExpress.register(app_v1);
     });
     
-    SwaggerExpress.create(config_v0, function(err, swaggerExpress) {
-        if (err) { throw err; }
-        swaggerExpress.register(app_v0);
-    });
+    // SwaggerExpress.create(config_v0, function(err, swaggerExpress) {
+    //     if (err) { throw err; }
+    //     swaggerExpress.register(app_v0);
+    // });
     
-    app.use('/', app_v0);
+    // app.use('/', app_v0);
     app.use('/', app_v1);
 
     // create a write stream (in append mode) and set up a log to record requests

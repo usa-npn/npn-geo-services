@@ -2098,8 +2098,9 @@ async function generate() {
             if(err)
                 reject(err);
             else {
-                overwriteHostInSwaggerFiles("./api/swagger/swagger_v0.yaml")
-                    .then( () => resolve());
+                resolve();
+                // overwriteHostInSwaggerFiles("./api/swagger/swagger_v0.yaml")
+                //     .then( () => resolve());
 
             }
         });

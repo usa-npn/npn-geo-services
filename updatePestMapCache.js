@@ -23,7 +23,7 @@ function doRequest(path) {
     console.log('options.hostname: ' + options.hostname);
     console.log(options.path);
     return new Promise ((resolve, reject) => {
-        // 'https://data-dev.usanpn.org:3006/v0/agdd/pestMap?species=Emerald%20Ash%20Borer&date=2017-01-05'
+        // 'https://data-dev.usanpn.org:3006/v1/agdd/pestMap?species=Emerald%20Ash%20Borer&date=2017-01-05'
         // console.log(options.hostname);
         https.get(options, (response) => {
             var body = '';
@@ -46,7 +46,7 @@ function doRequest(path) {
 async function deleteForecastDays(species) {
     let start = moment.utc().subtract(5,'days');
     let end = moment.utc().add(6,'days');
-    let pestImagePath = '/var/www/data-site/files/npn-geo-services/clipped_images/pest_maps/';
+    let pestImagePath = '/var/www/persist/npn-geo-services/clipped_images/pest_maps/';
     while(start <= end) {
         let dateString = start.format('YYYY-MM-DD');
         let fileName = `${species.replace(/\s/g, '_')}_${dateString}_styled.png`;
@@ -89,9 +89,9 @@ async function update() {
                 let dateString = end.format('YYYY-MM-DD');
                 try {
                     console.log(`generating pest map: ${species} ${dateString}`);
-                    await doRequest(`/v0/agdd/pestMap?species=${species}&date=${dateString}`);
+                    await doRequest(`/v1/agdd/pestMap?species=${species}&date=${dateString}`);
                     console.log(`generating pest map for pretty map: ${species} ${dateString}`);
-                    await doRequest(`/v0/agdd/pestMap?species=${species}&date=${dateString}&preserveExtent=true`);
+                    await doRequest(`/v1/agdd/pestMap?species=${species}&date=${dateString}&preserveExtent=true`);
                 } catch(error) {
                     console.log(error);
                 }
