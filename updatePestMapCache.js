@@ -13,8 +13,8 @@ const { exec } = require('child_process');
 // hits the geo services pestMap endpoint to generate image
 function doRequest(path) {
     let options = {
-        hostname: (os.hostname() == 'npnweb-dev.npn.arizona.edu' || os.hostname() == 'jeff-work' || os.hostname() == 'on-campus-10-138-68-38.vpn.arizona.edu') ? 'data-dev.usanpn.org' : 'data.usanpn.org',
-        port: 3003,
+        hostname: (os.hostname() == 'npnweb-dev.npn.arizona.edu' || os.hostname() == 'jeff-work' || os.hostname() == 'on-campus-10-138-68-38.vpn.arizona.edu') ? 'data-dev.usanpn.org' : 'services-staging.usanpn.org',
+        port: 443,
         path: encodeURI(path),
         method: 'GET',
         rejectUnauthorized: false
@@ -83,28 +83,28 @@ async function update() {
         ];
         for(var species of speciesArr) {
             await deleteForecastDays(species);
-            let start = moment.utc("2019-01-01");
+            let start = moment.utc("2023-08-01");
             let end = moment.utc().add(6,'days');
             while(start <= end){
                 let dateString = end.format('YYYY-MM-DD');
                 try {
                     console.log(`generating pest map: ${species} ${dateString}`);
-                    await doRequest(`/v1/agdd/pestMap?species=${species}&date=${dateString}`);
+                    await doRequest(`/geo-services/v1/phenoforecasts/pestMap?species=${species}&date=${dateString}`);
                     console.log(`generating pest map for pretty map: ${species} ${dateString}`);
-                    await doRequest(`/v1/agdd/pestMap?species=${species}&date=${dateString}&preserveExtent=true`);
+                    await doRequest(`/geo-services/v1/phenoforecasts/pestMap?species=${species}&date=${dateString}&preserveExtent=true`);
                 } catch(error) {
                     console.log(error);
                 }
                 end.subtract(1, 'days');
             }
         }
-        log.info("running the php pretty map script.");
+        /*log.info("running the php pretty map script.");
         exec('php -f /usr/local/scripts/pretty-maps/make_maps.php', async (err, stdout, stderr) => {
             if (err) {
                 log.error('error running pretty map script: ' + err);
                 throw err;
             }
-        });
+        });*/
         log.info("finished updating cached pest images.");
     } catch (error) {
         log.error("could not update pest cached images: " + error);
