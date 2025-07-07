@@ -978,6 +978,30 @@ async function generate() {
         }
     };
 
+    swaggerDefinition['definitions']['SimplePointTimeSeries30YearAvgResponse'] = {
+        required: ['base', 'latitude', 'longitude', 'timeSeries'],
+        properties: {
+            climateProvider: {
+                type: "string"
+            },
+            base: {
+                type: "number"
+            },
+            latitude: {
+                type: "number"
+            },
+            longitude: {
+                type: "number"
+            },
+            timeSeries: {
+                type: "array",
+                items: {
+                    type: "number"
+                }
+            }
+        }
+    };
+
     swaggerDefinition['definitions']['SimplePointTimeSeriesResponse'] = {
         required: ['startDate', 'endDate', 'base', 'latitude', 'longitude', 'timeSeries'],
         properties: {
@@ -1553,6 +1577,42 @@ async function generate() {
             ],
             responses: getResponses('SimplePointTimeSeriesResponse')
         };
+
+
+        swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvgPreprocessed'] = {};
+        swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvgPreprocessed']['x-swagger-router-controller'] = 'agdd';
+        swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvgPreprocessed']['get'] =
+            {
+                summary: `gets agdd 30 year average timeseries at a lat,long for given base`,
+                description: `Gets agdd 30 year average timeseries at a lat,long for given base.`,
+                tags: ['accumlated growing degree days'],
+                operationId: `simplePointTimeSeries30YearAvgPreprocessed`,
+                consumes: ['application/x-www-form-urlencoded'],
+                parameters: [
+                    {
+                        name: 'base',
+                        in: 'query',
+                        required: true,
+                        description: 'the base used to compute the agdd - for example 12',
+                        type: 'integer'
+                    },
+                    {
+                        name: 'latitude',
+                        in: 'query',
+                        required: true,
+                        description: 'the latitude used to compute the agdd - for example 32.2',
+                        type: 'number'
+                    },
+                    {
+                        name: 'longitude',
+                        in: 'query',
+                        required: true,
+                        description: 'the longitude used to compute the agdd - for example -110',
+                        type: 'number'
+                    }
+                ],
+                responses: getResponses('SimplePointTimeSeries30YearAvgResponse')
+            };
 
 
         swaggerDefinition['paths']['/agdd/simple/pointTimeSeries/30YearAvg'] = {};

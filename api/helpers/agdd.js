@@ -632,6 +632,35 @@ async function getSimpleAgddTimeSeries30YearAvg(temperatureUnit, base, lat, long
     return response;
 }
 
+async function getSimpleAgddTimeSeries30YearAvgPreprocessed(base, lat, long) {
+    const query = {
+        text: `SELECT doy, st_value(rast, ST_SetSRID(ST_Point($1, $2),4269))
+                from prism_30yr_avg_agdd
+                WHERE base = $5
+                AND ST_Intersects(rast, ST_SetSRID(ST_MakePoint($3, $4),4269))
+                ORDER BY doy;`,
+        values: [long, lat, long, lat, base]
+    };
+    console.log(query);
+    const res = await db.pgPool.query(query);
+
+    let timeSeries = res['rows'].map(row => {
+        return { 
+            "doy": row['doy'],
+            "gdd": row['st_value']
+        }
+    });
+
+    response = {
+        "climateProvider": 'PRISM',
+        "base": base,
+        "latitude": lat,
+        "longitude": long,
+        "timeSeries": timeSeries
+    };
+    return response;
+}
+
 async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, startDate, endDate, lowerThreshold, upperThreshold) {
     return new Promise((resolve, reject) =>
     {
@@ -719,6 +748,7 @@ async function getDynamicAgdd(agddMethod, climateProvider, temperatureUnit, star
 module.exports.getDynamicAgdd = getDynamicAgdd;
 module.exports.getSimpleAgddTimeSeries = getSimpleAgddTimeSeries;
 module.exports.getSimpleAgddTimeSeries30YearAvg = getSimpleAgddTimeSeries30YearAvg;
+module.exports.getSimpleAgddTimeSeries30YearAvgPreprocessed = getSimpleAgddTimeSeries30YearAvgPreprocessed;
 module.exports.getDoubleSineAgddTimeSeries = getDoubleSineAgddTimeSeries;
 module.exports.getPestMap = getPestMap;
 module.exports.getClippedAgddImage = getClippedAgddImage;
