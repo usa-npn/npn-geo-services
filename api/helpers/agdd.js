@@ -652,7 +652,7 @@ async function getSimpleAgddTimeSeries30YearAvgPreprocessed(base, lat, long) {
     let timeSeries = res['rows'].map(row => {
         return { 
             "doy": row['doy'],
-            "gdd": row['st_value']
+            "agdd": row['st_value']
         }
     });
 
