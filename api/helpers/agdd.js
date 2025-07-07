@@ -536,8 +536,13 @@ async function getSimpleAgddTimeSeries(climateProvider, temperatureUnit, startDa
         values: [long, lat, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), long, lat]
     };
     console.log(query);
+    log.info(query);	
+    db.pgPool.query(query)
+	.then(res => log.info('success query'))
+	.catch(err => log.info('Error executing query', err.stack));
+	log.info('jeff');
     const res = await db.pgPool.query(query);
-
+    log.info('after query');
     let dateAgddThresholdMet = null;
 
     let timeSeries = res['rows'].map(row => {

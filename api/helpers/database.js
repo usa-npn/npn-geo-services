@@ -1,7 +1,12 @@
 // postgres pool
 const { Pool, Client } = require('pg');
-const pgPool = new Pool();
-
+const pgPool = new Pool({
+	host: process.env.PGHOST,
+	user: process.env.PGUSER,
+	password: process.env.PGPASSWORD,
+	port: process.env.PGPORT,
+	database: process.env.PGDATABASE,
+});
 // mysql ppols
 // var mysql = require('mysql2');
 // var mysqlPromise = require('mysql2/promise');

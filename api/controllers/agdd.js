@@ -239,6 +239,7 @@ function doubleSineAgddMap(req, res) {
  * @param {{swagger}} req
  */
 function simplePointTimeSeries(req, res) {
+    log.info('in simplePointTimeSeries');
     let climateProvider = getParam(req.swagger.params['climateProvider']);
     let temperatureUnit = getParam(req.swagger.params['temperatureUnit']);
     let startDate = getParam(req.swagger.params['startDate']);

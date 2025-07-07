@@ -779,9 +779,9 @@ function getResponses(definitionName) {
 }
 
 
-let host = `${process.env.SERVICES_HOST}`;
+let host = `${process.env.SERVICES_HOST}:3003`;
 const version = "1.0.0";
-const basePath = "/geo-services/v1";
+const basePath = "/v1";
 
 let swaggerDefinition = {
     swagger: "2.0",
